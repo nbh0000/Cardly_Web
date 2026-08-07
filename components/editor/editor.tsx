@@ -70,6 +70,8 @@ export function Editor({ templateId }: { templateId: string }) {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [panelOpen, setPanelOpen] = useState(true);
   const [saved, setSaved] = useState<string | null>(null);
+  /** 방금 추가된 섹션을 잠깐 강조합니다. */
+  const [flash, setFlash] = useState<string | null>(null);
 
   const storageKey = `daon:draft:${templateId}`;
   const [dismissed, setDismissed] = useState(false);
@@ -102,17 +104,44 @@ export function Editor({ templateId }: { templateId: string }) {
 
   // 편집 중인 섹션이 미리보기 어디에 있는지 바로 보이도록 스크롤합니다.
   const previewRef = useRef<HTMLDivElement>(null);
-  const goToSection = useCallback((id: SectionId) => {
-    setSection(id);
-    const key = RAIL_TO_SECTION[id];
-    if (!key) return;
-    requestAnimationFrame(() => {
+
+  /**
+   * 미리보기를 해당 섹션 앵커로 스크롤합니다.
+   * 방금 켠 섹션은 아직 DOM 에 없을 수 있어 프레임을 두 번 기다립니다.
+   */
+  const scrollToAnchor = useCallback((key: string) => {
+    const tryScroll = (retries: number) => {
       const scroller = previewRef.current;
       const target = scroller?.querySelector<HTMLElement>(`#sec-${key}`);
-      if (!scroller || !target) return;
-      scroller.scrollTo({ top: Math.max(0, target.offsetTop - 8), behavior: "smooth" });
-    });
+      if (scroller && target) {
+        scroller.scrollTo({ top: Math.max(0, target.offsetTop - 8), behavior: "smooth" });
+        setFlash(key);
+        window.setTimeout(() => setFlash(null), 1400);
+        return;
+      }
+      if (retries > 0) requestAnimationFrame(() => tryScroll(retries - 1));
+    };
+    requestAnimationFrame(() => tryScroll(3));
   }, []);
+
+  const goToSection = useCallback(
+    (id: SectionId) => {
+      setSection(id);
+      const key = RAIL_TO_SECTION[id];
+      if (key) scrollToAnchor(key);
+    },
+    [scrollToAnchor],
+  );
+
+  /** 섹션 토글을 켜거나 항목을 추가했을 때 그 위치를 보여줍니다. */
+  const revealSection = useCallback(
+    (key: SectionKey) => {
+      // 모바일에서는 미리보기가 다른 탭이라 먼저 전환해 줍니다.
+      if (window.matchMedia("(max-width: 1023px)").matches) setTab("preview");
+      scrollToAnchor(key);
+    },
+    [scrollToAnchor],
+  );
 
   /** 청첩장 링크 QR 을 SVG 로 만들어 내려받습니다. */
   const downloadQr = () => {
@@ -225,6 +254,7 @@ export function Editor({ templateId }: { templateId: string }) {
               set={set}
               setData={setData}
               onGoOrder={() => goToSection("order")}
+              onReveal={revealSection}
             />
           </div>
         </div>
@@ -271,7 +301,7 @@ export function Editor({ templateId }: { templateId: string }) {
             <div className="w-full max-w-[24rem]">
               <div className="overflow-hidden rounded-phone bg-white p-2 shadow-lift ring-1 ring-line">
                 <div ref={previewRef} className="relative max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain rounded-[1.5rem]">
-                  <InvitationView template={template} data={data} live={false} />
+                  <InvitationView template={template} data={data} live={false} flash={flash} />
                 </div>
               </div>
               <p className="mt-3 text-center text-[0.6875rem] text-muted">

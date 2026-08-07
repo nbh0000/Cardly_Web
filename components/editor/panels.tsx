@@ -51,6 +51,8 @@ interface Props {
   setData: Dispatch<SetStateAction<InvitationData>>;
   /** "위치 바꾸기" 클릭 시 순서 변경 패널로 이동 */
   onGoOrder: () => void;
+  /** 섹션을 켰을 때 미리보기를 그 위치로 스크롤 */
+  onReveal: (section: SectionKey) => void;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -458,12 +460,12 @@ function PersonPanel({ data, set, setData, side }: Props & { side: "groom" | "br
 
 /* ---------------- 미니앨범 ---------------- */
 
-function Album({ data, set, onGoOrder }: Props) {
+function Album({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="미니앨범" desc="마음에 드는 앨범 디자인을 고르고 사진을 추가해보세요." />
       <Group>
-        <ToggleCard label="미니앨범 표시" checked={data.showAlbum} onChange={(v) => set("showAlbum", v)} />
+        <ToggleCard label="미니앨범 표시" checked={data.showAlbum} onChange={(v) => { set("showAlbum", v); if (v) onReveal("album"); }} />
         <SectionPosition data={data} section="album" onGoOrder={onGoOrder} />
         {data.showAlbum && (
           <>
@@ -522,7 +524,7 @@ function Album({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 예식 정보 ---------------- */
 
-function Wedding({ data, set, onGoOrder }: Props) {
+function Wedding({ data, set, onGoOrder, onReveal }: Props) {
   const [h, m] = data.time.split(":");
   const hour = Number(h ?? 12);
   const period = hour < 12 ? "오전" : "오후";
@@ -543,7 +545,7 @@ function Wedding({ data, set, onGoOrder }: Props) {
             <TextInput type="date" value={data.date} onChange={(v) => set("date", v)} />
           </Field>
           <Toggle label="초대장에 D-Day 표시하기" checked={data.showDday} onChange={(v) => set("showDday", v)} />
-          <Toggle label="캘린더 표시" checked={data.showCalendar} onChange={(v) => set("showCalendar", v)} />
+          <Toggle label="캘린더 표시" checked={data.showCalendar} onChange={(v) => { set("showCalendar", v); if (v) onReveal("calendar"); }} />
           <SectionPosition data={data} section="calendar" onGoOrder={onGoOrder} />
 
           <div className="grid gap-1.5">
@@ -579,7 +581,7 @@ function Wedding({ data, set, onGoOrder }: Props) {
         </Card>
 
         <Card title="예식장 기본 정보" desc="예식장 이름과 주소를 입력하고 청첩장 노출 여부를 설정하세요.">
-          <Toggle label="예식장 정보 표시" checked={data.showVenueInfo} onChange={(v) => set("showVenueInfo", v)} />
+          <Toggle label="예식장 정보 표시" checked={data.showVenueInfo} onChange={(v) => { set("showVenueInfo", v); if (v) onReveal("location"); }} />
           <SectionPosition data={data} section="location" onGoOrder={onGoOrder} />
           <Field label="예식장 이름 *"><TextInput value={data.venueName} onChange={(v) => set("venueName", v)} /></Field>
           <Field label="홀 / 층"><TextInput value={data.venueHall} onChange={(v) => set("venueHall", v)} /></Field>
@@ -610,7 +612,7 @@ function Wedding({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 초대 글 ---------------- */
 
-function Invite({ data, set, setData, onGoOrder }: Props) {
+function Invite({ data, set, setData, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="초대 글" desc="소중한 분들에게 전할 초대 문구를 입력해주세요." />
@@ -618,7 +620,7 @@ function Invite({ data, set, setData, onGoOrder }: Props) {
         <Field label="제목 *">
           <TextInput value={data.greetingTitle} onChange={(v) => set("greetingTitle", v)} placeholder="예: 초대합니다" />
         </Field>
-        <ToggleCard label="상단에 예식 날짜 표시하기" checked={data.showDateOnInvitation} onChange={(v) => set("showDateOnInvitation", v)} />
+        <ToggleCard label="상단에 예식 날짜 표시하기" checked={data.showDateOnInvitation} onChange={(v) => { set("showDateOnInvitation", v); if (v) onReveal("invitation"); }} />
         <SectionPosition data={data} section="invitation" onGoOrder={onGoOrder} />
         <Field label="본문 *">
           <TextArea value={data.greeting} onChange={(v) => set("greeting", v)} rows={9} />
@@ -652,12 +654,12 @@ function Invite({ data, set, setData, onGoOrder }: Props) {
 
 /* ---------------- 계좌 ---------------- */
 
-function Accounts({ data, set, onGoOrder }: Props) {
+function Accounts({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="계좌 정보" desc="축하의 마음을 전할 수 있는 계좌를 등록해주세요." />
       <Group>
-        <ToggleCard label="계좌 정보 표시" checked={data.showAccounts} onChange={(v) => set("showAccounts", v)} />
+        <ToggleCard label="계좌 정보 표시" checked={data.showAccounts} onChange={(v) => { set("showAccounts", v); if (v) onReveal("account"); }} />
         <SectionPosition data={data} section="account" onGoOrder={onGoOrder} />
         {data.showAccounts && (
           <>
@@ -690,12 +692,12 @@ function Accounts({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 갤러리 ---------------- */
 
-function Gallery({ data, set, onGoOrder }: Props) {
+function Gallery({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="갤러리" desc="소중한 순간이 담긴 사진을 올려주세요." />
       <Group>
-        <ToggleCard label="갤러리 사용" checked={data.showGallery} onChange={(v) => set("showGallery", v)} />
+        <ToggleCard label="갤러리 사용" checked={data.showGallery} onChange={(v) => { set("showGallery", v); if (v) onReveal("gallery"); }} />
         <SectionPosition data={data} section="gallery" onGoOrder={onGoOrder} />
         {data.showGallery && (
           <>
@@ -739,7 +741,7 @@ function GalleryGlyph({ id }: { id: string }) {
 
 /* ---------------- 안내사항 ---------------- */
 
-function Notice({ data, set, setData, onGoOrder }: Props) {
+function Notice({ data, set, setData, onGoOrder, onReveal }: Props) {
   // 항목을 추가하면 섹션이 자동으로 켜집니다 — 추가했는데 안 보이는 일이 없도록.
   const addNotice = () =>
     setData((d) => ({
@@ -747,7 +749,16 @@ function Notice({ data, set, setData, onGoOrder }: Props) {
       showNotice: true,
       notices: [...d.notices, { id: uid(), title: "", body: "" } as NoticeItem],
     }));
-  return <NoticeInner data={data} set={set} addNotice={addNotice} onGoOrder={onGoOrder} />;
+    onReveal("notice");
+  return (
+    <NoticeInner
+      data={data}
+      set={set}
+      addNotice={addNotice}
+      onGoOrder={onGoOrder}
+      onReveal={onReveal}
+    />
+  );
 }
 
 function NoticeInner({
@@ -755,17 +766,19 @@ function NoticeInner({
   set,
   addNotice,
   onGoOrder,
+  onReveal,
 }: {
   data: InvitationData;
   set: Set;
   addNotice: () => void;
   onGoOrder: () => void;
+  onReveal: (section: SectionKey) => void;
 }) {
   return (
     <>
       <PanelHead title="안내사항" desc="포토부스, 피로연, 화환 거절 등 하객분들께 전달할 안내사항을 작성해 주세요." />
       <Group>
-        <ToggleCard label="안내사항 표시하기" checked={data.showNotice} onChange={(v) => set("showNotice", v)} />
+        <ToggleCard label="안내사항 표시하기" checked={data.showNotice} onChange={(v) => { set("showNotice", v); if (v) onReveal("notice"); }} />
         <SectionPosition data={data} section="notice" onGoOrder={onGoOrder} />
         <Repeater items={data.notices} addLabel="안내사항 추가" onAdd={addNotice}>
           {(id, i) => {
@@ -789,7 +802,7 @@ function NoticeInner({
 
 /* ---------------- 하객스냅 ---------------- */
 
-function Snap({ data, set, onGoOrder }: Props) {
+function Snap({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="하객스냅" desc="하객이 직접 올린 사진과 영상을 모아보세요." />
@@ -801,7 +814,14 @@ function Snap({ data, set, onGoOrder }: Props) {
           </button>
         </Card>
         <Card title="공개 설정" desc="켜두면 청첩장에 하객스냅 업로드 영역이 표시됩니다.">
-          <Toggle label="하객 사진 업로드 받기" checked={data.snapEnabled} onChange={(v) => set("snapEnabled", v)} />
+          <Toggle
+            label="하객 사진 업로드 받기"
+            checked={data.snapEnabled}
+            onChange={(v) => {
+              set("snapEnabled", v);
+              if (v) onReveal("snap");
+            }}
+          />
         </Card>
         <SectionPosition data={data} section="snap" onGoOrder={onGoOrder} />
       </Group>
@@ -811,12 +831,12 @@ function Snap({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 두 사람 이야기 ---------------- */
 
-function Couple({ data, set, onGoOrder }: Props) {
+function Couple({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="두 사람 이야기" desc="신랑과 신부의 사진, 소개 문구를 한 섹션에 담아보세요." />
       <Group>
-        <ToggleCard label="두 사람 이야기 표시" checked={data.showCouple} onChange={(v) => set("showCouple", v)} />
+        <ToggleCard label="두 사람 이야기 표시" checked={data.showCouple} onChange={(v) => { set("showCouple", v); if (v) onReveal("couple"); }} />
         <SectionPosition data={data} section="couple" onGoOrder={onGoOrder} />
         {data.showCouple && (
           <>
@@ -871,21 +891,24 @@ const TIMELINE_SAMPLES: Record<string, TimelineItem[]> = {
   ],
 };
 
-function Timeline({ data, set, setData, onGoOrder }: Props) {
+function Timeline({ data, set, setData, onGoOrder, onReveal }: Props) {
   // 샘플을 넣거나 항목을 추가하면 섹션을 자동으로 켭니다.
-  const applySample = (items: TimelineItem[]) =>
+  const applySample = (items: TimelineItem[]) => {
     setData((d) => ({ ...d, showTimeline: true, timeline: items.map((x) => ({ ...x, id: uid() })) }));
+    onReveal("timeline");
+  };
   const addItem = () =>
     setData((d) => ({
       ...d,
       showTimeline: true,
       timeline: [...d.timeline, { id: uid(), date: "", period: "", body: "" } as TimelineItem],
     }));
+    onReveal("timeline");
   return (
     <>
       <PanelHead title="타임라인" desc="두 사람이 걸어온 시간을 순서대로 담아보세요." />
       <Group>
-        <ToggleCard label="타임라인 표시" checked={data.showTimeline} onChange={(v) => set("showTimeline", v)} />
+        <ToggleCard label="타임라인 표시" checked={data.showTimeline} onChange={(v) => { set("showTimeline", v); if (v) onReveal("timeline"); }} />
         <SectionPosition data={data} section="timeline" onGoOrder={onGoOrder} />
         {(
           <>
@@ -935,12 +958,12 @@ function Timeline({ data, set, setData, onGoOrder }: Props) {
 
 /* ---------------- 비디오 ---------------- */
 
-function Video({ data, set, onGoOrder }: Props) {
+function Video({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="비디오" desc="초대장에 동영상을 추가하여 특별함을 더해보세요." />
       <Group>
-        <ToggleCard label="비디오 섹션 사용하기" checked={data.showVideo} onChange={(v) => set("showVideo", v)} />
+        <ToggleCard label="비디오 섹션 사용하기" checked={data.showVideo} onChange={(v) => { set("showVideo", v); if (v) onReveal("video"); }} />
         <SectionPosition data={data} section="video" onGoOrder={onGoOrder} />
         {data.showVideo && (
           <>
@@ -988,12 +1011,12 @@ function Video({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 방명록 ---------------- */
 
-function Guestbook({ data, set, onGoOrder }: Props) {
+function Guestbook({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="방명록" desc="하객분들이 축하 메시지를 남길 수 있는 공간입니다." />
       <Group>
-        <ToggleCard label="방명록 사용하기" checked={data.showGuestbook} onChange={(v) => set("showGuestbook", v)} />
+        <ToggleCard label="방명록 사용하기" checked={data.showGuestbook} onChange={(v) => { set("showGuestbook", v); if (v) onReveal("guestbook"); }} />
         <SectionPosition data={data} section="guestbook" onGoOrder={onGoOrder} />
         {data.showGuestbook && (
           <>
@@ -1010,12 +1033,12 @@ function Guestbook({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 선물하기 ---------------- */
 
-function Gift({ data, set, onGoOrder }: Props) {
+function Gift({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead title="선물하기" desc="화환이나 답례품 링크를 연결할 수 있습니다." />
       <Group>
-        <ToggleCard label="선물하기 표시" checked={data.showGift} onChange={(v) => set("showGift", v)} />
+        <ToggleCard label="선물하기 표시" checked={data.showGift} onChange={(v) => { set("showGift", v); if (v) onReveal("gift"); }} />
         <SectionPosition data={data} section="gift" onGoOrder={onGoOrder} />
         {data.showGift && (
           <Field label="버튼 문구"><TextInput value={data.giftLabel} onChange={(v) => set("giftLabel", v)} /></Field>
@@ -1027,7 +1050,7 @@ function Gift({ data, set, onGoOrder }: Props) {
 
 /* ---------------- 참석여부 ---------------- */
 
-function Rsvp({ data, set, onGoOrder }: Props) {
+function Rsvp({ data, set, onGoOrder, onReveal }: Props) {
   return (
     <>
       <PanelHead
@@ -1036,7 +1059,7 @@ function Rsvp({ data, set, onGoOrder }: Props) {
         action={<button type="button" className="press rounded-full border border-line bg-white px-3 py-1.5 text-[0.75rem] text-ink">현황보기</button>}
       />
       <Group>
-        <ToggleCard label="참석여부 기능 사용" checked={data.showRsvp} onChange={(v) => set("showRsvp", v)} />
+        <ToggleCard label="참석여부 기능 사용" checked={data.showRsvp} onChange={(v) => { set("showRsvp", v); if (v) onReveal("rsvp"); }} />
         <SectionPosition data={data} section="rsvp" onGoOrder={onGoOrder} />
         {data.showRsvp && (
           <>

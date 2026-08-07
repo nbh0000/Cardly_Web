@@ -44,11 +44,14 @@ export function InvitationView({
   live = true,
   /** 갤러리 썸네일용 — 커버만 그립니다 */
   coverOnly = false,
+  /** 에디터에서 방금 추가한 섹션 — 잠깐 강조합니다 */
+  flash = null,
 }: {
   template: Template;
   data: InvitationData;
   live?: boolean;
   coverOnly?: boolean;
+  flash?: string | null;
 }) {
   const theme = resolveTheme(template, data);
   const headingFamily =
@@ -83,7 +86,7 @@ export function InvitationView({
       </div>
       {coverOnly ? null : (
         <>
-          <RestOfInvitation data={data} live={live} />
+          <RestOfInvitation data={data} live={live} flash={flash} />
         </>
       )}
     </div>
@@ -97,15 +100,17 @@ export function InvitationView({
 function RestOfInvitation({
   data,
   live,
+  flash,
 }: {
   data: InvitationData;
   live: boolean;
+  flash: string | null;
 }) {
   // 각 섹션에 앵커를 달아두면 에디터가 해당 위치로 미리보기를 스크롤할 수 있습니다.
   const render = (key: SectionKey) => {
     const node = renderSection(key);
     return node ? (
-      <div key={key} id={`sec-${key}`} data-sec={key} className="iv-anchor">
+      <div key={key} id={`sec-${key}`} data-sec={key} className={`iv-anchor${flash === key ? " is-flash" : ""}`}>
         {node}
       </div>
     ) : null;
