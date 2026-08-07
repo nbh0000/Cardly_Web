@@ -20,7 +20,7 @@ const notoSansKr = Noto_Sans_KR({
 
 export const metadata: Metadata = {
   // GitHub Pages 배포 주소. 커스텀 도메인을 붙이면 여기만 바꾸면 됩니다.
-  metadataBase: new URL("https://nbh3459.github.io/wedding-web/"),
+  metadataBase: new URL("https://nbh0000.github.io/wedding-web/"),
   title: {
     default: "다온 · 모바일 청첩장 — 두 사람의 이야기를 가장 아름답게",
     template: "%s | 다온",
