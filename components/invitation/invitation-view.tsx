@@ -9,6 +9,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { DefaultPhoto, variantFor } from "@/components/invitation/default-photo";
 import {
   daysUntil,
   formatDateDots,
@@ -46,12 +47,15 @@ export function InvitationView({
   coverOnly = false,
   /** 에디터에서 방금 추가한 섹션 — 잠깐 강조합니다 */
   flash = null,
+  /** 값이 바뀌면 오프닝 애니메이션을 다시 재생합니다 */
+  replayKey = "",
 }: {
   template: Template;
   data: InvitationData;
   live?: boolean;
   coverOnly?: boolean;
   flash?: string | null;
+  replayKey?: string;
 }) {
   const theme = resolveTheme(template, data);
   const headingFamily =
@@ -74,7 +78,7 @@ export function InvitationView({
     <div className="iv" style={style}>
       {data.effect !== "none" && !coverOnly && <EffectLayer kind={data.effect} />}
       {!coverOnly && data.opening !== "none" && (
-        <OpeningLayer kind={data.opening} />
+        <OpeningLayer key={data.opening + replayKey} kind={data.opening} />
       )}
 
       {!coverOnly && data.bgm !== "none" && (
@@ -188,11 +192,14 @@ function PhotoSlot({
   fit,
   className,
   rounded,
+  /** 기본 이미지 변주 선택용 — 슬롯마다 다른 그림이 나오게 합니다 */
+  seed = 0,
 }: {
   src?: string;
   fit: "cover" | "contain";
   className?: string;
   rounded?: string;
+  seed?: number;
 }) {
   return (
     <div
@@ -208,34 +215,8 @@ function PhotoSlot({
           <span className="iv-photo-dim" aria-hidden />
         </>
       ) : (
-        <PhotoPlaceholder />
+        <DefaultPhoto variant={variantFor(seed)} />
       )}
-    </div>
-  );
-}
-
-function PhotoPlaceholder() {
-  return (
-    <div className="iv-photo-empty">
-      <svg viewBox="0 0 48 48" fill="none" aria-hidden>
-        <rect
-          x="6"
-          y="10"
-          width="36"
-          height="28"
-          rx="3"
-          stroke="currentColor"
-          strokeWidth="1.2"
-        />
-        <circle cx="17" cy="20" r="3" stroke="currentColor" strokeWidth="1.2" />
-        <path
-          d="m9 34 10-9 7 6 6-5 7 8"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span>사진을 등록해 주세요</span>
     </div>
   );
 }
@@ -255,6 +236,7 @@ function CoverCenter({
         src={data.coverPhoto}
         fit={data.coverPhotoFit}
         className="iv-cover-center-photo"
+        seed={0}
       />
       <h1 className="iv-cover-names">
         {names.first}
@@ -278,6 +260,7 @@ function CoverPhoto({ data, names }: { data: InvitationData; names: Names }) {
         src={data.coverPhoto}
         fit={data.coverPhotoFit}
         className="iv-cover-photo-bg"
+        seed={0}
       />
       <div className="iv-cover-photo-scrim" />
       <div className="iv-cover-photo-text">
@@ -300,7 +283,7 @@ function CoverArch({ data, names }: { data: InvitationData; names: Names }) {
     <section className="iv-cover iv-cover-arch">
       <p className="iv-eyebrow">{data.coverEyebrow}</p>
       <div className="iv-arch">
-        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} />
+        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
       </div>
       <h1 className="iv-cover-names">
         {names.first} <span className="iv-dot">·</span> {names.second}
@@ -331,6 +314,7 @@ function CoverEditorial({
         src={data.coverPhoto}
         fit={data.coverPhotoFit}
         className="iv-cover-editorial-photo"
+        seed={0}
       />
       <h1 className="iv-cover-names iv-cover-names-left">
         {names.first}
@@ -352,6 +336,7 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
         src={data.coverPhoto}
         fit={data.coverPhotoFit}
         className="iv-cover-floral-photo"
+        seed={1}
       />
       <h1 className="iv-cover-names iv-cover-names-italic">
         {names.first}
@@ -628,7 +613,7 @@ function Gallery({ data }: { data: InvitationData }) {
             onClick={() => src && !data.galleryProtect && setLightbox(i)}
             aria-label={`사진 ${i + 1}`}
           >
-            <PhotoSlot src={src || undefined} fit="cover" />
+            <PhotoSlot src={src || undefined} fit="cover" seed={i + 1} />
           </button>
         ))}
       </div>
@@ -1164,7 +1149,7 @@ function Couple({ data }: { data: InvitationData }) {
               {tag}
             </span>
             <div className="iv-couple-photo" style={{ background: data.couplePoint1 }}>
-              <PhotoSlot src={photo} fit="cover" />
+              <PhotoSlot src={photo} fit="cover" seed={tag === "Groom" ? 3 : 5} />
             </div>
             <p className="iv-couple-name" style={{ color: data.couplePoint2 }}>
               {tag === "Groom" ? "신랑" : "신부"} {p.firstName || fullName(p)}
@@ -1190,10 +1175,10 @@ function Timeline({ data }: { data: InvitationData }) {
     <Section>
       <SectionTitle en="Our time">{data.timelineTitle}</SectionTitle>
       <ol className={`iv-timeline is-${data.timelineShape}`}>
-        {data.timeline.map((t) => (
+        {data.timeline.map((t, i) => (
           <li key={t.id}>
             <div className="iv-tl-photo">
-              <PhotoSlot src={t.photo} fit="cover" />
+              <PhotoSlot src={t.photo} fit="cover" seed={i + 4} />
             </div>
             <div className="iv-tl-body">
               <p className="iv-tl-period">{t.period}</p>
@@ -1226,7 +1211,7 @@ function Album({ data }: { data: InvitationData }) {
         <div className={`iv-album-grid is-d${current.designId % 6}`}>
           {Array.from({ length: Math.max(3, Math.min(6, current.photos.length)) }).map((_, i) => (
             <span key={i} className="iv-album-slot">
-              <PhotoSlot src={current.photos[i]} fit="cover" />
+              <PhotoSlot src={current.photos[i]} fit="cover" seed={i + 2} />
             </span>
           ))}
         </div>
@@ -1295,7 +1280,7 @@ function NoticeCard({
       <Sheet open={open} title={title || "안내사항"} onClose={() => setOpen(false)}>
         {photo && (
           <div className="iv-notice-photo">
-            <PhotoSlot src={photo} fit="cover" />
+            <PhotoSlot src={photo} fit="cover" seed={2} />
           </div>
         )}
         <p className="iv-body iv-prewrap" style={{ textAlign: "left" }}>
@@ -1322,7 +1307,7 @@ function VideoBlock({ data }: { data: InvitationData }) {
         ) : data.videoMode === "upload" && data.videoUrl ? (
           <video src={data.videoUrl} poster={data.videoThumb} controls playsInline />
         ) : data.videoThumb ? (
-          <PhotoSlot src={data.videoThumb} fit="cover" />
+          <PhotoSlot src={data.videoThumb} fit="cover" seed={4} />
         ) : (
           <span className="iv-empty">동영상을 등록해 주세요</span>
         )}
@@ -1374,28 +1359,84 @@ function Gift({ data }: { data: InvitationData }) {
    오프닝 애니메이션
    ============================================================ */
 
-const OPENING_MARK: Record<string, string> = {
-  emoji: "💍",
-  lace: "❁",
-  curtain: "",
-  envelope: "✉",
-  wrap: "🎀",
-};
+function OpeningLayer({
+  kind,
+}: {
+  kind: Exclude<InvitationData["opening"], "none">;
+}) {
+  // 애니메이션이 끝나면 레이어를 걷어내 아래 내용의 클릭을 막지 않게 합니다.
+  const [done, setDone] = useState(false);
+  if (done) return null;
 
-function OpeningLayer({ kind }: { kind: Exclude<InvitationData["opening"], "none"> }) {
-  // 커튼은 좌우로 갈라지고, 나머지는 마크가 있는 베일이 페이드아웃됩니다.
+  const finish = () => setDone(true);
+
   if (kind === "curtain") {
     return (
-      <div className="opening" aria-hidden>
+      <div className="opening" aria-hidden onAnimationEnd={finish}>
         <span className="opening-half l" />
         <span className="opening-half r" />
       </div>
     );
   }
+
+  if (kind === "envelope") {
+    return (
+      <div className="opening op-envelope" aria-hidden onAnimationEnd={finish}>
+        <span className="op-env-body" />
+        <span className="op-env-flap" />
+        <span className="op-env-card">
+          <span className="op-env-seal" />
+        </span>
+      </div>
+    );
+  }
+
+  if (kind === "wrap") {
+    return (
+      <div className="opening op-wrap" aria-hidden onAnimationEnd={finish}>
+        <span className="op-wrap-half l" />
+        <span className="op-wrap-half r" />
+        <span className="op-wrap-ribbon" />
+        <span className="op-wrap-bow" />
+      </div>
+    );
+  }
+
+  if (kind === "lace") {
+    return (
+      <div className="opening op-lace" aria-hidden onAnimationEnd={finish}>
+        <span className="op-lace-veil">
+          <svg viewBox="0 0 120 120" className="op-lace-doily">
+            {Array.from({ length: 16 }).map((_, i) => (
+              <ellipse
+                key={i}
+                cx="60"
+                cy="20"
+                rx="7"
+                ry="17"
+                transform={`rotate(${i * 22.5} 60 60)`}
+                fill="none"
+                stroke="var(--iv-accent)"
+                strokeWidth="1"
+              />
+            ))}
+            <circle cx="60" cy="60" r="22" fill="none" stroke="var(--iv-accent)" strokeWidth="1" />
+            <circle cx="60" cy="60" r="12" fill="none" stroke="var(--iv-accent)" strokeWidth="1" />
+          </svg>
+        </span>
+      </div>
+    );
+  }
+
+  // emoji — 링과 하트가 퍼졌다가 사라집니다
   return (
-    <div className="opening" aria-hidden>
-      <span className="opening-veil">
-        <span className="opening-mark">{OPENING_MARK[kind]}</span>
+    <div className="opening op-emoji" aria-hidden onAnimationEnd={finish}>
+      <span className="op-emoji-veil">
+        {["💍", "🤍", "💐", "🕊", "✨"].map((e, i) => (
+          <span key={e} className="op-emoji-bit" style={{ ["--i" as string]: i }}>
+            {e}
+          </span>
+        ))}
       </span>
     </div>
   );

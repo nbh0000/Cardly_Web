@@ -53,6 +53,8 @@ interface Props {
   onGoOrder: () => void;
   /** 섹션을 켰을 때 미리보기를 그 위치로 스크롤 */
   onReveal: (section: SectionKey) => void;
+  /** 오프닝 애니메이션 다시 재생 */
+  onReplayOpening: () => void;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -319,7 +321,7 @@ function Bgm({ data, set }: Props) {
 
 /* ---------------- 오프닝 ---------------- */
 
-function Opening({ data, set }: Props) {
+function Opening({ data, set, onReplayOpening }: Props) {
   return (
     <>
       <PanelHead title="오프닝 애니메이션" desc="청첩장을 열 때 재생되는 시작 애니메이션을 선택하세요" />
@@ -328,7 +330,7 @@ function Opening({ data, set }: Props) {
         <div className="grid grid-cols-3 gap-2">
           {OPENING_ANIMATIONS.map((o) => (
             <button
-              key={o.id} type="button" onClick={() => set("opening", o.id)}
+              key={o.id} type="button" onClick={() => { set("opening", o.id); onReplayOpening(); }}
               aria-pressed={o.id === data.opening}
               className={`press grid aspect-square place-items-center gap-2 rounded-lg bg-white text-[0.6875rem] ring-offset-2 ring-offset-cream transition-shadow ${o.id === data.opening ? "ring-2 ring-ink" : "ring-1 ring-line hover:ring-rose"}`}
             >
@@ -339,6 +341,15 @@ function Opening({ data, set }: Props) {
             </button>
           ))}
         </div>
+        {data.opening !== "none" && (
+          <button
+            type="button"
+            onClick={onReplayOpening}
+            className="press rounded-full border border-line bg-white py-3 text-[0.8125rem] text-ink hover:border-rose hover:text-rose-deep"
+          >
+            ↻ 오프닝 다시 보기
+          </button>
+        )}
       </Group>
     </>
   );

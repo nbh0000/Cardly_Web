@@ -72,6 +72,8 @@ export function Editor({ templateId }: { templateId: string }) {
   const [saved, setSaved] = useState<string | null>(null);
   /** 방금 추가된 섹션을 잠깐 강조합니다. */
   const [flash, setFlash] = useState<string | null>(null);
+  /** 값이 바뀌면 오프닝 애니메이션이 다시 재생됩니다. */
+  const [replay, setReplay] = useState(0);
 
   const storageKey = `daon:draft:${templateId}`;
   const [dismissed, setDismissed] = useState(false);
@@ -132,6 +134,12 @@ export function Editor({ templateId }: { templateId: string }) {
     },
     [scrollToAnchor],
   );
+
+  /** 오프닝 애니메이션 다시 보기 — 미리보기를 맨 위로 올리고 재생합니다. */
+  const replayOpening = useCallback(() => {
+    previewRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    setReplay((n) => n + 1);
+  }, []);
 
   /** 섹션 토글을 켜거나 항목을 추가했을 때 그 위치를 보여줍니다. */
   const revealSection = useCallback(
@@ -255,6 +263,7 @@ export function Editor({ templateId }: { templateId: string }) {
               setData={setData}
               onGoOrder={() => goToSection("order")}
               onReveal={revealSection}
+              onReplayOpening={replayOpening}
             />
           </div>
         </div>
@@ -301,7 +310,13 @@ export function Editor({ templateId }: { templateId: string }) {
             <div className="w-full max-w-[24rem]">
               <div className="overflow-hidden rounded-phone bg-white p-2 shadow-lift ring-1 ring-line">
                 <div ref={previewRef} className="relative max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain rounded-[1.5rem]">
-                  <InvitationView template={template} data={data} live={false} flash={flash} />
+                  <InvitationView
+                    template={template}
+                    data={data}
+                    live={false}
+                    flash={flash}
+                    replayKey={String(replay)}
+                  />
                 </div>
               </div>
               <p className="mt-3 text-center text-[0.6875rem] text-muted">
