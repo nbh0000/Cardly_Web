@@ -1,0 +1,413 @@
+@import "tailwindcss";
+@import "./invitation.css";
+@import "./motion.css";
+
+/* ============================================================
+   DESIGN TOKENS — 감성 미니멀 웨딩 / Ivory base + Dusty Rose
+   모든 값은 Tailwind v4 @theme 으로 등록되어
+   bg-ivory / text-ink / font-serif / py-section 형태로 사용합니다.
+   ============================================================ */
+
+@theme {
+  /* ---------- 1. COLOR ---------- */
+
+  /* Base — 아이보리/크림 계열. 페이지의 90%를 차지하는 바탕색 */
+  --color-ivory: #fdfbf7; /* 페이지 기본 배경 */
+  --color-cream: #f6f1e9; /* 교차 섹션 / 카드 배경 */
+  --color-sand: #ede6db; /* 한 단계 진한 면, 비활성 칩 */
+  --color-line: #e4dcd1; /* 헤어라인 보더 */
+  --color-line-soft: #efe9e0; /* 더 옅은 구분선 */
+
+  /* Point — Dusty Rose 1색 계열.
+     rose 는 장식/큰 글씨 전용, rose-deep 부터 본문 대비(AA) 통과 */
+  --color-rose: #b08d80; /* 액센트 면, 보더, 큰 디스플레이 텍스트 */
+  --color-rose-deep: #8a6558; /* 버튼 배경 / 링크 / 작은 텍스트 (AA ✓) */
+  --color-rose-press: #74544a; /* hover · active */
+  --color-rose-mist: #e8dad3; /* 틴트 배경, 뱃지 */
+  --color-rose-veil: #f4eae5; /* 아주 옅은 틴트 섹션 */
+
+  /* Text — 순수 검정 대신 따뜻한 잉크 톤 */
+  --color-ink: #2e2a27; /* 제목·본문 (ivory 대비 13.9:1) */
+  --color-ink-soft: #57504a; /* 보조 본문 (7.3:1) */
+  --color-muted: #7a716a; /* 캡션·메타 (4.6:1, AA ✓) */
+  --color-hint: #a79d94; /* 장식 텍스트 전용 — 본문에 쓰지 말 것 */
+
+  /* ---------- 2. TYPOGRAPHY ---------- */
+  /* 세리프 = 제목·이름·숫자 / 산세리프 = 본문·UI */
+
+  --text-display: clamp(2.125rem, 7.5vw, 4rem);
+  --text-display--line-height: 1.22;
+  --text-display--letter-spacing: -0.025em;
+  --text-display--font-weight: 400;
+
+  --text-h1: clamp(1.75rem, 5.5vw, 2.75rem);
+  --text-h1--line-height: 1.32;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h1--font-weight: 400;
+
+  --text-h2: clamp(1.375rem, 4vw, 1.875rem);
+  --text-h2--line-height: 1.42;
+  --text-h2--letter-spacing: -0.015em;
+  --text-h2--font-weight: 500;
+
+  --text-h3: clamp(1.0625rem, 2.5vw, 1.25rem);
+  --text-h3--line-height: 1.5;
+  --text-h3--letter-spacing: -0.01em;
+  --text-h3--font-weight: 500;
+
+  --text-body: 0.9375rem; /* 15px — 모바일 본문 기준 */
+  --text-body--line-height: 1.85; /* 한글 가독성을 위해 넉넉하게 */
+
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.8;
+
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.7;
+
+  --text-eyebrow: 0.6875rem; /* 섹션 상단 영문 라벨 */
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.22em;
+  --text-eyebrow--font-weight: 500;
+
+  /* ---------- 3. SPACING ---------- */
+  /* 기본 스텝은 Tailwind 4px 스케일 그대로.
+     아래는 "여백을 넉넉하게" 원칙을 담은 시맨틱 토큰 */
+
+  --spacing-gutter: 1.25rem; /* 모바일 좌우 여백 20px */
+  --spacing-section: clamp(4.5rem, 11vw, 8.5rem); /* 섹션 상하 여백 */
+  --spacing-section-sm: clamp(3rem, 7vw, 5rem);
+  --spacing-block: clamp(2rem, 5vw, 3.5rem); /* 헤딩 ↔ 콘텐츠 */
+
+  --container-content: 68rem; /* 1088px — 본문 최대폭 */
+  --container-narrow: 42rem; /* 672px — 문단 최대폭 */
+
+  /* ---------- 4. RADIUS ---------- */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.125rem;
+  --radius-xl: 1.75rem;
+  --radius-phone: 2rem; /* 템플릿 썸네일 (폰 목업) */
+  --radius-full: 999px;
+
+  /* ---------- 5. ELEVATION ---------- */
+  /* 그림자는 회색이 아니라 잉크 톤에 알파 — 아이보리 위에서 탁해지지 않게 */
+  --shadow-hairline: 0 0 0 1px #e4dcd1;
+  --shadow-soft: 0 1px 2px rgb(46 42 39 / 0.04), 0 6px 16px rgb(46 42 39 / 0.05);
+  --shadow-card: 0 2px 4px rgb(46 42 39 / 0.04), 0 14px 34px rgb(46 42 39 / 0.08);
+  --shadow-lift: 0 4px 8px rgb(46 42 39 / 0.05), 0 24px 56px rgb(46 42 39 / 0.13);
+
+  /* ---------- 6. MOTION ---------- */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 폰트는 next/font 가 런타임에 주입하므로 inline 으로 참조 */
+@theme inline {
+  --font-serif:
+    var(--font-noto-serif-kr), "Nanum Myeongjo", "Apple SD Gothic Neo", Georgia,
+    serif;
+  --font-sans:
+    var(--font-noto-sans-kr), "Pretendard", "Apple SD Gothic Neo",
+    "Malgun Gothic", system-ui, sans-serif;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+@layer base {
+  :root {
+    color-scheme: light; /* 브랜드가 라이트에 고정된 디자인 */
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.85;
+    /* 한글은 단어 중간에서 끊기면 가독성이 크게 떨어짐 */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-rose-mist);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-rose-deep);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ============================================================
+   COMPONENT PRIMITIVES
+   ============================================================ */
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: calc(var(--container-content) + var(--spacing-gutter) * 2);
+    margin-inline: auto;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  /* 섹션 상단 영문 라벨 + 로즈 헤어라인 */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: var(--text-eyebrow);
+    letter-spacing: 0.22em;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: var(--color-rose-deep);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.5rem;
+    height: 1px;
+    background: var(--color-rose);
+  }
+  .eyebrow-center::before {
+    display: none;
+  }
+
+  /* 버튼 */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.9375rem 1.625rem;
+    border-radius: var(--radius-full, 999px);
+    transition:
+      background-color 0.25s var(--ease-out-soft),
+      color 0.25s var(--ease-out-soft),
+      border-color 0.25s var(--ease-out-soft),
+      transform 0.25s var(--ease-out-soft);
+    white-space: nowrap;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-primary {
+    background: var(--color-rose-deep);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: var(--color-rose-press);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+  }
+  .btn-ghost:hover {
+    border-color: var(--color-rose);
+    color: var(--color-rose-deep);
+  }
+
+  .btn-sm {
+    padding: 0.6875rem 1.125rem;
+    font-size: 0.8125rem;
+  }
+
+  /* 얇은 구분선 */
+  .rule {
+    height: 1px;
+    background: var(--color-line);
+    border: 0;
+  }
+}
+
+/* ============================================================
+   TEMPLATE THUMBNAIL — 미니 청첩장 렌더러
+   컨테이너 쿼리 단위(cqw)로 조판해서 어떤 크기에서도
+   비율이 동일하게 유지됩니다. (그리드 180px ~ 히어로 300px)
+   ============================================================ */
+
+.tpl {
+  container-type: inline-size;
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  font-family: var(--font-serif);
+  isolation: isolate;
+}
+
+.tpl-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 9cqw 8cqw;
+}
+
+/* 공통 타입 스케일 (cqw 기준) */
+.tpl-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 3.1cqw;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+.tpl-name {
+  font-size: 10cqw;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.tpl-amp {
+  font-size: 6cqw;
+  line-height: 1;
+  font-style: italic;
+}
+.tpl-meta {
+  font-family: var(--font-sans);
+  font-size: 3.4cqw;
+  line-height: 1.75;
+  letter-spacing: 0.04em;
+}
+.tpl-bigdate {
+  font-size: 17cqw;
+  line-height: 0.94;
+  letter-spacing: -0.03em;
+}
+.tpl-hr {
+  height: 1px;
+  width: 100%;
+  opacity: 0.45;
+}
+
+/* — layout: center — 정중앙 정렬 미니멀 */
+.tpl-center .tpl-inner {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5cqw;
+}
+
+/* — layout: photo — 상단 사진 영역 + 하단 캡션 */
+.tpl-photo .tpl-inner {
+  padding: 0;
+}
+.tpl-photo-frame {
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+}
+.tpl-photo-caption {
+  flex: 0 0 auto;
+  padding: 7cqw 8cqw 9cqw;
+  text-align: center;
+}
+
+/* — layout: arch — 아치형 프레임 */
+.tpl-arch .tpl-inner {
+  align-items: center;
+  text-align: center;
+  gap: 5cqw;
+}
+.tpl-arch-shape {
+  width: 56cqw;
+  aspect-ratio: 3 / 4;
+  border-radius: 999px 999px 6cqw 6cqw;
+  display: grid;
+  place-items: center;
+  margin-top: 4cqw;
+}
+
+/* — layout: editorial — 좌측 정렬, 큰 날짜 숫자 */
+.tpl-editorial .tpl-inner {
+  align-items: flex-start;
+  text-align: left;
+  justify-content: space-between;
+}
+
+/* — layout: floral — 상단 SVG 장식 + 세리프 이탤릭 */
+.tpl-floral .tpl-inner {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4cqw;
+}
+.tpl-floral-sprig {
+  width: 26cqw;
+  height: auto;
+}
+.tpl-pill {
+  font-family: var(--font-sans);
+  font-size: 3.1cqw;
+  letter-spacing: 0.18em;
+  padding: 2cqw 5cqw;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.75;
+}
+
+/* ============================================================
+   ANIMATION — 스크롤 진입
+   ============================================================ */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.7s var(--ease-out-soft) both;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rise-in-view {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 42%;
+    }
+  }
+}
