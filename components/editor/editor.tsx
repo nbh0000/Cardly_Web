@@ -153,14 +153,19 @@ export function Editor({ templateId }: { templateId: string }) {
 
   /** 청첩장 링크 QR 을 SVG 로 만들어 내려받습니다. */
   const downloadQr = () => {
-    const url = `${window.location.origin}/preview/${template.id}`;
+    // GitHub Pages 는 /wedding-web 아래에 배포되므로 origin 만 쓰면 404 가 됩니다.
+    // 현재 주소(.../editor/<id>)에서 basePath 를 그대로 떼어 씁니다.
+    const base = window.location.pathname.replace(/\/editor\/.*$/, "");
+    const url = `${window.location.origin}${base}/preview/${template.id}`;
     const svg = buildQrSvg(url);
     const blob = new Blob([svg], { type: "image/svg+xml" });
+    const href = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
+    a.href = href;
     a.download = `${template.id}-qr.svg`;
     a.click();
-    URL.revokeObjectURL(a.href);
+    // 클릭 직후 해제하면 다운로드가 시작되기 전에 URL 이 죽을 수 있습니다.
+    setTimeout(() => URL.revokeObjectURL(href), 10_000);
   };
 
   const save = () => {
@@ -308,7 +313,7 @@ export function Editor({ templateId }: { templateId: string }) {
           {/* 폰 프레임 */}
           <div className="flex h-[calc(100%-4rem)] items-start justify-center overflow-y-auto px-4 pb-8">
             <div className="w-full max-w-[24rem]">
-              <div className="overflow-hidden rounded-phone bg-white p-2 shadow-lift ring-1 ring-line">
+              <div className="iv-stage overflow-hidden rounded-phone bg-white p-2 shadow-lift ring-1 ring-line">
                 <div ref={previewRef} className="relative max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain rounded-[1.5rem]">
                   <InvitationView
                     template={template}

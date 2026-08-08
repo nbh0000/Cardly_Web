@@ -29,8 +29,13 @@ export default async function PreviewPage({
     <div className="min-h-dvh bg-cream">
       {/* 데스크톱에서는 폰 프레임 안에, 모바일에서는 전체 화면으로 */}
       <div className="mx-auto max-w-[26rem] md:py-10">
-        <div className="md:overflow-hidden md:rounded-phone md:bg-white md:p-2 md:shadow-lift md:ring-1 md:ring-line">
-          <div className="md:overflow-hidden md:rounded-[1.5rem]">
+        {/*
+          데스크톱에서는 폰 프레임을 화면 높이로 묶고 그 안에서 스크롤시킵니다.
+          프레임 높이가 청첩장 전체 길이(수천 px)만큼 늘어나면 iv-stage-md 로
+          가둔 바텀 시트가 프레임 맨 아래 — 화면 밖 — 에 그려집니다.
+        */}
+        <div className="iv-stage-md md:overflow-hidden md:rounded-phone md:bg-white md:p-2 md:shadow-lift md:ring-1 md:ring-line">
+          <div className="md:h-[calc(100dvh-11rem)] md:overflow-y-auto md:overscroll-contain md:rounded-[1.5rem]">
             <InvitationView template={template} data={data} />
           </div>
         </div>

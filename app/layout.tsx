@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
+import { TEMPLATES } from "@/lib/invitation";
 import "./globals.css";
 
 const notoSerifKr = Noto_Serif_KR({
@@ -25,8 +26,7 @@ export const metadata: Metadata = {
     default: "다온 · 모바일 청첩장 — 두 사람의 이야기를 가장 아름답게",
     template: "%s | 다온",
   },
-  description:
-    "감성적인 모바일 청첩장을 5분 만에. 60여 종의 디자인 템플릿, 실시간 참석 응답, 마음 전하는 곳, 카카오톡 공유 최적화까지 한 번에.",
+  description: `감성적인 모바일 청첩장을 5분 만에. ${TEMPLATES.length}종의 디자인 템플릿, 실시간 참석 응답, 마음 전하는 곳, 카카오톡 공유 최적화까지 한 번에.`,
   keywords: [
     "모바일청첩장",
     "청첩장",
@@ -40,8 +40,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     siteName: "다온",
     title: "다온 · 모바일 청첩장",
-    description:
-      "감성적인 모바일 청첩장을 5분 만에. 60여 종의 디자인 템플릿과 하객 응답 기능.",
+    description: `감성적인 모바일 청첩장을 5분 만에. ${TEMPLATES.length}종의 디자인 템플릿과 하객 응답 기능.`,
   },
 };
 

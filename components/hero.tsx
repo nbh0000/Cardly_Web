@@ -71,7 +71,8 @@ export function Hero() {
                   <div
                     className={`relative aspect-[3/4] overflow-hidden ${featured ? "rounded-[1.5rem]" : "rounded-md"}`}
                   >
-                    <div className="absolute inset-0 origin-top scale-[0.62] [width:161%]">
+                    {/* 축소 기준점이 상단 중앙이면 오른쪽으로 밀려 잘립니다. */}
+                    <div className="absolute inset-0 origin-top-left scale-[0.62] [width:161%]">
                       <InvitationView template={t} data={data} coverOnly />
                     </div>
                   </div>

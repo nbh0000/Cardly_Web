@@ -5,6 +5,21 @@
    모든 치수는 em 기준 → --iv-scale 하나로 전체 크기가 조절됩니다.
    ============================================================ */
 
+/*
+ * 폰 프레임. transform 을 주면 이 요소가 position:fixed 자식들의 기준 블록이
+ * 되어, 바텀 시트와 라이트박스가 프레임 밖으로 새어 나가지 않습니다.
+ * (프레임이 없는 실제 모바일 화면에서는 이 클래스를 붙이지 않아 뷰포트 기준)
+ */
+.iv-stage {
+  transform: translateZ(0);
+}
+/* 미리보기 페이지처럼 데스크톱에서만 프레임이 생기는 경우 */
+@media (min-width: 48rem) {
+  .iv-stage-md {
+    transform: translateZ(0);
+  }
+}
+
 .iv {
   position: relative;
   font-family: var(--font-sans);
@@ -1142,8 +1157,9 @@
 
 /* ---------- 배경음악 토글 ---------- */
 
+/* 스크롤을 내려도 계속 눌러 끌 수 있도록 화면(폰 프레임)에 고정합니다. */
 .iv-bgm {
-  position: absolute;
+  position: fixed;
   top: 0.9em;
   right: 0.9em;
   z-index: 120;

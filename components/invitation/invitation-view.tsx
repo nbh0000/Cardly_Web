@@ -2,6 +2,8 @@
 
 import {
   Fragment,
+  createContext,
+  use,
   useCallback,
   useEffect,
   useMemo,
@@ -9,6 +11,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { createPortal } from "react-dom";
 import { DefaultPhoto, variantFor } from "@/components/invitation/default-photo";
 import {
   daysUntil,
@@ -31,6 +34,14 @@ import {
 
 /** 값이 바뀌지 않는 스토어 — 최초 스냅샷만 필요할 때 씁니다. */
 const subscribeNever = () => () => {};
+
+/**
+ * 바텀 시트를 붙일 자리.
+ * 섹션(.reveal)에는 스크롤 연동 transform 이 걸려 있어, 그 안에서 그린
+ * position:fixed 요소는 화면이 아니라 "그 섹션"을 기준으로 배치됩니다.
+ * 그래서 시트는 청첩장 루트로 빼내어 그립니다.
+ */
+const SheetHostContext = createContext<HTMLElement | null>(null);
 
 const SCALE: Record<InvitationData["fontScale"], number> = {
   sm: 0.92,
@@ -57,6 +68,7 @@ export function InvitationView({
   flash?: string | null;
   replayKey?: string;
 }) {
+  const [sheetHost, setSheetHost] = useState<HTMLElement | null>(null);
   const theme = resolveTheme(template, data);
   const headingFamily =
     data.headingFont === "serif" ? "var(--font-serif)" : "var(--font-sans)";
@@ -76,23 +88,26 @@ export function InvitationView({
 
   return (
     <div className="iv" style={style}>
-      {data.effect !== "none" && !coverOnly && <EffectLayer kind={data.effect} />}
-      {!coverOnly && data.opening !== "none" && (
-        <OpeningLayer key={data.opening + replayKey} kind={data.opening} />
-      )}
+      <SheetHostContext value={sheetHost}>
+        {data.effect !== "none" && !coverOnly && <EffectLayer kind={data.effect} />}
+        {!coverOnly && data.opening !== "none" && (
+          <OpeningLayer key={data.opening + replayKey} kind={data.opening} />
+        )}
 
-      {!coverOnly && data.bgm !== "none" && (
-        <BgmPlayer track={data.bgm} autoplay={data.bgmAutoplay} />
-      )}
+        {!coverOnly && data.bgm !== "none" && (
+          <BgmPlayer track={data.bgm} autoplay={data.bgmAutoplay} />
+        )}
 
-      <div id="sec-cover" className="iv-anchor">
-        <Cover template={template} data={data} />
-      </div>
-      {coverOnly ? null : (
-        <>
+        <div id="sec-cover" className="iv-anchor">
+          <Cover template={template} data={data} />
+        </div>
+        {coverOnly ? null : (
           <RestOfInvitation data={data} live={live} flash={flash} />
-        </>
-      )}
+        )}
+
+        {/* 시트가 붙는 자리 — 섹션의 transform 밖이어야 화면 기준으로 뜹니다. */}
+        {!coverOnly && <div ref={setSheetHost} />}
+      </SheetHostContext>
     </div>
   );
 }
@@ -507,10 +522,11 @@ function ContactButton({
             <span>본인</span>
             <a href={`tel:${phone}`}>{phone || "-"}</a>
           </li>
+          {/* 직접 추가한 연락처는 관계(role)가 겹칠 수 있어 인덱스로 키를 만듭니다. */}
           {parents
             .filter((p) => p.name)
-            .map((p) => (
-              <li key={p.role}>
+            .map((p, i) => (
+              <li key={`${p.role}-${i}`}>
                 <span>
                   {p.role} {p.name}
                 </span>
@@ -1368,7 +1384,19 @@ function OpeningLayer({
   const [done, setDone] = useState(false);
   if (done) return null;
 
-  const finish = () => setDone(true);
+  /**
+   * animationend 는 자식에서도 버블링됩니다. 그대로 받으면 가장 짧은 조각
+   * (봉투 뚜껑, 리본, 이모지 하나)이 끝나는 순간 레이어가 사라져 정작 본
+   * 연출은 보이지 않습니다. 레이어 안에서 아직 도는 애니메이션이 하나도
+   * 없을 때만 정리합니다.
+   */
+  const finish = (e: React.AnimationEvent<HTMLDivElement>) => {
+    const layer = e.currentTarget;
+    const running = layer
+      .getAnimations({ subtree: true })
+      .some((a) => a.playState === "running");
+    if (!running) setDone(true);
+  };
 
   if (kind === "curtain") {
     return (
@@ -1480,6 +1508,7 @@ function Sheet({
   const [phase, setPhase] = useState<"closed" | "open" | "closing">(
     open ? "open" : "closed",
   );
+  const host = use(SheetHostContext);
 
   if (open && phase !== "open") setPhase("open");
   if (!open && phase === "open") setPhase("closing");
@@ -1487,7 +1516,7 @@ function Sheet({
   if (phase === "closed") return null;
   const closing = phase === "closing";
 
-  return (
+  const markup = (
     <>
       <div className="sheet-scrim" onClick={onClose} aria-hidden />
       <div
@@ -1517,6 +1546,8 @@ function Sheet({
       </div>
     </>
   );
+
+  return host ? createPortal(markup, host) : markup;
 }
 
 function SectionTitle({

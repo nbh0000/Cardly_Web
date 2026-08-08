@@ -1,8 +1,10 @@
+import { TEMPLATES } from "@/lib/invitation";
+
 const STEPS = [
   {
     n: "01",
     title: "템플릿 선택",
-    body: "60여 종 중에서 두 사람의 분위기에 맞는 디자인을 고릅니다. 색상·폰트는 나중에 언제든 바꿀 수 있어요.",
+    body: `${TEMPLATES.length}종 중에서 두 사람의 분위기에 맞는 디자인을 고릅니다. 색상·폰트는 나중에 언제든 바꿀 수 있어요.`,
   },
   {
     n: "02",

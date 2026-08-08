@@ -127,19 +127,26 @@ export function Toggle({
   const id = useId();
   return (
     <div className="flex items-center justify-between gap-4">
-      <label htmlFor={id} className="cursor-pointer">
-        <span className="block text-[0.8125rem] text-ink">{label}</span>
+      {/* <label for> 는 button 을 가리킬 수 없어 눌러도 아무 일이 없었습니다.
+          설명 영역도 스위치를 누르는 것과 똑같이 동작하도록 직접 연결합니다. */}
+      <span
+        onClick={() => onChange(!checked)}
+        className="cursor-pointer select-none"
+      >
+        <span id={id} className="block text-[0.8125rem] text-ink">
+          {label}
+        </span>
         {desc && (
           <span className="mt-0.5 block text-[0.6875rem] text-muted">
             {desc}
           </span>
         )}
-      </label>
+      </span>
       <button
-        id={id}
         type="button"
         role="switch"
         aria-checked={checked}
+        aria-labelledby={id}
         onClick={() => onChange(!checked)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
           checked ? "bg-rose-deep" : "bg-sand"

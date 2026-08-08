@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import {
   ChipGroup,
   ColorPicker,
@@ -754,13 +754,17 @@ function GalleryGlyph({ id }: { id: string }) {
 
 function Notice({ data, set, setData, onGoOrder, onReveal }: Props) {
   // 항목을 추가하면 섹션이 자동으로 켜집니다 — 추가했는데 안 보이는 일이 없도록.
-  const addNotice = () =>
+  // (onReveal 은 반드시 이 함수 안에서 불러야 합니다. 밖에 두면 렌더 중에
+  //  부모 상태를 바꿔 React 경고가 뜨고, 패널을 열 때마다 미리보기가 튑니다.)
+  const addNotice = () => {
     setData((d) => ({
       ...d,
       showNotice: true,
       notices: [...d.notices, { id: uid(), title: "", body: "" } as NoticeItem],
     }));
     onReveal("notice");
+  };
+
   return (
     <NoticeInner
       data={data}
@@ -908,13 +912,15 @@ function Timeline({ data, set, setData, onGoOrder, onReveal }: Props) {
     setData((d) => ({ ...d, showTimeline: true, timeline: items.map((x) => ({ ...x, id: uid() })) }));
     onReveal("timeline");
   };
-  const addItem = () =>
+  const addItem = () => {
     setData((d) => ({
       ...d,
       showTimeline: true,
       timeline: [...d.timeline, { id: uid(), date: "", period: "", body: "" } as TimelineItem],
     }));
     onReveal("timeline");
+  };
+
   return (
     <>
       <PanelHead title="타임라인" desc="두 사람이 걸어온 시간을 순서대로 담아보세요." />
@@ -1124,8 +1130,14 @@ export function isSectionActive(k: SectionKey, d: InvitationData): boolean {
 }
 
 function Order({ data, set }: Props) {
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  /**
+   * 끌고 있는 섹션. 인덱스가 아니라 키로 들고 있어야 순서가 바뀌어도 안 어긋납니다.
+   * 값은 ref 로 두고 state 는 표시용으로만 씁니다 — 빠르게 끌면 pointerdown 직후
+   * 리렌더가 끝나기 전에 pointermove 가 들어와 state 만으로는 첫 이동을 놓칩니다.
+   */
+  const dragRef = useRef<SectionKey | null>(null);
+  const [dragKey, setDragKey] = useState<SectionKey | null>(null);
 
   const active = data.sectionOrder.filter((k) => isSectionActive(k, data));
   const inactive = data.sectionOrder.filter((k) => !isSectionActive(k, data));
@@ -1150,44 +1162,65 @@ function Order({ data, set }: Props) {
     set("sectionOrder", next);
   };
 
+  /** 포인터 y 좌표가 어느 행 위에 있는지 */
+  const rowAt = (y: number) => {
+    const rows = listRef.current?.children;
+    if (!rows || rows.length === 0) return -1;
+    for (let i = 0; i < rows.length; i++) {
+      if (y < rows[i]!.getBoundingClientRect().bottom) return i;
+    }
+    return rows.length - 1;
+  };
+
+  /**
+   * HTML5 drag&drop 은 모바일 브라우저에서 아예 발생하지 않아 손잡이를
+   * 포인터 이벤트로 처리합니다. 놓을 때가 아니라 끄는 도중에 바로 순서를
+   * 바꿔 목록과 미리보기가 실시간으로 따라옵니다.
+   */
+  const onHandleDown = (k: SectionKey) => (e: React.PointerEvent<HTMLElement>) => {
+    e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* 캡처를 못 잡아도 손잡이 위에서는 계속 동작합니다. */
+    }
+    dragRef.current = k;
+    setDragKey(k);
+  };
+
+  const onHandleMove = (e: React.PointerEvent<HTMLElement>) => {
+    const k = dragRef.current;
+    if (!k) return;
+    const from = active.indexOf(k);
+    const to = rowAt(e.clientY);
+    if (from >= 0 && to >= 0 && to !== from) reorder(from, to);
+  };
+
+  const onHandleUp = (e: React.PointerEvent<HTMLElement>) => {
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      /* 이미 해제된 경우 */
+    }
+    dragRef.current = null;
+    setDragKey(null);
+  };
+
   return (
     <>
-      <PanelHead title="순서 변경" desc="초대장 각 섹션의 노출 순서를 자유롭게 변경할 수 있습니다. 손잡이를 잡고 끌어 옮기세요." />
+      <PanelHead title="순서 변경" desc="초대장 각 섹션의 노출 순서를 자유롭게 변경할 수 있습니다. 손잡이를 잡고 끌면 바로 순서가 바뀝니다." />
       <Group>
         <span className="text-[0.75rem] text-ink-soft">섹션 순서</span>
 
-        <ul className="grid gap-2">
+        <ul ref={listRef} className="grid gap-2">
           {active.map((k, i) => {
-            const dragging = dragIdx === i;
-            const isOver = overIdx === i && dragIdx !== null && dragIdx !== i;
+            const dragging = dragKey === k;
             return (
               <li
                 key={k}
-                draggable
-                onDragStart={(e) => {
-                  setDragIdx(i);
-                  e.dataTransfer.effectAllowed = "move";
-                  // Firefox 는 데이터가 설정되지 않으면 드래그를 시작하지 않습니다.
-                  e.dataTransfer.setData("text/plain", k);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (overIdx !== i) setOverIdx(i);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (dragIdx !== null) reorder(dragIdx, i);
-                  setDragIdx(null);
-                  setOverIdx(null);
-                }}
-                onDragEnd={() => {
-                  setDragIdx(null);
-                  setOverIdx(null);
-                }}
-                className={`flex items-center gap-3 rounded-lg bg-white px-4 py-3.5 ring-1 transition-all duration-200 ${
-                  dragging ? "opacity-40 ring-rose-deep" : "ring-line"
-                } ${isOver ? "translate-y-0.5 ring-2 ring-rose-deep" : ""}`}
+                className={`flex items-center gap-3 rounded-lg bg-white px-4 py-3.5 ring-1 transition-shadow duration-200 ${
+                  dragging ? "shadow-lift ring-2 ring-rose-deep" : "ring-line"
+                }`}
               >
                 <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-cream text-[0.6875rem] text-muted">
                   {i + 1}
@@ -1207,9 +1240,15 @@ function Order({ data, set }: Props) {
                     className="press grid h-7 w-7 place-items-center rounded-md text-muted hover:bg-cream hover:text-ink disabled:opacity-25"
                   >↓</button>
                   <span
-                    className="cursor-grab pl-1 text-hint select-none active:cursor-grabbing"
-                    aria-hidden
+                    role="button"
+                    tabIndex={-1}
+                    aria-label={`${SECTION_LABELS[k]} 끌어서 옮기기`}
                     title="끌어서 옮기기"
+                    onPointerDown={onHandleDown(k)}
+                    onPointerMove={onHandleMove}
+                    onPointerUp={onHandleUp}
+                    onPointerCancel={onHandleUp}
+                    className="grid h-7 w-7 cursor-grab touch-none place-items-center text-hint select-none active:cursor-grabbing"
                   >
                     ⠿
                   </span>
