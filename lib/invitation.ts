@@ -62,13 +62,40 @@ export const FONT_SCALES: { id: FontScale; label: string; factor: number }[] = [
   { id: "lg", label: "크게", factor: 1.12 },
 ];
 
-export type EffectKind = "none" | "petal" | "snow" | "sparkle";
+/* ---------- 화면 효과 ----------
+   청첩장 전체(스크롤 끝까지)에 깔리는 파티클 레이어.
+   화면 기준으로 고정되므로 어느 섹션을 보고 있든 계속 내립니다. */
+
+export type EffectKind =
+  | "none"
+  | "petal" /* 꽃잎 */
+  | "snow" /* 눈 */
+  | "sparkle" /* 반짝임 */
+  | "confetti" /* 꽃가루 */
+  | "heart" /* 하트 */
+  | "bokeh"; /* 빛망울 — 아래에서 위로 */
 
 export const EFFECTS: { id: EffectKind; label: string }[] = [
   { id: "none", label: "없음" },
   { id: "petal", label: "꽃잎" },
   { id: "snow", label: "눈" },
   { id: "sparkle", label: "반짝임" },
+  { id: "confetti", label: "꽃가루" },
+  { id: "heart", label: "하트" },
+  { id: "bokeh", label: "빛망울" },
+];
+
+export type EffectDensity = "low" | "mid" | "high";
+
+/** 화면에 동시에 떠 있는 입자 수 */
+export const EFFECT_DENSITIES: {
+  id: EffectDensity;
+  label: string;
+  count: number;
+}[] = [
+  { id: "low", label: "은은하게", count: 14 },
+  { id: "mid", label: "보통", count: 26 },
+  { id: "high", label: "풍성하게", count: 42 },
 ];
 
 export type BgmTrack = "none" | "canon" | "spring" | "lullaby" | "waltz";
@@ -381,6 +408,7 @@ export interface InvitationData {
   /** 템플릿 기본 포인트색을 덮어쓰는 커스텀 색 */
   accentOverride?: string;
   effect: EffectKind;
+  effectDensity: EffectDensity;
 
   /* 커버 */
   coverEyebrow: string;
@@ -824,6 +852,7 @@ export function createDefaultData(templateId: string): InvitationData {
     headingFont: t.headingFont,
     fontScale: "md",
     effect: "none",
+    effectDensity: "mid",
 
     coverEyebrow: t.eyebrow ?? "WE ARE GETTING MARRIED",
     coverPhotoFit: "cover",

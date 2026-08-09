@@ -21,6 +21,7 @@ import {
   DATE_FORMATS,
   DAUGHTER_RELATIONS,
   EFFECTS,
+  EFFECT_DENSITIES,
   FONT_OPTIONS,
   FONT_SCALES,
   PHOTO_TONES,
@@ -326,6 +327,14 @@ function Design({ data, set, setData }: Props) {
         <ChipGroup label="글꼴" options={FONT_OPTIONS.map((f) => ({ id: f.id, label: f.label }))} value={data.headingFont} onChange={(v) => set("headingFont", v)} />
         <ChipGroup label="글자 크기" options={FONT_SCALES.map((f) => ({ id: f.id, label: f.label }))} value={data.fontScale} onChange={(v) => set("fontScale", v)} />
         <ChipGroup label="화면 효과" options={EFFECTS} value={data.effect} onChange={(v) => set("effect", v)} />
+        {data.effect !== "none" && (
+          <ChipGroup
+            label="효과 양"
+            options={EFFECT_DENSITIES.map((d) => ({ id: d.id, label: d.label }))}
+            value={data.effectDensity}
+            onChange={(v) => set("effectDensity", v)}
+          />
+        )}
       </Group>
     </>
   );

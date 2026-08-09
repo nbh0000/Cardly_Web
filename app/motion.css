@@ -265,12 +265,19 @@
   }
 }
 
+/*
+ * 오프닝은 "지금 보고 있는 화면"을 덮어야 합니다.
+ * absolute 로 두면 기준 블록인 .iv 가 청첩장 전체 높이(수천 px)라서
+ * 봉투·레이스·이모지처럼 가운데 놓이는 연출이 화면 한참 아래에 그려져
+ * 아무것도 보이지 않았습니다. fixed 로 화면에 붙입니다.
+ * (폰 프레임 .iv-stage 에는 transform 이 있어 프레임 안에 갇힙니다)
+ */
 .opening {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 190;
   pointer-events: none;
-  perspective: 1000px;
+  perspective: 1200px;
   overflow: hidden;
 }
 
@@ -281,60 +288,122 @@
   bottom: 0;
   width: 50.5%;
   background: var(--iv-bg, #fff);
-  box-shadow: 0 0 24px rgb(0 0 0 / 0.12);
+  box-shadow: 0 0 30px rgb(0 0 0 / 0.16);
 }
 .opening-half.l {
   left: 0;
-  animation: curtain-l 1.3s var(--ease-in-out-soft) 0.4s both;
+  animation: curtain-l 1.3s var(--ease-in-out-soft) 0.45s both;
 }
 .opening-half.r {
   right: 0;
-  animation: curtain-r 1.3s var(--ease-in-out-soft) 0.4s both;
+  animation: curtain-r 1.3s var(--ease-in-out-soft) 0.45s both;
+}
+/* 갈라지기 직전 가운데에 스치는 가는 빛 — 종이가 열리는 인상을 줍니다 */
+.op-curtain-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  translate: -50% 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--iv-accent, #b08d80) 18%,
+    var(--iv-accent, #b08d80) 82%,
+    transparent
+  );
+  animation: seam-out 0.9s var(--ease-soft) 0.35s both;
 }
 
-/* ── 봉투 열기 ── */
-.op-env-body,
-.op-env-flap,
-.op-env-card {
-  position: absolute;
-}
+/* ── 봉투 열기 ──
+   예전에는 봉투가 화면 전체를 덮어 "봉투"로 보이지 않았습니다.
+   가운데에 실제 봉투 한 통을 놓고, 뚜껑이 젖혀지며 카드가 빠져나온 뒤
+   카드가 화면을 채우면서 청첩장으로 이어집니다. */
 .op-env-body {
+  position: absolute;
   inset: 0;
-  background: var(--iv-sub, #eee);
-  animation: veil-out 0.5s var(--ease-soft) 2.05s both;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--iv-accent, #b08d80) 12%, var(--iv-bg, #fff)),
+    var(--iv-sub, #eee)
+  );
+  animation: veil-out 0.55s var(--ease-soft) 2.5s both;
+}
+.op-env-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(74%, 20rem);
+  aspect-ratio: 3 / 2;
+  translate: -50% -50%;
+  transform-style: preserve-3d;
+  animation: env-stage-in 0.7s var(--spring) 0.1s both;
+}
+.op-env-pocket {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, var(--iv-accent, #b08d80) 24%, var(--iv-bg, #fff));
+  /* 아래쪽 접힌 면 — 카드가 이 뒤에서 올라오는 것처럼 보이게 합니다 */
+  clip-path: polygon(0 34%, 50% 74%, 100% 34%, 100% 100%, 0 100%);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.18);
+  z-index: 2;
+  animation: veil-out 0.45s var(--ease-soft) 2s forwards;
 }
 .op-env-flap {
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 46%;
-  background: color-mix(in srgb, var(--iv-accent, #b08d80) 32%, var(--iv-sub, #eee));
+  height: 74%;
+  border-radius: 0.35rem 0.35rem 0 0;
+  background: color-mix(in srgb, var(--iv-accent, #b08d80) 38%, var(--iv-bg, #fff));
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: top center;
+  /* 두 번째 애니메이션은 forwards — both 로 두면 시작 전부터 그 값이
+     덮어써져 뚜껑이 젖혀지는 연출 자체가 보이지 않습니다. */
   animation:
-    envelope-flap 0.85s var(--ease-in-out-soft) 0.35s both,
-    veil-out 0.4s linear 2.05s both;
+    envelope-flap 0.8s var(--ease-in-out-soft) 0.5s both,
+    veil-out 0.45s var(--ease-soft) 2s forwards;
+  z-index: 3;
 }
 .op-env-card {
-  left: 12%;
-  right: 12%;
-  top: 22%;
-  bottom: 12%;
-  border-radius: 0.4rem;
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 6%;
+  bottom: 6%;
+  border-radius: 0.3rem;
   background: var(--iv-bg, #fff);
-  box-shadow: 0 8px 28px rgb(0 0 0 / 0.18);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.2);
   display: grid;
   place-items: center;
+  gap: 0.5rem;
+  transform-origin: center bottom;
   animation:
-    env-card-rise 0.95s var(--spring) 1.05s both,
-    veil-out 0.45s var(--ease-soft) 2.05s both;
+    env-card-rise 0.85s var(--spring) 1.15s both,
+    env-card-fill 0.8s var(--ease-in-out-soft) 2s forwards;
+  z-index: 1;
 }
 .op-env-seal {
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
   border-radius: 999px;
   border: 1px solid var(--iv-accent, #b08d80);
-  background: color-mix(in srgb, var(--iv-accent, #b08d80) 14%, transparent);
+  background: color-mix(in srgb, var(--iv-accent, #b08d80) 12%, transparent);
+  color: var(--iv-accent, #b08d80);
+  font-family: var(--font-script), serif;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.op-env-rule {
+  width: 3.2rem;
+  height: 1px;
+  background: var(--iv-accent, #b08d80);
+  opacity: 0.5;
 }
 
 /* ── 포장지 뜯기 ── */
@@ -418,14 +487,49 @@
 }
 
 /* ── 키프레임 ── */
-@keyframes env-card-rise {
+@keyframes seam-out {
   from {
-    transform: translateY(28%) scale(0.94);
+    opacity: 0.85;
+    scale: 1 1;
+  }
+  to {
+    opacity: 0;
+    scale: 1 0.2;
+  }
+}
+@keyframes env-stage-in {
+  from {
+    transform: scale(0.82) translateY(8%);
     opacity: 0;
   }
   to {
     transform: none;
     opacity: 1;
+  }
+}
+/* 카드가 봉투 주머니 뒤에서 위로 빠져나옵니다 */
+@keyframes env-card-rise {
+  from {
+    transform: translateY(10%) scale(0.96);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-38%) scale(1);
+    opacity: 1;
+  }
+}
+/* 빠져나온 카드가 화면을 채우며 청첩장으로 넘어갑니다 */
+@keyframes env-card-fill {
+  from {
+    transform: translateY(-38%) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-38%) scale(5);
+    opacity: 0;
   }
 }
 @keyframes wrap-l {

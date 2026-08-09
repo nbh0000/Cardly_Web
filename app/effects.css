@@ -1,0 +1,221 @@
+/* ============================================================
+   SCREEN EFFECTS
+   청첩장 전체에 깔리는 파티클(눈·꽃잎·꽃가루·하트·반짝임·빛망울).
+
+   레이어는 position:fixed 라 화면 기준으로 붙습니다. 예전에는 absolute
+   였는데, 기준 블록인 .iv 가 청첩장 전체 높이(수천 px)여서 입자가 맨 위
+   한 화면에서만 떨어지고 그 아래로 스크롤하면 아무것도 없었습니다.
+   미리보기의 폰 프레임(.iv-stage)에는 transform 이 걸려 있어 fixed 자식이
+   프레임 안에 갇히므로, 프레임 밖으로 새지도 않습니다.
+
+   한 입자는 세 겹입니다. 요소 하나에 transform 은 하나뿐이라
+   낙하·흔들림·회전을 나눠 걸어야 하기 때문입니다.
+     .iv-fx-fall   아래로(빛망울은 위로) 이동
+     .iv-fx-sway   좌우 흔들림 + 깊이감(투명도·블러)
+     .iv-fx-shape  모양 + 회전/반짝임
+   ============================================================ */
+
+.iv-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  pointer-events: none;
+  /* 합성 레이어로 올려 스크롤 중에도 끊기지 않게 합니다 */
+  contain: strict;
+}
+
+.iv-fx-fall {
+  position: absolute;
+  top: -14vh;
+  left: var(--x);
+  width: var(--size);
+  height: var(--size);
+  animation: fx-fall var(--dur) linear var(--delay) infinite;
+  will-change: transform;
+}
+.iv-fx-sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: var(--o);
+  filter: blur(var(--blur));
+  animation: fx-sway var(--sway) ease-in-out var(--delay) infinite alternate;
+}
+.iv-fx-shape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: fx-spin var(--spin) linear var(--delay) infinite;
+}
+
+@keyframes fx-fall {
+  to {
+    transform: translateY(128vh);
+  }
+}
+@keyframes fx-rise {
+  to {
+    transform: translateY(-128vh);
+  }
+}
+@keyframes fx-sway {
+  from {
+    transform: translateX(calc(var(--drift) * -0.5));
+  }
+  to {
+    transform: translateX(calc(var(--drift) * 0.5));
+  }
+}
+@keyframes fx-spin {
+  to {
+    transform: rotate(calc(var(--spin-dir) * 360deg));
+  }
+}
+/* 종이·꽃잎이 뒤집히며 도는 느낌 — 평면 회전보다 훨씬 자연스럽습니다 */
+@keyframes fx-tumble {
+  to {
+    transform: rotate3d(1, 0.7, 0.25, calc(var(--spin-dir) * 360deg));
+  }
+}
+@keyframes fx-flip {
+  to {
+    transform: rotate3d(0.35, 1, 0.15, calc(var(--spin-dir) * 720deg));
+  }
+}
+@keyframes fx-twinkle {
+  0%,
+  100% {
+    transform: scale(0.45) rotate(0deg);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.15) rotate(90deg);
+    opacity: 1;
+  }
+}
+@keyframes fx-pulse {
+  0%,
+  100% {
+    transform: scale(0.86);
+  }
+  50% {
+    transform: scale(1.16);
+  }
+}
+@keyframes fx-beat {
+  0%,
+  100% {
+    transform: scale(0.92) rotate(calc(var(--spin-dir) * -8deg));
+  }
+  45% {
+    transform: scale(1.12) rotate(calc(var(--spin-dir) * 8deg));
+  }
+}
+
+/* ---------- 눈 ---------- */
+/* 흰 점만 쓰면 아이보리 배경에서 사라져 버려, 가장자리에 옅은 청회색을
+   남겨 밝은 바탕에서도 형태가 읽히게 했습니다. */
+.iv-fx-snow .iv-fx-shape {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 32%,
+    #ffffff 0%,
+    #f6fafd 42%,
+    rgb(186 206 226 / 0.55) 76%,
+    rgb(186 206 226 / 0) 100%
+  );
+}
+/* 가까운 눈송이는 결정 모양으로 — 멀리 있는 것과 섞이며 깊이가 생깁니다 */
+.iv-fx-snow .iv-fx-fall[data-depth="2"] .iv-fx-shape {
+  background: #fff;
+  filter: drop-shadow(0 1px 1.5px rgb(120 142 166 / 0.35));
+  -webkit-mask: var(--fx-snowflake) center / contain no-repeat;
+  mask: var(--fx-snowflake) center / contain no-repeat;
+}
+
+/* ---------- 꽃잎 ---------- */
+.iv-fx-petal .iv-fx-shape {
+  border-radius: 100% 0 100% 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--iv-accent) 26%, #fff) 0%,
+    var(--iv-accent) 78%
+  );
+  box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.4);
+  animation-name: fx-tumble;
+}
+
+/* ---------- 반짝임 ---------- */
+.iv-fx-sparkle .iv-fx-shape {
+  background: radial-gradient(
+    circle,
+    #fff 0%,
+    color-mix(in srgb, var(--iv-accent) 65%, #fff) 38%,
+    color-mix(in srgb, var(--iv-accent) 80%, transparent) 62%,
+    transparent 74%
+  );
+  clip-path: polygon(
+    50% 0,
+    58% 42%,
+    100% 50%,
+    58% 58%,
+    50% 100%,
+    42% 58%,
+    0 50%,
+    42% 42%
+  );
+  animation-name: fx-twinkle;
+  animation-timing-function: ease-in-out;
+}
+
+/* ---------- 꽃가루 ---------- */
+.iv-fx-confetti .iv-fx-shape {
+  height: 64%;
+  border-radius: 1px;
+  background: var(--c);
+  animation-name: fx-flip;
+}
+
+/* ---------- 하트 ---------- */
+.iv-fx-heart .iv-fx-shape {
+  background: var(--iv-accent);
+  -webkit-mask: var(--fx-heart) center / contain no-repeat;
+  mask: var(--fx-heart) center / contain no-repeat;
+  animation-name: fx-beat;
+  animation-timing-function: ease-in-out;
+}
+
+/* ---------- 빛망울 ---------- */
+/* 유일하게 아래에서 위로 올라갑니다 */
+.iv-fx-bokeh .iv-fx-fall {
+  top: auto;
+  bottom: -14vh;
+  animation-name: fx-rise;
+}
+.iv-fx-bokeh .iv-fx-shape {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 38% 34%,
+    rgb(255 255 255 / 0.95) 0%,
+    color-mix(in srgb, var(--iv-accent) 48%, transparent) 52%,
+    transparent 72%
+  );
+  animation-name: fx-pulse;
+  animation-timing-function: ease-in-out;
+}
+
+/* ---------- 마스크 도형 ---------- */
+
+.iv {
+  --fx-heart: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 92'><path d='M50 90C24 71 2 54 2 32 2 15 14 4 28 4c9 0 17 5 22 13C55 9 63 4 72 4c14 0 26 11 26 28 0 22-22 39-48 58Z' fill='black'/></svg>");
+  --fx-snowflake: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><g fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round'><path d='M12 1.5v21M2.9 6.75l18.2 10.5M2.9 17.25 21.1 6.75'/><path d='M12 5.6 9.3 2.9M12 5.6l2.7-2.7M12 18.4l-2.7 2.7M12 18.4l2.7 2.7'/><path d='M6.9 9.05 3.2 8.06M6.9 14.95l-3.7 1M17.1 9.05l3.7-1M17.1 14.95l3.7 1'/></g></svg>");
+}
+
+/* ---------- 접근성 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .iv-fx {
+    display: none;
+  }
+}

@@ -26,7 +26,10 @@ import {
   resolveTheme,
   weekdayEn,
   WEEKDAY_LABELS,
+  EFFECT_DENSITIES,
   type Account,
+  type EffectDensity,
+  type EffectKind,
   type InvitationData,
   type SectionKey,
   type Template,
@@ -48,6 +51,13 @@ const SheetHostContext = createContext<HTMLElement | null>(null);
  * 사진 슬롯이 여기에 자기 슬롯 번호를 더해 씁니다.
  */
 const PhotoSeedContext = createContext(0);
+
+/**
+ * 오프닝 연출이 아직 도는 중인지.
+ * 참석 여부 팝업처럼 스스로 떠오르는 UI 가 오프닝 위에 겹쳐 뜨지 않도록,
+ * 연출이 끝난 뒤에 시작하게 하려고 내려보냅니다.
+ */
+const OpeningContext = createContext(false);
 
 const SCALE: Record<InvitationData["fontScale"], number> = {
   sm: 0.92,
@@ -75,6 +85,18 @@ export function InvitationView({
   replayKey?: string;
 }) {
   const [sheetHost, setSheetHost] = useState<HTMLElement | null>(null);
+
+  /* 오프닝은 종류를 바꾸거나 다시 재생을 누르면 처음부터 다시 돕니다.
+     key 가 바뀌는 순간 "끝남" 표시도 같이 되돌립니다. */
+  const openingKey = data.opening + replayKey;
+  const [playedKey, setPlayedKey] = useState(openingKey);
+  const [openingDone, setOpeningDone] = useState(false);
+  if (playedKey !== openingKey) {
+    setPlayedKey(openingKey);
+    setOpeningDone(false);
+  }
+  const openingActive = !coverOnly && data.opening !== "none" && !openingDone;
+
   const theme = resolveTheme(template, data);
   const headingFamily =
     data.headingFont === "serif" ? "var(--font-serif)" : "var(--font-sans)";
@@ -100,9 +122,19 @@ export function InvitationView({
     >
       <SheetHostContext value={sheetHost}>
        <PhotoSeedContext value={data.photoSeed ?? 0}>
-        {data.effect !== "none" && !coverOnly && <EffectLayer kind={data.effect} />}
-        {!coverOnly && data.opening !== "none" && (
-          <OpeningLayer key={data.opening + replayKey} kind={data.opening} />
+        <OpeningContext value={openingActive}>
+        {data.effect !== "none" && !coverOnly && (
+          <EffectLayer
+            kind={data.effect}
+            density={data.effectDensity ?? "mid"}
+          />
+        )}
+        {openingActive && (
+          <OpeningLayer
+            key={openingKey}
+            kind={data.opening as Exclude<InvitationData["opening"], "none">}
+            onDone={() => setOpeningDone(true)}
+          />
         )}
 
         {!coverOnly && data.bgm !== "none" && (
@@ -118,6 +150,7 @@ export function InvitationView({
 
         {/* 시트가 붙는 자리 — 섹션의 transform 밖이어야 화면 기준으로 뜹니다. */}
         {!coverOnly && <div ref={setSheetHost} />}
+        </OpeningContext>
        </PhotoSeedContext>
       </SheetHostContext>
     </div>
@@ -1124,13 +1157,15 @@ function AccountRow({ account }: { account: Account }) {
 function Rsvp({ data, live }: { data: InvitationData; live: boolean }) {
   const [sent, setSent] = useState(false);
   const [popup, setPopup] = useState(false);
+  // 오프닝 연출이 도는 동안에는 팝업을 띄우지 않습니다.
+  const openingActive = use(OpeningContext);
 
   useEffect(() => {
-    if (live && data.rsvpPopup) {
+    if (live && data.rsvpPopup && !openingActive) {
       const t = setTimeout(() => setPopup(true), 900);
       return () => clearTimeout(t);
     }
-  }, [live, data.rsvpPopup]);
+  }, [live, data.rsvpPopup, openingActive]);
 
   const form = (compact?: boolean) => (
     <form
@@ -1412,28 +1447,106 @@ function BgmPlayer({ track, autoplay }: { track: string; autoplay: boolean }) {
    효과 레이어
    ============================================================ */
 
-function EffectLayer({ kind }: { kind: "petal" | "snow" | "sparkle" }) {
-  // 위치/지연을 결정적으로 계산해 SSR 과 CSR 결과가 같도록 합니다.
-  const bits = Array.from({ length: 18 }, (_, i) => ({
-    left: (i * 37) % 100,
-    delay: (i * 0.73) % 9,
-    dur: 7 + ((i * 1.7) % 6),
-    size: 6 + ((i * 3) % 8),
-  }));
+/**
+ * 정수 연산만 쓰는 결정적 난수.
+ * Math.random 을 쓰면 서버가 그린 HTML 과 브라우저가 다시 그린 결과가 달라
+ * hydration 이 깨집니다. Math.sin 계열도 엔진마다 끝자리가 다를 수 있어
+ * 비트 연산만으로 만듭니다.
+ */
+function rnd(seed: number): number {
+  let t = (seed * 1103515245 + 12345) & 0x7fffffff;
+  t ^= t >>> 13;
+  t = (t * 1274126177) & 0x7fffffff;
+  return t / 0x7fffffff;
+}
+
+/** 꽃가루 색 — 테마 포인트색에 파스텔 몇 가지를 섞습니다. */
+const CONFETTI_COLORS = [
+  "var(--iv-accent)",
+  "#F6C6D0",
+  "#F7E0A3",
+  "#BFD8C4",
+  "#C9D8EC",
+  "#E8C7E4",
+];
+
+/**
+ * 청첩장 전체에 깔리는 파티클 레이어.
+ *
+ * 한 입자는 세 겹으로 나눠 그립니다. transform 은 요소당 하나뿐이라
+ * 낙하·좌우 흔들림·회전을 한 요소에 함께 걸 수 없기 때문입니다.
+ *   .iv-fx-fall  아래로(빛망울은 위로) 이동
+ *   .iv-fx-sway  좌우로 흔들림 + 깊이감(투명도·블러)
+ *   .iv-fx-shape 모양 + 회전/반짝임
+ *
+ * 입자마다 깊이(0 먼 곳 ~ 2 가까운 곳)를 줘서 크기·속도·선명도를 달리하면
+ * 평면적인 눈보라가 아니라 공간감 있는 화면이 됩니다.
+ */
+function EffectLayer({
+  kind,
+  density,
+}: {
+  kind: Exclude<EffectKind, "none">;
+  density: EffectDensity;
+}) {
+  const count =
+    EFFECT_DENSITIES.find((d) => d.id === density)?.count ??
+    EFFECT_DENSITIES[1]!.count;
+
+  // 빛망울은 크고 느리게, 하트·꽃가루는 작고 가볍게 움직입니다.
+  const baseSize = kind === "bokeh" ? 26 : kind === "confetti" ? 8 : 12;
+  const spread = kind === "bokeh" ? 34 : kind === "confetti" ? 6 : 10;
+  const baseDur = kind === "bokeh" ? 18 : kind === "sparkle" ? 13 : 11;
+
+  const bits = Array.from({ length: count }, (_, i) => {
+    const r = (n: number) => rnd(i * 17 + n * 101 + 3);
+    const depth = i % 3; /* 0 먼 곳 · 1 중간 · 2 가까운 곳 */
+    const scale = [0.62, 0.9, 1.3][depth]!;
+    const speed = [1.55, 1.15, 0.85][depth]!;
+    return {
+      depth,
+      left: r(1) * 100,
+      /** 음수 지연 — 첫 화면부터 이미 흩날리는 중인 상태로 시작합니다 */
+      delay: -r(2) * 16,
+      dur: (baseDur + r(3) * baseDur * 0.8) * speed,
+      size: (baseSize + r(4) * spread) * scale,
+      drift: (r(5) * 2 - 1) * (40 + r(6) * 90),
+      sway: 3 + r(7) * 4,
+      spin: 4 + r(8) * 9,
+      spinDir: r(9) > 0.5 ? 1 : -1,
+      opacity: [0.34, 0.6, 0.92][depth]!,
+      blur: [1.5, 0.5, 0][depth]!,
+      color: CONFETTI_COLORS[Math.floor(r(10) * CONFETTI_COLORS.length)]!,
+    };
+  });
 
   return (
-    <div className={`iv-effect iv-effect-${kind}`} aria-hidden>
+    <div className={`iv-fx iv-fx-${kind}`} aria-hidden>
       {bits.map((b, i) => (
         <span
           key={i}
-          style={{
-            left: `${b.left}%`,
-            animationDelay: `${b.delay}s`,
-            animationDuration: `${b.dur}s`,
-            width: b.size,
-            height: b.size,
-          }}
-        />
+          className="iv-fx-fall"
+          data-depth={b.depth}
+          style={
+            {
+              "--x": `${b.left}%`,
+              "--size": `${b.size.toFixed(2)}px`,
+              "--dur": `${b.dur.toFixed(2)}s`,
+              "--delay": `${b.delay.toFixed(2)}s`,
+              "--drift": `${b.drift.toFixed(1)}px`,
+              "--sway": `${b.sway.toFixed(2)}s`,
+              "--spin": `${b.spin.toFixed(2)}s`,
+              "--spin-dir": b.spinDir,
+              "--o": b.opacity,
+              "--blur": `${b.blur}px`,
+              "--c": b.color,
+            } as React.CSSProperties
+          }
+        >
+          <span className="iv-fx-sway">
+            <span className="iv-fx-shape" />
+          </span>
+        </span>
       ))}
     </div>
   );
@@ -1670,13 +1783,11 @@ function Gift({ data }: { data: InvitationData }) {
 
 function OpeningLayer({
   kind,
+  onDone,
 }: {
   kind: Exclude<InvitationData["opening"], "none">;
+  onDone: () => void;
 }) {
-  // 애니메이션이 끝나면 레이어를 걷어내 아래 내용의 클릭을 막지 않게 합니다.
-  const [done, setDone] = useState(false);
-  if (done) return null;
-
   /**
    * animationend 는 자식에서도 버블링됩니다. 그대로 받으면 가장 짧은 조각
    * (봉투 뚜껑, 리본, 이모지 하나)이 끝나는 순간 레이어가 사라져 정작 본
@@ -1688,14 +1799,25 @@ function OpeningLayer({
     const running = layer
       .getAnimations({ subtree: true })
       .some((a) => a.playState === "running");
-    if (!running) setDone(true);
+    if (!running) onDone();
   };
+
+  /**
+   * 애니메이션이 아예 시작되지 않는 경우(모션 최소화 설정, 탭이 백그라운드에
+   * 있어 animationend 를 놓친 경우)에도 레이어가 영원히 남지 않도록
+   * 넉넉한 시간 뒤 강제로 걷어냅니다.
+   */
+  useEffect(() => {
+    const t = setTimeout(onDone, 6000);
+    return () => clearTimeout(t);
+  }, [onDone]);
 
   if (kind === "curtain") {
     return (
-      <div className="opening" aria-hidden onAnimationEnd={finish}>
+      <div className="opening op-curtain" aria-hidden onAnimationEnd={finish}>
         <span className="opening-half l" />
         <span className="opening-half r" />
+        <span className="op-curtain-seam" />
       </div>
     );
   }
@@ -1704,9 +1826,13 @@ function OpeningLayer({
     return (
       <div className="opening op-envelope" aria-hidden onAnimationEnd={finish}>
         <span className="op-env-body" />
-        <span className="op-env-flap" />
-        <span className="op-env-card">
-          <span className="op-env-seal" />
+        <span className="op-env-stage">
+          <span className="op-env-card">
+            <span className="op-env-seal">&amp;</span>
+            <span className="op-env-rule" />
+          </span>
+          <span className="op-env-pocket" />
+          <span className="op-env-flap" />
         </span>
       </div>
     );
@@ -1749,7 +1875,7 @@ function OpeningLayer({
     );
   }
 
-  // emoji — 링과 하트가 퍼졌다가 사라집니다
+  // emoji — 링과 하트가 차례로 튀어오른 뒤 베일이 걷힙니다
   return (
     <div className="opening op-emoji" aria-hidden onAnimationEnd={finish}>
       <span className="op-emoji-veil">
