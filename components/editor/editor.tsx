@@ -5,6 +5,11 @@ import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import { SectionPanel } from "@/components/editor/panels";
 import { Rail, type SectionId } from "@/components/editor/rail";
 import { InvitationView } from "@/components/invitation/invitation-view";
+import {
+  buildExport,
+  downloadExport,
+  suggestSlug,
+} from "@/lib/export-invitation";
 import { buildQrSvg } from "@/lib/qr";
 import {
   TEMPLATES,
@@ -169,6 +174,40 @@ export function Editor({ templateId }: { templateId: string }) {
     setTimeout(() => URL.revokeObjectURL(href), 10_000);
   };
 
+  /**
+   * 발행용 파일 내보내기.
+   * 사진은 blob: URL 이라 그대로는 남길 수 없어, 실제 픽셀을 읽어 파일에
+   * 담습니다. 사진이 많으면 몇 초 걸리므로 진행 상태를 표시합니다.
+   */
+  const [publishing, setPublishing] = useState(false);
+
+  const publish = async () => {
+    const suggested = suggestSlug(data);
+    const slug = window
+      .prompt(
+        "청첩장 주소를 정해주세요. /i/<주소> 로 열립니다.\n영문 소문자·숫자·하이픈만 쓸 수 있습니다.",
+        suggested,
+      )
+      ?.trim();
+    if (!slug) return;
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      window.alert("영문 소문자·숫자·하이픈만 쓸 수 있습니다.");
+      return;
+    }
+
+    setPublishing(true);
+    try {
+      downloadExport(await buildExport(data, slug));
+      window.alert(
+        `${slug}.json 을 받았습니다.\n\n터미널에서 아래를 실행한 뒤 커밋·푸시하면 배포됩니다.\n\nnpm run invite:add -- <내려받은 파일 경로>\n\n배포 후 주소: /i/${slug}`,
+      );
+    } catch {
+      window.alert("사진을 읽지 못했습니다. 사진을 다시 올린 뒤 시도해 주세요.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const save = () => {
     // blob: URL 은 세션이 끝나면 죽으므로 저장 대상에서 모두 제외합니다.
     const rest = stripPhotos(data);
@@ -303,7 +342,15 @@ export function Editor({ templateId }: { templateId: string }) {
             <div className="flex items-center gap-2">
               {saved && <span className="hidden text-[0.6875rem] text-muted sm:inline">{saved} 저장됨</span>}
               <button type="button" onClick={downloadQr} className="press hidden items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink sm:flex">
-                <QrGlyph /> QR 코드 다운로드
+                <QrGlyph /> 미리보기 QR
+              </button>
+              <button
+                type="button"
+                onClick={publish}
+                disabled={publishing}
+                className="press rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink disabled:opacity-50"
+              >
+                {publishing ? "만드는 중…" : "발행용 파일 내보내기"}
               </button>
               <button onClick={save} className="press rounded-md bg-ink px-4 py-2 text-[0.75rem] text-ivory">
                 청첩장 저장하기

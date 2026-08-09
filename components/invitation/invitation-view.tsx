@@ -13,6 +13,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { SamplePhoto } from "@/components/invitation/sample-photo";
+import { asset } from "@/lib/asset";
 import {
   daysUntil,
   formatDateDots,
@@ -296,9 +297,14 @@ function PhotoSlot({
     >
       {src ? (
         <>
-          {/* 사용자가 업로드한 blob/data URL — next/image 최적화 대상이 아닙니다. */}
+          {/* 업로드한 blob/data URL 이거나, 발행된 청첩장의 public/ 경로입니다.
+              후자는 GitHub Pages 의 basePath 를 붙여야 열립니다. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" style={{ objectFit: fit }} />
+          <img
+            src={src.startsWith("/") ? asset(src) : src}
+            alt=""
+            style={{ objectFit: fit }}
+          />
           {/* 디자인 > 타이틀 이미지 어둡기 */}
           <span className="iv-photo-dim" aria-hidden />
         </>
