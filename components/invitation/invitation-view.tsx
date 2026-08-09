@@ -12,7 +12,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import { DefaultPhoto, variantFor } from "@/components/invitation/default-photo";
+import { SamplePhoto } from "@/components/invitation/sample-photo";
 import {
   daysUntil,
   formatDateDots,
@@ -42,6 +42,12 @@ const subscribeNever = () => () => {};
  * 그래서 시트는 청첩장 루트로 빼내어 그립니다.
  */
 const SheetHostContext = createContext<HTMLElement | null>(null);
+
+/**
+ * 샘플 사진 시작 번호. 템플릿마다 다른 사진이 깔리도록 커버·갤러리의 모든
+ * 사진 슬롯이 여기에 자기 슬롯 번호를 더해 씁니다.
+ */
+const PhotoSeedContext = createContext(0);
 
 const SCALE: Record<InvitationData["fontScale"], number> = {
   sm: 0.92,
@@ -87,8 +93,13 @@ export function InvitationView({
   } as React.CSSProperties;
 
   return (
-    <div className="iv" style={style}>
+    <div
+      className={`iv${coverOnly ? " iv-coveronly" : ""}`}
+      style={style}
+      data-tone={data.photoTone ?? "none"}
+    >
       <SheetHostContext value={sheetHost}>
+       <PhotoSeedContext value={data.photoSeed ?? 0}>
         {data.effect !== "none" && !coverOnly && <EffectLayer kind={data.effect} />}
         {!coverOnly && data.opening !== "none" && (
           <OpeningLayer key={data.opening + replayKey} kind={data.opening} />
@@ -107,6 +118,7 @@ export function InvitationView({
 
         {/* 시트가 붙는 자리 — 섹션의 transform 밖이어야 화면 기준으로 뜹니다. */}
         {!coverOnly && <div ref={setSheetHost} />}
+       </PhotoSeedContext>
       </SheetHostContext>
     </div>
   );
@@ -197,10 +209,37 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   if (layout === "editorial")
     return <CoverEditorial data={data} names={names} />;
   if (layout === "floral") return <CoverFloral data={data} names={names} />;
+  if (layout === "heart") return <CoverHeart data={data} names={names} />;
+  if (layout === "poster") return <CoverPoster data={data} names={names} />;
+  if (layout === "polaroid") return <CoverPolaroid data={data} names={names} />;
+  if (layout === "band") return <CoverBand data={data} names={names} />;
+  if (layout === "filmstrip")
+    return <CoverFilmstrip data={data} names={names} />;
   return <CoverCenter data={data} names={names} template={template} />;
 }
 
 type Names = { first: string; second: string };
+
+/** 커버 위에 얹는 영문 캘리그래피 한 줄 */
+function ScriptLine({
+  data,
+  className = "",
+}: {
+  data: InvitationData;
+  className?: string;
+}) {
+  if (!data.coverScript) return null;
+  return <p className={`iv-script ${className}`}>{data.coverScript}</p>;
+}
+
+/** 신랑·신부의 영문 이름. 비어 있으면 한글 이름으로 대신합니다. */
+function englishNames(data: InvitationData, names: Names) {
+  const groomFirst = data.nameOrder === "groom-first";
+  return {
+    first: (groomFirst ? data.groomEnglish : data.brideEnglish) || names.first,
+    second: (groomFirst ? data.brideEnglish : data.groomEnglish) || names.second,
+  };
+}
 
 function PhotoSlot({
   src,
@@ -216,6 +255,7 @@ function PhotoSlot({
   rounded?: string;
   seed?: number;
 }) {
+  const seedBase = use(PhotoSeedContext);
   return (
     <div
       className={`iv-photo ${className ?? ""}`}
@@ -230,7 +270,7 @@ function PhotoSlot({
           <span className="iv-photo-dim" aria-hidden />
         </>
       ) : (
-        <DefaultPhoto variant={variantFor(seed)} />
+        <SamplePhoto seed={seedBase + seed} fit={fit} />
       )}
     </div>
   );
@@ -253,6 +293,7 @@ function CoverCenter({
         className="iv-cover-center-photo"
         seed={0}
       />
+      <ScriptLine data={data} />
       <h1 className="iv-cover-names">
         {names.first}
         <span className="iv-amp">&amp;</span>
@@ -280,6 +321,7 @@ function CoverPhoto({ data, names }: { data: InvitationData; names: Names }) {
       <div className="iv-cover-photo-scrim" />
       <div className="iv-cover-photo-text">
         <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
+        <ScriptLine data={data} className="iv-script-lg iv-on-photo" />
         <h1 className="iv-cover-names iv-on-photo">
           {names.first} <span className="iv-dot">·</span> {names.second}
         </h1>
@@ -300,6 +342,7 @@ function CoverArch({ data, names }: { data: InvitationData; names: Names }) {
       <div className="iv-arch">
         <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
       </div>
+      <ScriptLine data={data} />
       <h1 className="iv-cover-names">
         {names.first} <span className="iv-dot">·</span> {names.second}
       </h1>
@@ -331,6 +374,7 @@ function CoverEditorial({
         className="iv-cover-editorial-photo"
         seed={0}
       />
+      <ScriptLine data={data} className="iv-script-left" />
       <h1 className="iv-cover-names iv-cover-names-left">
         {names.first}
         <br />
@@ -353,6 +397,7 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
         className="iv-cover-floral-photo"
         seed={1}
       />
+      <ScriptLine data={data} className="iv-script-lg" />
       <h1 className="iv-cover-names iv-cover-names-italic">
         {names.first}
         <span className="iv-amp"> &amp; </span>
@@ -360,6 +405,254 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
       </h1>
       <span className="iv-pill">{formatDateDots(data.date)}</span>
       <p className="iv-cover-meta">{data.venueName} {data.venueHall}</p>
+    </section>
+  );
+}
+
+/* ---------- 그래픽 커버 ---------- */
+
+const MONTHS_EN = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+/** May 17, 2026 */
+function formatDateEn(iso: string): string {
+  const d = parseDate(iso);
+  return `${MONTHS_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+/** 사진을 하트 모양으로 오려내는 clip-path.
+ *  100×92 좌표계를 objectBoundingBox 로 눌러 어떤 비율에도 맞춥니다. */
+const HEART_D =
+  "M50 90C24 71 2 54 2 32 2 15 14 4 28 4c9 0 17 5 22 13C55 9 63 4 72 4c14 0 26 11 26 28 0 22-22 39-48 58Z";
+
+function HeartClip() {
+  return (
+    <svg className="iv-defs" aria-hidden focusable="false">
+      <defs>
+        <clipPath id="iv-heart-clip" clipPathUnits="objectBoundingBox">
+          <path d={HEART_D} transform="scale(0.01 0.010869)" />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+}
+
+/** 커버 여백에 흩뿌리는 하트 스티커 */
+function HeartStickers() {
+  const spots = [
+    { top: "16%", left: "6%", size: "1.5em", rot: -14, solid: true },
+    { top: "24%", right: "7%", size: "1em", rot: 12, solid: false },
+    { top: "52%", left: "3%", size: "1.1em", rot: 8, solid: false },
+    { top: "62%", right: "4%", size: "1.6em", rot: -10, solid: true },
+    { bottom: "16%", left: "9%", size: "1.2em", rot: 16, solid: true },
+    { bottom: "26%", right: "10%", size: "0.9em", rot: -6, solid: false },
+  ];
+  return (
+    <span className="iv-stickers" aria-hidden>
+      {spots.map((s, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 100 92"
+          className="iv-sticker-heart"
+          style={{
+            top: s.top,
+            left: s.left,
+            right: s.right,
+            bottom: s.bottom,
+            width: s.size,
+            rotate: `${s.rot}deg`,
+            opacity: s.solid ? 1 : 0.55,
+          }}
+        >
+          <path d={HEART_D} />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+function CoverHeart({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-heart">
+      <HeartClip />
+      {data.showStickers && <HeartStickers />}
+
+      <p className="iv-hand iv-hand-xl">{data.coverScript || "Save the date!"}</p>
+
+      <div className="iv-heart-frame">
+        <div className="iv-heart-photo">
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        </div>
+        <svg className="iv-heart-outline" viewBox="0 0 100 92" aria-hidden>
+          <path d={HEART_D} />
+        </svg>
+        {data.showStickers && (
+          <>
+            <span className="iv-tag iv-tag-a">Groom</span>
+            <span className="iv-tag iv-tag-b">Bride</span>
+          </>
+        )}
+      </div>
+
+      <p className="iv-hand iv-heart-quote">
+        we&rsquo;re saying
+        <br />
+        &ldquo; I do ! &rdquo;
+      </p>
+
+      <h1 className="iv-cover-names iv-heart-names">
+        {names.first} <span className="iv-dot">&middot;</span> {names.second}
+      </h1>
+      <p className="iv-heart-date">on {formatDateEn(data.date)}</p>
+      <p className="iv-cover-meta">
+        {data.venueName} {data.venueHall}
+      </p>
+    </section>
+  );
+}
+
+function CoverPoster({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-poster">
+      <PhotoSlot
+        src={data.coverPhoto}
+        fit={data.coverPhotoFit}
+        className="iv-poster-bg"
+        seed={0}
+      />
+      <div className="iv-poster-scrim" />
+
+      <div className="iv-poster-top">
+        <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
+        <p className="iv-poster-en">
+          {en.first} <span className="iv-amp">&amp;</span> {en.second}
+        </p>
+      </div>
+
+      <p className="iv-poster-date" aria-hidden>
+        {formatDateDots(data.date)}
+      </p>
+
+      <div className="iv-poster-bottom">
+        <ScriptLine data={data} className="iv-script-xl iv-on-photo" />
+        <h1 className="iv-cover-names iv-on-photo iv-poster-names">
+          {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        </h1>
+        <span className="iv-rule" />
+        <p className="iv-cover-meta iv-on-photo">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function CoverPolaroid({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-polaroid">
+      <p className="iv-eyebrow">{data.coverEyebrow}</p>
+      <p className="iv-polaroid-date">{formatDateDots(data.date)}</p>
+
+      <div className="iv-polaroid-stack">
+        <figure className="iv-polaroid iv-polaroid-back">
+          <PhotoSlot src={undefined} fit="cover" seed={2} />
+        </figure>
+        <figure className="iv-polaroid iv-polaroid-back2">
+          <PhotoSlot src={undefined} fit="cover" seed={3} />
+        </figure>
+        <figure className="iv-polaroid iv-polaroid-front">
+          <span className="iv-tape" aria-hidden />
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+          <figcaption className="iv-hand">
+            {data.coverScript || "Our Wedding Day"}
+          </figcaption>
+        </figure>
+      </div>
+
+      <h1 className="iv-cover-names iv-polaroid-names">
+        {names.first}
+        <span className="iv-amp">&amp;</span>
+        {names.second}
+      </h1>
+      <p className="iv-cover-meta">
+        {formatDateKo(data.date)} {formatTimeKo(data.time)}
+        <br />
+        {data.venueName} {data.venueHall}
+      </p>
+    </section>
+  );
+}
+
+function CoverBand({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-band">
+      <div className="iv-band-plate">
+        <p className="iv-eyebrow">{data.coverEyebrow}</p>
+        <div className="iv-band-frame">
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        </div>
+        <ScriptLine data={data} className="iv-script-lg" />
+      </div>
+
+      <div className="iv-band-foot">
+        <p className="iv-band-en">
+          {en.first} <span className="iv-amp">&amp;</span> {en.second}
+        </p>
+        <h1 className="iv-cover-names iv-band-names">
+          {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        </h1>
+        <span className="iv-hairline" />
+        <p className="iv-cover-meta">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function CoverFilmstrip({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-film">
+      <p className="iv-film-reel">{data.coverEyebrow}</p>
+
+      <div className="iv-film-body">
+        <div className="iv-filmstrip">
+          <span className="iv-film-holes" aria-hidden />
+          <div className="iv-film-cell">
+            <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+          </div>
+          <div className="iv-film-cell">
+            <PhotoSlot src={undefined} fit="cover" seed={1} />
+          </div>
+          <span className="iv-film-holes iv-film-holes-b" aria-hidden />
+        </div>
+
+        <p className="iv-film-date" aria-hidden>
+          {formatDateDots(data.date)}
+        </p>
+      </div>
+
+      <ScriptLine data={data} className="iv-script-lg" />
+      <h1 className="iv-cover-names iv-film-names">
+        {names.first} <span className="iv-dot">&middot;</span> {names.second}
+      </h1>
+      <p className="iv-film-en">
+        {en.first} &nbsp;/&nbsp; {en.second}
+      </p>
+      <p className="iv-cover-meta">
+        {formatDateKo(data.date)} {formatTimeKo(data.time)}
+        <br />
+        {data.venueName} {data.venueHall}
+      </p>
     </section>
   );
 }

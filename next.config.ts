@@ -15,6 +15,9 @@ const basePath = isPages
   : "";
 
 const nextConfig: NextConfig = {
+  // public/ 의 정적 파일을 <img src> 로 직접 참조할 때 붙일 접두사.
+  // basePath 는 Next 라우팅에만 적용되므로 클라이언트에도 같은 값을 넘겨줍니다.
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   ...(isPages
     ? {
         output: "export",

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./invitation.css";
+@import "./cover.css";
 @import "./motion.css";
 
 /* ============================================================
@@ -109,6 +110,15 @@
   --font-sans:
     var(--font-noto-sans-kr), "Pretendard", "Apple SD Gothic Neo",
     "Malgun Gothic", system-ui, sans-serif;
+
+  /* 커버 장식용 라틴 글꼴.
+     한글은 포함되지 않으므로 항상 국문 폰트를 뒤에 세워 둡니다. */
+  --font-display: var(--ff-display), var(--font-noto-serif-kr), Georgia, serif;
+  --font-script:
+    var(--ff-script), var(--font-noto-serif-kr), "Apple Chancery", cursive;
+  --font-hand: var(--ff-hand), var(--font-noto-sans-kr), "Segoe Script", cursive;
+  --font-thin-serif:
+    var(--ff-thin-serif), var(--font-noto-serif-kr), Georgia, serif;
 }
 
 /* ============================================================

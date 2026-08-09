@@ -14,9 +14,10 @@ export function TemplateCard({ template }: { template: Template }) {
     <article className="group">
       <Link href={`/editor/${template.id}`} className="block">
         <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-white shadow-soft ring-1 ring-line transition-[transform,box-shadow] duration-400 ease-[cubic-bezier(.22,1,.36,1)] group-hover:-translate-y-1.5 group-hover:shadow-lift">
-          {/* 161% 폭을 0.62배로 줄여 카드에 꼭 맞춥니다.
-              기준점이 top(=상단 중앙)이면 오른쪽으로 밀려 잘리므로 top-left 로 잡습니다. */}
-          <div className="absolute inset-0 origin-top-left scale-[0.62] [width:161%]">
+          {/* 161% 폭·높이를 0.62배로 줄여 카드에 꼭 맞춥니다.
+              기준점이 top(=상단 중앙)이면 오른쪽으로 밀려 잘리므로 top-left 로 잡습니다.
+              높이까지 지정해야 커버가 카드 아래까지 꽉 차게 늘어납니다. */}
+          <div className="absolute inset-0 origin-top-left scale-[0.62] [height:161%] [width:161%]">
             <InvitationView template={template} data={data} coverOnly />
           </div>
 

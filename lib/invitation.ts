@@ -10,7 +10,12 @@ export type CoverLayout =
   | "arch" /* 아치 프레임 */
   | "editorial" /* 좌측 정렬 + 큰 날짜 */
   | "photo" /* 풀블리드 사진 */
-  | "floral"; /* 플라워 장식 */
+  | "floral" /* 플라워 장식 */
+  | "heart" /* 하트로 오려낸 사진 + 스티커 */
+  | "poster" /* 풀사진 위 대형 캘리그래피 */
+  | "polaroid" /* 테이프로 붙인 폴라로이드 콜라주 */
+  | "band" /* 컬러 배경판 + 액자 + 손글씨 라벨 */
+  | "filmstrip"; /* 세로 필름 스트립 */
 
 export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "center", label: "센터" },
@@ -18,6 +23,27 @@ export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "arch", label: "아치" },
   { id: "editorial", label: "에디토리얼" },
   { id: "floral", label: "플라워" },
+  { id: "heart", label: "하트" },
+  { id: "poster", label: "포스터" },
+  { id: "polaroid", label: "폴라로이드" },
+  { id: "band", label: "컬러밴드" },
+  { id: "filmstrip", label: "필름" },
+];
+
+/* ---------- 사진 보정 ----------
+   스톡·스냅 사진의 색감이 제각각이어도 템플릿 톤에 묶이도록
+   커버와 갤러리 전체에 같은 필터를 겁니다. moiitee 계열 청첩장이
+   흑백/필름 톤으로 통일감을 내는 것과 같은 장치입니다. */
+
+export type PhotoTone = "none" | "bw" | "film" | "warm" | "cool" | "fade";
+
+export const PHOTO_TONES: { id: PhotoTone; label: string }[] = [
+  { id: "none", label: "원본" },
+  { id: "bw", label: "흑백" },
+  { id: "film", label: "필름" },
+  { id: "warm", label: "웜톤" },
+  { id: "cool", label: "쿨톤" },
+  { id: "fade", label: "페이드" },
 ];
 
 export type HeadingFont = "serif" | "sans";
@@ -208,6 +234,14 @@ export interface Template {
   coverLayout: CoverLayout;
   headingFont: HeadingFont;
   theme: InvitationTheme;
+  /** 커버·갤러리 사진에 기본으로 걸리는 색보정 */
+  photoTone: PhotoTone;
+  /** 커버에 얹는 영문 캘리그래피 한 줄 */
+  script: string;
+  /** 상단 라벨 기본값 (비우면 공용 문구) */
+  eyebrow?: string;
+  /** 샘플 사진 고르기 — 템플릿마다 다른 사진이 나오도록 */
+  photoSeed: number;
 }
 
 /* ---------- 내용 ---------- */
@@ -352,6 +386,14 @@ export interface InvitationData {
   coverEyebrow: string;
   coverPhoto?: string;
   coverPhotoFit: "cover" | "contain";
+  /** 커버에 얹는 영문 캘리그래피 (빈 문자열이면 숨김) */
+  coverScript: string;
+  /** 하트·테이프·라벨 같은 장식 요소 표시 여부 */
+  showStickers: boolean;
+  /** 사진 색보정 — 커버와 갤러리에 함께 적용 */
+  photoTone: PhotoTone;
+  /** 사진을 아직 올리지 않았을 때 쓰는 샘플 사진 묶음의 시작 번호 */
+  photoSeed: number;
 
   /* 인사말 */
   greetingTitle: string;
@@ -423,22 +465,129 @@ export const CATEGORY_LABELS: Record<TemplateCategory | "all", string> = {
 };
 
 export const TEMPLATES: Template[] = [
+  /* ---- 그래픽 계열 : 사진을 오려 붙이고 손글씨를 얹는 쪽 ---- */
+  {
+    id: "heartbeat",
+    name: "하트비트",
+    categories: ["photo", "modern"],
+    badge: "BEST",
+    coverLayout: "heart",
+    headingFont: "sans",
+    photoTone: "bw",
+    script: "Save the date!",
+    eyebrow: "WE'RE GETTING MARRIED",
+    photoSeed: 4,
+    theme: { bg: "#F4C6CE", ink: "#2B1F23", sub: "#EBB0BA", accent: "#D01F3C", accentSoft: "#FADDE2" },
+  },
+  {
+    id: "locket",
+    name: "로켓",
+    categories: ["classic", "photo"],
+    badge: "NEW",
+    coverLayout: "poster",
+    headingFont: "serif",
+    photoTone: "warm",
+    script: "We are getting Married",
+    eyebrow: "THE BRIDE & GROOM",
+    photoSeed: 13,
+    theme: { bg: "#5E1220", ink: "#F6E9DA", sub: "#7A2231", accent: "#E0BE8A", accentSoft: "#732033" },
+  },
+  {
+    id: "evergreen",
+    name: "에버그린",
+    categories: ["photo", "floral"],
+    badge: "NEW",
+    coverLayout: "poster",
+    headingFont: "serif",
+    photoTone: "cool",
+    script: "Happily Ever After",
+    eyebrow: "GROOM AND BRIDE",
+    photoSeed: 0,
+    theme: { bg: "#8FA391", ink: "#FFFFFF", sub: "#7B9080", accent: "#FFFFFF", accentSoft: "#A6B7A6" },
+  },
+  {
+    id: "polaroid-day",
+    name: "폴라로이드",
+    categories: ["photo", "minimal"],
+    coverLayout: "polaroid",
+    headingFont: "sans",
+    photoTone: "film",
+    script: "Our Wedding Day",
+    eyebrow: "THE DAY WE BEGAN",
+    photoSeed: 12,
+    theme: { bg: "#EDE7DD", ink: "#2A2724", sub: "#DCD3C5", accent: "#7C6A57", accentSoft: "#E6DFD3" },
+  },
+  {
+    id: "noir",
+    name: "느와르",
+    categories: ["modern", "photo"],
+    badge: "BEST",
+    coverLayout: "poster",
+    headingFont: "serif",
+    photoTone: "bw",
+    script: "Wedding",
+    eyebrow: "A NEW CHAPTER BEGINS",
+    photoSeed: 6,
+    theme: { bg: "#141414", ink: "#F4F2EE", sub: "#242424", accent: "#CFC6B8", accentSoft: "#2C2C2C" },
+  },
+  {
+    id: "super8",
+    name: "슈퍼8",
+    categories: ["photo", "modern"],
+    coverLayout: "filmstrip",
+    headingFont: "sans",
+    photoTone: "film",
+    script: "The Day We Began",
+    eyebrow: "REEL 01 · 2026",
+    photoSeed: 7,
+    theme: { bg: "#1B1A18", ink: "#EFE9DE", sub: "#2A2825", accent: "#D8A15C", accentSoft: "#2F2C28" },
+  },
+  {
+    id: "sorbet",
+    name: "소르베",
+    categories: ["modern", "photo"],
+    coverLayout: "band",
+    headingFont: "sans",
+    photoTone: "warm",
+    script: "with all my heart",
+    eyebrow: "SAVE THE DATE",
+    photoSeed: 9,
+    theme: { bg: "#F6E2CE", ink: "#3B2A20", sub: "#EFD2B6", accent: "#C4714A", accentSoft: "#FAECDD" },
+  },
+  {
+    id: "bluette",
+    name: "블루에트",
+    categories: ["minimal", "modern"],
+    coverLayout: "band",
+    headingFont: "serif",
+    photoTone: "cool",
+    script: "Something Blue",
+    eyebrow: "WE ARE GETTING MARRIED",
+    photoSeed: 2,
+    theme: { bg: "#DCE5EC", ink: "#1F2A33", sub: "#C6D4DF", accent: "#4A6D89", accentSoft: "#E9F0F5" },
+  },
+
+  /* ---- 클래식 계열 : 여백과 조판으로 가는 쪽 ---- */
   {
     id: "linen",
     name: "리넨",
     categories: ["minimal"],
-    badge: "BEST",
     coverLayout: "center",
     headingFont: "serif",
+    photoTone: "fade",
+    script: "Save the date",
+    photoSeed: 1,
     theme: { bg: "#FBF8F3", ink: "#2E2A27", sub: "#EFE7DC", accent: "#B08D80", accentSoft: "#F1E5DF" },
   },
   {
     id: "petit-jour",
     name: "쁘띠 주르",
     categories: ["floral", "classic"],
-    badge: "NEW",
     coverLayout: "floral",
     headingFont: "serif",
+    photoTone: "warm",
+    script: "Petit Jour",
+    photoSeed: 3,
     theme: { bg: "#FCF6F3", ink: "#4A3A34", sub: "#F0DDD5", accent: "#C08E82", accentSoft: "#F7E9E4" },
   },
   {
@@ -447,15 +596,20 @@ export const TEMPLATES: Template[] = [
     categories: ["modern", "photo"],
     coverLayout: "editorial",
     headingFont: "serif",
+    photoTone: "bw",
+    script: "The Archive",
+    photoSeed: 10,
     theme: { bg: "#F3F1EC", ink: "#26241F", sub: "#E2DED4", accent: "#8A8271", accentSoft: "#EBE8E0" },
   },
   {
     id: "still-life",
     name: "스틸 라이프",
     categories: ["photo", "minimal"],
-    badge: "BEST",
     coverLayout: "photo",
     headingFont: "serif",
+    photoTone: "film",
+    script: "Still Life",
+    photoSeed: 5,
     theme: { bg: "#FFFDF9", ink: "#332E29", sub: "#DFD3C8", accent: "#B08D80", accentSoft: "#F2E8E2" },
   },
   {
@@ -464,6 +618,9 @@ export const TEMPLATES: Template[] = [
     categories: ["classic"],
     coverLayout: "arch",
     headingFont: "serif",
+    photoTone: "warm",
+    script: "In Chapel",
+    photoSeed: 7,
     theme: { bg: "#FAF6EF", ink: "#3A342C", sub: "#EEE4CF", accent: "#A98E63", accentSoft: "#F3EADA" },
   },
   {
@@ -472,6 +629,9 @@ export const TEMPLATES: Template[] = [
     categories: ["minimal", "modern"],
     coverLayout: "center",
     headingFont: "sans",
+    photoTone: "bw",
+    script: "Blanc",
+    photoSeed: 11,
     theme: { bg: "#FFFFFF", ink: "#1F1D1B", sub: "#F0EEEA", accent: "#9E958B", accentSoft: "#F4F2EF" },
   },
   {
@@ -480,15 +640,20 @@ export const TEMPLATES: Template[] = [
     categories: ["floral"],
     coverLayout: "arch",
     headingFont: "serif",
+    photoTone: "warm",
+    script: "Rosewater",
+    photoSeed: 9,
     theme: { bg: "#FBF3F1", ink: "#46322E", sub: "#F2DDD8", accent: "#BF8378", accentSoft: "#F8E9E5" },
   },
   {
     id: "sage-note",
     name: "세이지 노트",
     categories: ["minimal", "floral"],
-    badge: "NEW",
     coverLayout: "floral",
     headingFont: "serif",
+    photoTone: "cool",
+    script: "Sage Note",
+    photoSeed: 0,
     theme: { bg: "#F7F8F3", ink: "#2F332B", sub: "#E3E8DB", accent: "#8A9A7B", accentSoft: "#EDF1E6" },
   },
   {
@@ -497,6 +662,9 @@ export const TEMPLATES: Template[] = [
     categories: ["modern", "classic"],
     coverLayout: "center",
     headingFont: "serif",
+    photoTone: "bw",
+    script: "Midnight",
+    photoSeed: 6,
     theme: { bg: "#2B2A2E", ink: "#F2EFEA", sub: "#3C3A40", accent: "#C4A882", accentSoft: "#3A3840" },
   },
   {
@@ -505,15 +673,20 @@ export const TEMPLATES: Template[] = [
     categories: ["photo", "modern"],
     coverLayout: "photo",
     headingFont: "sans",
+    photoTone: "film",
+    script: "Grain",
+    photoSeed: 13,
     theme: { bg: "#F5F2ED", ink: "#2A2724", sub: "#D8CFC2", accent: "#8E7F6E", accentSoft: "#EAE5DC" },
   },
   {
     id: "editorial-no5",
     name: "에디토리얼 N°5",
     categories: ["modern"],
-    badge: "BEST",
     coverLayout: "editorial",
     headingFont: "serif",
+    photoTone: "fade",
+    script: "Numéro Cinq",
+    photoSeed: 12,
     theme: { bg: "#FDFBF7", ink: "#1E1C1A", sub: "#EDE6DB", accent: "#B08D80", accentSoft: "#F4EAE5" },
   },
   {
@@ -522,6 +695,9 @@ export const TEMPLATES: Template[] = [
     categories: ["floral", "classic"],
     coverLayout: "floral",
     headingFont: "serif",
+    photoTone: "warm",
+    script: "Camellia",
+    photoSeed: 4,
     theme: { bg: "#FAF4F4", ink: "#463033", sub: "#EFDCDE", accent: "#A6606A", accentSoft: "#F6E7E9" },
   },
 ];
@@ -649,8 +825,12 @@ export function createDefaultData(templateId: string): InvitationData {
     fontScale: "md",
     effect: "none",
 
-    coverEyebrow: "WE ARE GETTING MARRIED",
+    coverEyebrow: t.eyebrow ?? "WE ARE GETTING MARRIED",
     coverPhotoFit: "cover",
+    coverScript: t.script,
+    showStickers: true,
+    photoTone: t.photoTone,
+    photoSeed: t.photoSeed,
 
     greetingTitle: GREETING_SAMPLES[0]!.title,
     greeting: GREETING_SAMPLES[0]!.body,

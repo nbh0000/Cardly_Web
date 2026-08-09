@@ -13,6 +13,7 @@ import {
   TextInput,
   Toggle,
 } from "@/components/editor/controls";
+import { samplePhoto } from "@/components/invitation/sample-photo";
 import type { SectionId } from "@/components/editor/rail";
 import {
   BGM_TRACKS,
@@ -22,6 +23,7 @@ import {
   EFFECTS,
   FONT_OPTIONS,
   FONT_SCALES,
+  PHOTO_TONES,
   GALLERY_TYPES,
   GREETING_SAMPLES,
   OPENING_ANIMATIONS,
@@ -230,7 +232,20 @@ function Decor({ data, set }: Props) {
         <Field label="상단 문구">
           <TextInput value={data.coverEyebrow} onChange={(v) => set("coverEyebrow", v)} />
         </Field>
+        <Field label="영문 필기체 문구">
+          <TextInput
+            value={data.coverScript}
+            onChange={(v) => set("coverScript", v)}
+            placeholder="Save the date!"
+          />
+        </Field>
         <ChipGroup label="커버 레이아웃" options={COVER_LAYOUTS} value={data.coverLayout} onChange={(v) => set("coverLayout", v)} />
+        <Toggle
+          label="장식 스티커"
+          desc="하트·테이프·이름표 같은 꾸밈 요소를 표시합니다."
+          checked={data.showStickers}
+          onChange={(v) => set("showStickers", v)}
+        />
       </Group>
     </>
   );
@@ -264,7 +279,20 @@ function Design({ data, set, setData }: Props) {
             {TEMPLATES.map((t) => (
               <button
                 key={t.id} type="button"
-                onClick={() => setData((d) => ({ ...d, templateId: t.id, coverLayout: t.coverLayout, headingFont: t.headingFont, accentOverride: undefined }))}
+                onClick={() =>
+                  setData((d) => ({
+                    ...d,
+                    templateId: t.id,
+                    coverLayout: t.coverLayout,
+                    headingFont: t.headingFont,
+                    accentOverride: undefined,
+                    // 템플릿을 바꾸면 그 템플릿이 전제한 사진 톤·문구까지 함께 갈아입습니다.
+                    photoTone: t.photoTone,
+                    photoSeed: t.photoSeed,
+                    coverScript: t.script,
+                    coverEyebrow: t.eyebrow ?? d.coverEyebrow,
+                  }))
+                }
                 aria-pressed={t.id === data.templateId}
                 className={`press relative aspect-[3/4] overflow-hidden rounded-md ring-offset-2 ring-offset-cream transition-shadow ${t.id === data.templateId ? "ring-2 ring-ink" : "ring-1 ring-line"}`}
                 style={{ background: t.theme.bg }}
@@ -275,7 +303,17 @@ function Design({ data, set, setData }: Props) {
                   </span>
                 )}
                 <span className="flex h-full flex-col items-center justify-center gap-1.5 p-2">
-                  <span className="h-10 w-7 rounded-t-full" style={{ background: t.theme.sub }} />
+                  {/* 색만 보여주면 어떤 분위기인지 알기 어려워 실제 샘플 사진을 함께 깝니다. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={samplePhoto(t.photoSeed)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    data-tone={t.photoTone}
+                    className="iv-toned h-10 w-8 rounded-t-full object-cover"
+                    style={{ background: t.theme.sub }}
+                  />
                   <span className="h-px w-6" style={{ background: t.theme.accent }} />
                   <span className="font-serif text-[0.5rem]" style={{ color: t.theme.ink }}>{t.name}</span>
                 </span>
@@ -284,6 +322,7 @@ function Design({ data, set, setData }: Props) {
           </div>
         </div>
 
+        <ChipGroup label="사진 톤" options={PHOTO_TONES} value={data.photoTone} onChange={(v) => set("photoTone", v)} />
         <ChipGroup label="글꼴" options={FONT_OPTIONS.map((f) => ({ id: f.id, label: f.label }))} value={data.headingFont} onChange={(v) => set("headingFont", v)} />
         <ChipGroup label="글자 크기" options={FONT_SCALES.map((f) => ({ id: f.id, label: f.label }))} value={data.fontScale} onChange={(v) => set("fontScale", v)} />
         <ChipGroup label="화면 효과" options={EFFECTS} value={data.effect} onChange={(v) => set("effect", v)} />

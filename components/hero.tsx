@@ -2,7 +2,8 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { createDefaultData, getTemplate } from "@/lib/invitation";
 
-const FEATURED = ["linen", "petit-jour", "editorial-no5"];
+/* 첫 화면에서 곧바로 완성도가 보이도록 그래픽 커버 3종을 세웁니다. */
+const FEATURED = ["noir", "heartbeat", "locket"];
 
 export function Hero() {
   return (
@@ -72,7 +73,7 @@ export function Hero() {
                     className={`relative aspect-[3/4] overflow-hidden ${featured ? "rounded-[1.5rem]" : "rounded-md"}`}
                   >
                     {/* 축소 기준점이 상단 중앙이면 오른쪽으로 밀려 잘립니다. */}
-                    <div className="absolute inset-0 origin-top-left scale-[0.62] [width:161%]">
+                    <div className="absolute inset-0 origin-top-left scale-[0.62] [height:161%] [width:161%]">
                       <InvitationView template={t} data={data} coverOnly />
                     </div>
                   </div>
