@@ -395,7 +395,7 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
         src={data.coverPhoto}
         fit={data.coverPhotoFit}
         className="iv-cover-floral-photo"
-        seed={1}
+        seed={0}
       />
       <ScriptLine data={data} className="iv-script-lg" />
       <h1 className="iv-cover-names iv-cover-names-italic">

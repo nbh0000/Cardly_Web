@@ -476,7 +476,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "bw",
     script: "Save the date!",
     eyebrow: "WE'RE GETTING MARRIED",
-    photoSeed: 4,
+    photoSeed: 0,
     theme: { bg: "#F4C6CE", ink: "#2B1F23", sub: "#EBB0BA", accent: "#D01F3C", accentSoft: "#FADDE2" },
   },
   {
@@ -489,7 +489,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "warm",
     script: "We are getting Married",
     eyebrow: "THE BRIDE & GROOM",
-    photoSeed: 13,
+    photoSeed: 1,
     theme: { bg: "#5E1220", ink: "#F6E9DA", sub: "#7A2231", accent: "#E0BE8A", accentSoft: "#732033" },
   },
   {
@@ -502,7 +502,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "cool",
     script: "Happily Ever After",
     eyebrow: "GROOM AND BRIDE",
-    photoSeed: 0,
+    photoSeed: 2,
     theme: { bg: "#8FA391", ink: "#FFFFFF", sub: "#7B9080", accent: "#FFFFFF", accentSoft: "#A6B7A6" },
   },
   {
@@ -514,7 +514,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "film",
     script: "Our Wedding Day",
     eyebrow: "THE DAY WE BEGAN",
-    photoSeed: 12,
+    photoSeed: 3,
     theme: { bg: "#EDE7DD", ink: "#2A2724", sub: "#DCD3C5", accent: "#7C6A57", accentSoft: "#E6DFD3" },
   },
   {
@@ -527,7 +527,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "bw",
     script: "Wedding",
     eyebrow: "A NEW CHAPTER BEGINS",
-    photoSeed: 6,
+    photoSeed: 4,
     theme: { bg: "#141414", ink: "#F4F2EE", sub: "#242424", accent: "#CFC6B8", accentSoft: "#2C2C2C" },
   },
   {
@@ -539,7 +539,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "film",
     script: "The Day We Began",
     eyebrow: "REEL 01 · 2026",
-    photoSeed: 7,
+    photoSeed: 5,
     theme: { bg: "#1B1A18", ink: "#EFE9DE", sub: "#2A2825", accent: "#D8A15C", accentSoft: "#2F2C28" },
   },
   {
@@ -551,7 +551,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "warm",
     script: "with all my heart",
     eyebrow: "SAVE THE DATE",
-    photoSeed: 9,
+    photoSeed: 6,
     theme: { bg: "#F6E2CE", ink: "#3B2A20", sub: "#EFD2B6", accent: "#C4714A", accentSoft: "#FAECDD" },
   },
   {
@@ -563,7 +563,7 @@ export const TEMPLATES: Template[] = [
     photoTone: "cool",
     script: "Something Blue",
     eyebrow: "WE ARE GETTING MARRIED",
-    photoSeed: 2,
+    photoSeed: 7,
     theme: { bg: "#DCE5EC", ink: "#1F2A33", sub: "#C6D4DF", accent: "#4A6D89", accentSoft: "#E9F0F5" },
   },
 
@@ -576,7 +576,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "fade",
     script: "Save the date",
-    photoSeed: 1,
+    photoSeed: 8,
     theme: { bg: "#FBF8F3", ink: "#2E2A27", sub: "#EFE7DC", accent: "#B08D80", accentSoft: "#F1E5DF" },
   },
   {
@@ -587,7 +587,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "warm",
     script: "Petit Jour",
-    photoSeed: 3,
+    photoSeed: 20,
     theme: { bg: "#FCF6F3", ink: "#4A3A34", sub: "#F0DDD5", accent: "#C08E82", accentSoft: "#F7E9E4" },
   },
   {
@@ -609,7 +609,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "film",
     script: "Still Life",
-    photoSeed: 5,
+    photoSeed: 11,
     theme: { bg: "#FFFDF9", ink: "#332E29", sub: "#DFD3C8", accent: "#B08D80", accentSoft: "#F2E8E2" },
   },
   {
@@ -620,7 +620,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "warm",
     script: "In Chapel",
-    photoSeed: 7,
+    photoSeed: 12,
     theme: { bg: "#FAF6EF", ink: "#3A342C", sub: "#EEE4CF", accent: "#A98E63", accentSoft: "#F3EADA" },
   },
   {
@@ -631,7 +631,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "sans",
     photoTone: "bw",
     script: "Blanc",
-    photoSeed: 11,
+    photoSeed: 13,
     theme: { bg: "#FFFFFF", ink: "#1F1D1B", sub: "#F0EEEA", accent: "#9E958B", accentSoft: "#F4F2EF" },
   },
   {
@@ -642,7 +642,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "warm",
     script: "Rosewater",
-    photoSeed: 9,
+    photoSeed: 14,
     theme: { bg: "#FBF3F1", ink: "#46322E", sub: "#F2DDD8", accent: "#BF8378", accentSoft: "#F8E9E5" },
   },
   {
@@ -653,7 +653,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "cool",
     script: "Sage Note",
-    photoSeed: 0,
+    photoSeed: 15,
     theme: { bg: "#F7F8F3", ink: "#2F332B", sub: "#E3E8DB", accent: "#8A9A7B", accentSoft: "#EDF1E6" },
   },
   {
@@ -664,7 +664,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "bw",
     script: "Midnight",
-    photoSeed: 6,
+    photoSeed: 16,
     theme: { bg: "#2B2A2E", ink: "#F2EFEA", sub: "#3C3A40", accent: "#C4A882", accentSoft: "#3A3840" },
   },
   {
@@ -675,7 +675,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "sans",
     photoTone: "film",
     script: "Grain",
-    photoSeed: 13,
+    photoSeed: 17,
     theme: { bg: "#F5F2ED", ink: "#2A2724", sub: "#D8CFC2", accent: "#8E7F6E", accentSoft: "#EAE5DC" },
   },
   {
@@ -686,7 +686,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "fade",
     script: "Numéro Cinq",
-    photoSeed: 12,
+    photoSeed: 18,
     theme: { bg: "#FDFBF7", ink: "#1E1C1A", sub: "#EDE6DB", accent: "#B08D80", accentSoft: "#F4EAE5" },
   },
   {
@@ -697,7 +697,7 @@ export const TEMPLATES: Template[] = [
     headingFont: "serif",
     photoTone: "warm",
     script: "Camellia",
-    photoSeed: 4,
+    photoSeed: 19,
     theme: { bg: "#FAF4F4", ink: "#463033", sub: "#EFDCDE", accent: "#A6606A", accentSoft: "#F6E7E9" },
   },
 ];

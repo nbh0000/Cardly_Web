@@ -10,7 +10,7 @@
 
 import { asset } from "@/lib/asset";
 
-export const SAMPLE_COUNT = 14;
+export const SAMPLE_COUNT = 22;
 
 /** seed 번째 샘플 사진의 URL */
 export function samplePhoto(seed: number): string {
