@@ -269,6 +269,13 @@ export interface Template {
   eyebrow?: string;
   /** 샘플 사진 고르기 — 템플릿마다 다른 사진이 나오도록 */
   photoSeed: number;
+  /**
+   * 관리자가 직접 올린 대표 사진 (data URL).
+   * 있으면 기본 샘플 사진 대신 이 사진이 커버에 깔립니다.
+   */
+  samplePhoto?: string;
+  /** 관리자 페이지에서 만든 템플릿인지 — 목록에서 구분해 보여줍니다. */
+  custom?: boolean;
 }
 
 /* ---------- 내용 ---------- */
@@ -730,8 +737,32 @@ export const TEMPLATES: Template[] = [
   },
 ];
 
+/* ------------------------------------------------------------
+   커스텀 템플릿 레지스트리
+
+   관리자 페이지에서 만든 템플릿을 빌트인과 똑같이 취급하기 위한 자리입니다.
+   getTemplate() 을 쓰는 곳이 렌더러·에디터 전반에 흩어져 있어, 각 호출부를
+   고치는 대신 조회 지점 한 곳에 커스텀 목록을 얹었습니다.
+
+   브라우저에서만 채워집니다(서버 렌더 결과에는 빌트인만 들어갑니다).
+   그래서 첫 렌더는 서버와 같고, 마운트 뒤 등록되면서 다시 그려집니다.
+   ------------------------------------------------------------ */
+
+let customTemplates: Template[] = [];
+
+export function registerCustomTemplates(list: Template[]): void {
+  customTemplates = list.map((t) => ({ ...t, custom: true }));
+}
+
+export function getCustomTemplates(): Template[] {
+  return customTemplates;
+}
+
 export function getTemplate(id: string): Template | undefined {
-  return TEMPLATES.find((t) => t.id === id);
+  return (
+    TEMPLATES.find((t) => t.id === id) ??
+    customTemplates.find((t) => t.id === id)
+  );
 }
 
 /** 템플릿 + 사용자 override 를 합친 실제 렌더링 테마 */
@@ -855,6 +886,7 @@ export function createDefaultData(templateId: string): InvitationData {
     effectDensity: "mid",
 
     coverEyebrow: t.eyebrow ?? "WE ARE GETTING MARRIED",
+    coverPhoto: t.samplePhoto,
     coverPhotoFit: "cover",
     coverScript: t.script,
     showStickers: true,

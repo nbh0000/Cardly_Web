@@ -24,6 +24,7 @@ const COLUMNS = [
       { label: "브랜드 소개", href: "/" },
       { label: "이용약관", href: "/" },
       { label: "개인정보처리방침", href: "/" },
+      { label: "템플릿 관리", href: "/admin" },
     ],
   },
 ];

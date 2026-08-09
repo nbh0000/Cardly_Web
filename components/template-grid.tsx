@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { TemplateCard } from "@/components/template-card";
+import { useCustomTemplates } from "@/lib/custom-templates";
 import {
   CATEGORY_LABELS,
   TEMPLATES,
@@ -14,14 +15,17 @@ const FILTERS: Filter[] = ["all", "minimal", "floral", "modern", "classic", "pho
 
 export function TemplateGrid({ limit }: { limit?: number }) {
   const [active, setActive] = useState<Filter>("all");
+  // 관리자가 등록한 템플릿을 앞쪽에 붙입니다 (마운트 후에 채워집니다).
+  const custom = useCustomTemplates();
 
   const visible = useMemo(() => {
+    const all = [...custom, ...TEMPLATES];
     const list =
       active === "all"
-        ? TEMPLATES
-        : TEMPLATES.filter((t) => t.categories.includes(active));
+        ? all
+        : all.filter((t) => t.categories.includes(active));
     return limit ? list.slice(0, limit) : list;
-  }, [active, limit]);
+  }, [active, limit, custom]);
 
   return (
     <>
