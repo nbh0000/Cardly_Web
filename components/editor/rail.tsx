@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 
 export type SectionId =
-  | "decor" | "design" | "bgm" | "opening" | "groom" | "bride" | "album"
+  | "decor" | "design" | "bgm" | "opening" | "effect" | "groom" | "bride" | "album"
   | "wedding" | "invite" | "account" | "gallery" | "notice" | "snap"
   | "couple" | "timeline" | "video" | "guestbook" | "gift" | "rsvp"
   | "image" | "order";
@@ -21,6 +21,7 @@ export const RAIL: RailItem[] = [
   { id: "design", label: "디자인", icon: <><circle cx="12" cy="12" r="8.5" {...s} /><path d="M12 3.5c-2 3-3 5.5-3 8.5s1 5.5 3 8.5" {...s} /><circle cx="15.5" cy="9" r="1.4" fill="currentColor" stroke="none" /></> },
   { id: "bgm", label: "배경음악", icon: <><path d="M9 18V6l10-2v12" {...s} /><circle cx="7" cy="18" r="2.4" {...s} /><circle cx="17" cy="16" r="2.4" {...s} /></> },
   { id: "opening", label: "오프닝", icon: <><path d="M4 20c3-1 5-3 7-7l4-4" {...s} /><path d="M15 4.5 16.4 6M19 3l.9.9M18.5 8.5 20 10" {...s} /><circle cx="17.5" cy="6.5" r="2.4" {...s} /></> },
+  { id: "effect", label: "화면효과", icon: <><path d="M12 2.5v19M4.2 7.2l15.6 9M4.2 16.8l15.6-9" {...s} /><path d="M12 6 9.6 3.6M12 6l2.4-2.4M12 18l-2.4 2.4M12 18l2.4 2.4" {...s} /><path d="M8 9 4.8 8.1M8 15l-3.2.9M16 9l3.2-.9M16 15l3.2.9" {...s} /></> },
   { id: "groom", label: "신랑 정보", icon: <><path d="M6 9h12l-1 10H7L6 9Z" {...s} /><path d="M9 9V7a3 3 0 0 1 6 0v2" {...s} /><path d="M4 6.5 6 9M20 6.5 18 9" {...s} /></> },
   { id: "bride", label: "신부 정보", icon: <><circle cx="12" cy="5" r="2" {...s} /><path d="M12 7v3M8 20c0-5 2-8 4-10 2 2 4 5 4 10H8Z" {...s} /></> },
   { id: "album", label: "미니앨범", icon: <><rect x="4" y="4" width="7" height="16" rx="1.5" {...s} /><rect x="13" y="4" width="7" height="16" rx="1.5" {...s} /></> },

@@ -182,6 +182,7 @@ export function SectionPanel({
     case "design": return <Design {...p} />;
     case "bgm": return <Bgm {...p} />;
     case "opening": return <Opening {...p} />;
+    case "effect": return <Effect {...p} />;
     case "groom": return <PersonPanel {...p} side="groom" />;
     case "bride": return <PersonPanel {...p} side="bride" />;
     case "album": return <Album {...p} />;
@@ -276,7 +277,9 @@ function Design({ data, set, setData }: Props) {
 
         <div className="grid gap-1.5">
           <span className="text-[0.75rem] text-ink-soft">디자인 테마</span>
-          <div className="grid grid-cols-3 gap-2">
+          {/* 테마가 20종이라 그대로 두면 아래 설정들이 두 화면 밑으로 밀립니다.
+              그리드 자체에만 스크롤을 줘서 뒤 항목이 화면 안에 남게 합니다. */}
+          <div className="grid max-h-[21rem] grid-cols-3 gap-2 overflow-y-auto overscroll-contain pr-1">
             {TEMPLATES.map((t) => (
               <button
                 key={t.id} type="button"
@@ -326,7 +329,54 @@ function Design({ data, set, setData }: Props) {
         <ChipGroup label="사진 톤" options={PHOTO_TONES} value={data.photoTone} onChange={(v) => set("photoTone", v)} />
         <ChipGroup label="글꼴" options={FONT_OPTIONS.map((f) => ({ id: f.id, label: f.label }))} value={data.headingFont} onChange={(v) => set("headingFont", v)} />
         <ChipGroup label="글자 크기" options={FONT_SCALES.map((f) => ({ id: f.id, label: f.label }))} value={data.fontScale} onChange={(v) => set("fontScale", v)} />
-        <ChipGroup label="화면 효과" options={EFFECTS} value={data.effect} onChange={(v) => set("effect", v)} />
+      </Group>
+    </>
+  );
+}
+
+/* ---------------- 화면 효과 ---------------- */
+
+/** 칩만 늘어놓으면 어떤 느낌인지 알 수 없어, 종류마다 미리보기 기호를 답니다. */
+const EFFECT_GLYPH: Record<string, string> = {
+  none: "✕",
+  petal: "🌸",
+  snow: "❄",
+  sparkle: "✦",
+  confetti: "🎊",
+  heart: "♥",
+  bokeh: "◌",
+};
+
+function Effect({ data, set }: Props) {
+  return (
+    <>
+      <PanelHead
+        title="화면 효과"
+        desc="청첩장 전체에 깔리는 효과입니다. 스크롤해도 계속 따라옵니다."
+      />
+      <Group>
+        <span className="text-[0.75rem] text-ink-soft">효과 선택</span>
+        <div className="grid grid-cols-3 gap-2">
+          {EFFECTS.map((e) => (
+            <button
+              key={e.id}
+              type="button"
+              onClick={() => set("effect", e.id)}
+              aria-pressed={e.id === data.effect}
+              className={`press grid aspect-square place-items-center gap-2 rounded-lg bg-white text-[0.6875rem] ring-offset-2 ring-offset-cream transition-shadow ${
+                e.id === data.effect
+                  ? "ring-2 ring-ink"
+                  : "ring-1 ring-line hover:ring-rose"
+              }`}
+            >
+              <span className="text-lg text-muted" aria-hidden>
+                {EFFECT_GLYPH[e.id]}
+              </span>
+              <span className="text-ink-soft">{e.label}</span>
+            </button>
+          ))}
+        </div>
+
         {data.effect !== "none" && (
           <ChipGroup
             label="효과 양"
@@ -335,6 +385,11 @@ function Design({ data, set, setData }: Props) {
             onChange={(v) => set("effectDensity", v)}
           />
         )}
+
+        <p className="text-[0.6875rem] leading-relaxed text-muted">
+          기기에서 &lsquo;모션 줄이기&rsquo;를 켠 하객에게는 효과가 보이지
+          않습니다. 읽기에 방해가 되지 않도록 한 배려입니다.
+        </p>
       </Group>
     </>
   );

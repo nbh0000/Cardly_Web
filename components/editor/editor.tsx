@@ -23,6 +23,7 @@ const RAIL_TO_SECTION: Partial<Record<SectionId, SectionKey | "cover">> = {
   design: "cover",
   image: "cover",
   opening: "cover",
+  effect: "cover",
   invite: "invitation",
   groom: "invitation",
   bride: "invitation",
