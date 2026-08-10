@@ -10,16 +10,22 @@
  */
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import {
   isIdTaken,
   loadStoredTemplates,
-  removeCustomTemplate,
   saveCustomTemplates,
-  upsertCustomTemplate,
-  useCustomTemplates,
 } from "@/lib/custom-templates";
+import {
+  canWrite,
+  dropTemplate,
+  putTemplate,
+  storeMode,
+  useTemplates,
+} from "@/lib/template-store";
+import { signIn, signOut } from "@/lib/supabase";
+import { extractFromFigma, type FigmaExtract } from "@/lib/figma-css";
 import {
   CATEGORY_LABELS,
   COVER_LAYOUTS,
@@ -32,6 +38,9 @@ import {
   type Template,
   type TemplateCategory,
 } from "@/lib/invitation";
+
+/** 값이 바뀌지 않는 스토어 — 최초 스냅샷만 필요할 때 씁니다. */
+const subscribeNever = () => () => {};
 
 const CATEGORIES: TemplateCategory[] = [
   "minimal",
@@ -124,13 +133,27 @@ async function toCompactDataUrl(file: File, maxW = 900): Promise<string> {
 }
 
 export function TemplateBuilder() {
-  const custom = useCustomTemplates();
+  const { templates: custom, reload } = useTemplates();
   const [draft, setDraft] = useState<Template>(emptyTemplate);
   /** 편집 중인 기존 템플릿의 id — 새로 만드는 중이면 null */
   const [editingId, setEditingId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const importRef = useRef<HTMLInputElement>(null);
+
+  /* 저장 위치가 DB 인지 이 브라우저인지.
+     mode 는 빌드 시점에 정해지는 환경변수라 서버·클라이언트가 같습니다.
+     로그인 여부는 localStorage 라 서버에서 알 수 없으므로, 서버 스냅샷은
+     "아직 못 쓴다"로 두고 브라우저에서 실제 값을 읽습니다. */
+  const mode = storeMode();
+  const initialWritable = useSyncExternalStore(
+    subscribeNever,
+    canWrite,
+    () => mode === "local",
+  );
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const writable = authed ?? initialWritable;
+  const setWritable = (v: boolean) => setAuthed(v);
 
   const set = <K extends keyof Template>(key: K, value: Template[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
@@ -154,20 +177,30 @@ export function TemplateBuilder() {
   const autoId = slugify(draft.name);
   const id = draft.id.trim() || autoId;
   const nameMissing = !draft.name.trim();
-  const idClash = !!id && isIdTaken(id, editingId ?? undefined);
-  const canSave = !nameMissing && !idClash;
+  const idClash = !!id && isIdTaken(id, custom, editingId ?? undefined);
+  const canSave = !nameMissing && !idClash && writable;
 
-  const save = () => {
+  const save = async () => {
     if (!canSave) return;
     // 한글 이름만 넣은 경우 슬러그가 비므로 여기서 붙입니다.
     const finalId = id || `custom-${Date.now().toString(36)}`;
     const next: Template = { ...draft, id: finalId, custom: true };
-    // id 를 바꿔 저장하면 예전 id 의 찌꺼기가 남으므로 먼저 지웁니다.
-    if (editingId && editingId !== finalId) removeCustomTemplate(editingId);
-    upsertCustomTemplate(next);
+    try {
+      // id 를 바꿔 저장하면 예전 id 의 찌꺼기가 남으므로 먼저 지웁니다.
+      if (editingId && editingId !== finalId) await dropTemplate(editingId);
+      await putTemplate(next);
+    } catch (e) {
+      setNotice(`저장하지 못했습니다 — ${(e as Error).message}`);
+      return;
+    }
     setEditingId(finalId);
     setDraft(next);
-    setNotice(`'${next.name}' 저장했습니다. 템플릿 목록에서 바로 보입니다.`);
+    reload();
+    setNotice(
+      mode === "db"
+        ? `'${next.name}' 저장했습니다. 모든 방문자에게 바로 보입니다.`
+        : `'${next.name}' 저장했습니다. 이 브라우저의 템플릿 목록에 보입니다.`,
+    );
   };
 
   const startNew = () => {
@@ -183,9 +216,15 @@ export function TemplateBuilder() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const remove = (t: Template) => {
-    removeCustomTemplate(t.id);
+  const remove = async (t: Template) => {
+    try {
+      await dropTemplate(t.id);
+    } catch (e) {
+      setNotice(`삭제하지 못했습니다 — ${(e as Error).message}`);
+      return;
+    }
     if (editingId === t.id) startNew();
+    reload();
     setNotice(`'${t.name}' 삭제했습니다.`);
   };
 
@@ -232,6 +271,25 @@ export function TemplateBuilder() {
     <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-12">
       {/* ---------------- 입력 ---------------- */}
       <div className="grid gap-7">
+        <StoreStatus
+          mode={mode}
+          writable={writable}
+          onAuthChange={() => {
+            setWritable(canWrite());
+            reload();
+          }}
+        />
+
+        <FigmaImport
+          onApply={(next) =>
+            setDraft((d) => ({
+              ...d,
+              theme: next.theme ?? d.theme,
+              headingFont: next.headingFont ?? d.headingFont,
+            }))
+          }
+        />
+
         <Panel title="기본 정보">
           <Row label="템플릿 이름" hint="목록에 보이는 이름입니다.">
             <input
@@ -572,6 +630,211 @@ export function TemplateBuilder() {
         </p>
       </aside>
     </div>
+  );
+}
+
+/* ---------------- 저장 위치 ---------------- */
+
+/**
+ * 지금 저장이 어디로 가는지 알려주고, DB 모드면 관리자 로그인을 받습니다.
+ *
+ * anon 키만으로는 테이블에 쓸 수 없도록 RLS 를 걸어 두었기 때문에
+ * (supabase/schema.sql), 저장하려면 로그인이 필요합니다.
+ */
+function StoreStatus({
+  mode,
+  writable,
+  onAuthChange,
+}: {
+  mode: "db" | "local";
+  writable: boolean;
+  onAuthChange: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  if (mode === "local") {
+    return (
+      <div className="rounded-lg border border-line bg-white p-5 text-[0.8125rem] leading-relaxed text-ink-soft">
+        <b className="text-ink">저장 위치 · 이 브라우저</b>
+        <p className="mt-1.5">
+          지금은 만든 템플릿이 이 브라우저에만 남습니다. 데이터베이스를 연결하면
+          저장하는 즉시 모든 방문자에게 반영됩니다 —{" "}
+          <code className="rounded bg-cream px-1.5 py-0.5 text-[0.75rem]">
+            supabase/schema.sql
+          </code>{" "}
+          의 안내를 따르세요.
+        </p>
+      </div>
+    );
+  }
+
+  if (writable) {
+    return (
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white p-5 text-[0.8125rem] text-ink-soft">
+        <b className="text-ink">저장 위치 · 데이터베이스</b>
+        <span>관리자로 로그인되어 있습니다. 저장하면 바로 반영됩니다.</span>
+        <button
+          type="button"
+          onClick={() => {
+            signOut();
+            onAuthChange();
+          }}
+          className="ml-auto rounded-full border border-line px-3 py-1.5 text-[0.75rem] hover:border-rose"
+        >
+          로그아웃
+        </button>
+      </div>
+    );
+  }
+
+  const submit = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await signIn(email.trim(), password);
+      setPassword("");
+      onAuthChange();
+    } catch (e) {
+      setError(`로그인하지 못했습니다 — ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel title="관리자 로그인">
+      <p className="text-[0.8125rem] leading-relaxed text-ink-soft">
+        데이터베이스가 연결되어 있습니다. 템플릿을 저장하려면 로그인하세요.
+        계정은 Supabase 대시보드의 Authentication &gt; Users 에서 만듭니다.
+      </p>
+      <Row label="이메일">
+        <input
+          className="ipt"
+          type="email"
+          autoComplete="username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </Row>
+      <Row label="비밀번호">
+        <input
+          className="ipt"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void submit();
+          }}
+        />
+      </Row>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={submit}
+          disabled={busy || !email || !password}
+          className="rounded-full bg-ink px-5 py-2.5 text-[0.8125rem] text-ivory disabled:opacity-40"
+        >
+          {busy ? "확인 중…" : "로그인"}
+        </button>
+        {error && <span className="text-[0.75rem] text-rose-deep">{error}</span>}
+      </div>
+    </Panel>
+  );
+}
+
+/* ---------------- 피그마에서 가져오기 ---------------- */
+
+/**
+ * 피그마 Dev Mode 의 'Copy as code' 결과를 붙여넣으면 색과 글꼴을 뽑아
+ * 아래 항목들을 채웁니다.
+ *
+ * 배치(좌표)는 가져오지 않습니다. 이 코드베이스의 커버는 절대 좌표가 아니라
+ * 커버 레이아웃 10종 중 하나 + 테마 변수로 그려지기 때문입니다. 좌표를 그대로
+ * 옮기면 글자 크기 조절·다크 테마·반응형이 전부 깨집니다.
+ */
+function FigmaImport({ onApply }: { onApply: (r: FigmaExtract) => void }) {
+  const [text, setText] = useState("");
+  const [result, setResult] = useState<FigmaExtract | null>(null);
+
+  const parse = (value: string) => {
+    setText(value);
+    setResult(value.trim() ? extractFromFigma(value) : null);
+  };
+
+  const apply = () => {
+    if (result?.theme) onApply(result);
+  };
+
+  return (
+    <Panel title="피그마에서 가져오기">
+      <Row
+        label="Dev Mode 코드 붙여넣기"
+        hint="피그마에서 프레임 선택 → Dev Mode → Copy as code. CSS·React 어느 쪽이든 됩니다."
+      >
+        <textarea
+          className="ipt font-mono"
+          rows={5}
+          value={text}
+          onChange={(e) => parse(e.target.value)}
+          placeholder={"background: #F4C6CE;\ncolor: #2B1F23;\nfont-family: Playfair Display;"}
+        />
+      </Row>
+
+      {result && (
+        <>
+          <Row label={`찾은 색 ${result.colors.length}개`}>
+            <div className="flex flex-wrap gap-1.5">
+              {result.colors.slice(0, 12).map((c) => (
+                <span
+                  key={c.hex}
+                  title={`${c.hex} · ${c.count}회`}
+                  className="flex items-center gap-1.5 rounded-full border border-line bg-white py-1 pr-2.5 pl-1.5 text-[0.6875rem] text-ink-soft"
+                >
+                  <span
+                    className="h-4 w-4 rounded-full ring-1 ring-line"
+                    style={{ background: c.hex }}
+                  />
+                  {c.hex}
+                </span>
+              ))}
+            </div>
+          </Row>
+
+          {result.fontFamily && (
+            <p className="text-[0.75rem] text-muted">
+              글꼴 <b className="text-ink">{result.fontFamily}</b> →{" "}
+              {result.headingFont === "serif" ? "명조" : "고딕"}으로 봅니다.
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={apply}
+              disabled={!result.theme}
+              className="rounded-full bg-ink px-5 py-2.5 text-[0.8125rem] text-ivory disabled:opacity-40"
+            >
+              색·글꼴 적용하기
+            </button>
+            {!result.theme && (
+              <span className="text-[0.75rem] text-muted">
+                색이 두 개 이상 있어야 배치할 수 있습니다.
+              </span>
+            )}
+          </div>
+
+          <p className="text-[0.6875rem] leading-relaxed text-muted">
+            배치(좌표)는 가져오지 않습니다. 커버 모양은 아래 &lsquo;커버
+            레이아웃&rsquo;에서 고르시고, 원하는 구성이 목록에 없으면 프레임
+            이미지를 주시면 새로 만들어 드립니다.
+          </p>
+        </>
+      )}
+    </Panel>
   );
 }
 

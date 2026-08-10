@@ -35,6 +35,11 @@ jobs:
           GITHUB_PAGES: "true"
           # 저장소 이름이 곧 Pages 경로가 됩니다 (user.github.io/<repo>)
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+          # 데이터베이스 연결용. 시크릿이 없으면 빈 값이 되고,
+          # 관리자 페이지는 브라우저 저장 모드로 동작합니다.
+          # (anon 키는 브라우저에 노출되는 공개 키입니다 — 보호는 RLS 가 합니다)
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: npm run build
 
       - name: Disable Jekyll processing

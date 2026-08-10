@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Editor } from "@/components/editor/editor";
-import { useCustomTemplates } from "@/lib/custom-templates";
+import { useTemplates } from "@/lib/template-store";
 
 /**
  * 커스텀 템플릿용 편집기 껍데기.
@@ -14,10 +14,10 @@ import { useCustomTemplates } from "@/lib/custom-templates";
  */
 export function CustomEditor() {
   const id = useSearchParams().get("id") ?? "";
-  const templates = useCustomTemplates();
+  const { templates, loading } = useTemplates();
 
   // useCustomTemplates 는 마운트 전(그리고 서버)에서 빈 배열입니다.
-  if (templates.length === 0) return <Loading>템플릿을 불러오는 중…</Loading>;
+  if (loading) return <Loading>템플릿을 불러오는 중…</Loading>;
 
   if (!templates.some((t) => t.id === id)) {
     return (

@@ -12,12 +12,7 @@
  * 관리자 페이지는 두 단계를 모두 지원합니다.
  */
 
-import { useEffect, useState } from "react";
-import {
-  registerCustomTemplates,
-  TEMPLATES,
-  type Template,
-} from "@/lib/invitation";
+import { registerCustomTemplates, TEMPLATES, type Template } from "@/lib/invitation";
 import PUBLISHED from "@/lib/published-templates.json";
 
 const KEY = "daon:custom-templates";
@@ -76,35 +71,19 @@ export function removeCustomTemplate(id: string): void {
   saveCustomTemplates(readStored().filter((t) => t.id !== id));
 }
 
-/** 빌트인 id 와 겹치지 않는지 */
-export function isIdTaken(id: string, exceptId?: string): boolean {
+/** 빌트인 또는 이미 등록된 템플릿과 아이디가 겹치는지 */
+export function isIdTaken(
+  id: string,
+  existing: Template[],
+  exceptId?: string,
+): boolean {
   if (TEMPLATES.some((t) => t.id === id)) return true;
-  return loadCustomTemplates().some((t) => t.id === id && t.id !== exceptId);
+  return existing.some((t) => t.id === id && t.id !== exceptId);
 }
 
-/**
- * 커스텀 템플릿을 읽어 렌더러 레지스트리에 등록하고 목록을 돌려줍니다.
- *
- * 첫 렌더에서는 빈 배열을 반환합니다. 서버가 만든 HTML 에는 커스텀
- * 템플릿이 없으므로, 여기서 바로 채우면 hydration 이 어긋납니다.
- */
-export function useCustomTemplates(): Template[] {
-  const [list, setList] = useState<Template[]>([]);
-
-  useEffect(() => {
-    const sync = () => {
-      const next = loadCustomTemplates();
-      registerCustomTemplates(next);
-      setList(next);
-    };
-    sync();
-    window.addEventListener(CHANGED, sync);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener(CHANGED, sync);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
-
-  return list;
+/** 저장소가 바뀌었음을 알립니다 (같은 탭의 다른 화면이 다시 읽도록). */
+export function notifyChanged(): void {
+  window.dispatchEvent(new Event(CHANGED));
 }
+
+export const CHANGED_EVENT = CHANGED;

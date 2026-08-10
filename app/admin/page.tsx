@@ -90,26 +90,34 @@ export default function AdminPage() {
             </p>
           </header>
 
-          {/* 정적 호스팅이라 저장 방식이 두 갈래인 점을 먼저 밝혀 둡니다.
+          {/* 저장이 어디로 가는지 먼저 밝혀 둡니다.
               이 설명이 없으면 "저장했는데 다른 사람에게 안 보인다"가 됩니다. */}
           <div className="mt-8 max-w-narrow rounded-lg border border-line bg-rose-veil/60 p-5">
             <p className="text-[0.8125rem] leading-relaxed text-ink-soft">
-              이 사이트는 서버 없이 정적 파일로만 돌아갑니다. 그래서 저장이 두
-              단계입니다.
+              템플릿을 저장하는 방법은 세 가지입니다. 어느 쪽으로 저장되는지는
+              아래 &lsquo;저장 위치&rsquo;에 표시됩니다.
             </p>
             <ol className="mt-3 grid gap-1.5 text-[0.8125rem] leading-relaxed text-ink-soft">
               <li>
-                <b className="text-ink">이 브라우저에 저장</b> — 지금 쓰는
-                브라우저의 템플릿 목록과 편집기에 바로 나타납니다. 만들면서
-                확인하는 용도입니다.
+                <b className="text-ink">데이터베이스</b> — Supabase 를 연결하면
+                저장하는 즉시 모든 방문자에게 반영됩니다. 배포도 커밋도 필요
+                없습니다. 설정은{" "}
+                <code className="rounded bg-white px-1.5 py-0.5 text-[0.75rem]">
+                  supabase/schema.sql
+                </code>{" "}
+                의 안내를 따르세요.
               </li>
               <li>
-                <b className="text-ink">모두에게 배포</b> — 아래 &lsquo;JSON
+                <b className="text-ink">이 브라우저에 저장</b> — 연결 전 기본
+                동작입니다. 지금 쓰는 브라우저에만 남습니다.
+              </li>
+              <li>
+                <b className="text-ink">파일로 배포</b> — &lsquo;JSON
                 내보내기&rsquo;로 받은 파일을{" "}
                 <code className="rounded bg-white px-1.5 py-0.5 text-[0.75rem]">
                   lib/published-templates.json
                 </code>{" "}
-                에 넣고 커밋하면 빌드에 포함되어 모든 방문자에게 보입니다.
+                에 넣고 커밋하면 빌드에 포함됩니다.
               </li>
             </ol>
           </div>
