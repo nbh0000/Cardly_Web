@@ -24,6 +24,20 @@ export interface FigmaExtract {
   headingFont?: HeadingFont;
   /** 가장 큰 글자에 쓰인 글꼴 이름 — 안내에만 씁니다. */
   fontFamily?: string;
+  /** 프레임 이름 추정치 — 템플릿 이름 칸을 채워 둡니다. */
+  name?: string;
+}
+
+/**
+ * 붙여넣은 코드에서 프레임 이름을 짐작합니다.
+ * 피그마는 레이어 이름을 클래스나 주석으로 남기므로 그것을 씁니다.
+ */
+function guessName(input: string): string | undefined {
+  const comment = input.match(/\/\*+\s*([^*/\n]{2,40}?)\s*\*+\//);
+  if (comment) return comment[1]!.trim();
+  const cls = input.match(/[.#]([a-zA-Z][\w-]{1,40})\s*\{/);
+  if (cls) return cls[1]!.replace(/[-_]+/g, " ").trim();
+  return undefined;
 }
 
 /* ---------------- 색 유틸 ---------------- */
@@ -162,6 +176,7 @@ export function extractFromFigma(input: string): FigmaExtract {
     theme: assignTheme(colors, asBackground, asText),
     headingFont,
     fontFamily,
+    name: guessName(input),
   };
 }
 

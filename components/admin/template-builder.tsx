@@ -286,6 +286,8 @@ export function TemplateBuilder() {
               ...d,
               theme: next.theme ?? d.theme,
               headingFont: next.headingFont ?? d.headingFont,
+              // 이름은 비어 있을 때만 채웁니다 — 직접 적은 이름을 덮지 않도록.
+              name: d.name.trim() ? d.name : (next.name ?? d.name),
             }))
           }
         />
@@ -759,30 +761,71 @@ function StoreStatus({
 function FigmaImport({ onApply }: { onApply: (r: FigmaExtract) => void }) {
   const [text, setText] = useState("");
   const [result, setResult] = useState<FigmaExtract | null>(null);
+  const [applied, setApplied] = useState(false);
 
-  const parse = (value: string) => {
+  const parse = (value: string): FigmaExtract | null => {
     setText(value);
-    setResult(value.trim() ? extractFromFigma(value) : null);
+    const next = value.trim() ? extractFromFigma(value) : null;
+    setResult(next);
+    setApplied(false);
+    return next;
   };
 
-  const apply = () => {
-    if (result?.theme) onApply(result);
+  const apply = (r: FigmaExtract | null = result) => {
+    if (!r?.theme) return;
+    onApply(r);
+    setApplied(true);
   };
 
   return (
     <Panel title="피그마에서 가져오기">
       <Row
         label="Dev Mode 코드 붙여넣기"
-        hint="피그마에서 프레임 선택 → Dev Mode → Copy as code. CSS·React 어느 쪽이든 됩니다."
+        hint="붙여넣으면 바로 적용됩니다. 여러 레이어를 따로 복사해 이어 붙여도 됩니다."
       >
         <textarea
           className="ipt font-mono"
           rows={5}
           value={text}
           onChange={(e) => parse(e.target.value)}
-          placeholder={"background: #F4C6CE;\ncolor: #2B1F23;\nfont-family: Playfair Display;"}
+          /* 붙여넣기는 곧 "이걸 쓰겠다"는 뜻이라 버튼을 한 번 더 누르게 하지
+             않습니다. 직접 타이핑할 때는 미리보기만 하고 적용하지 않습니다. */
+          onPaste={(e) => {
+            const pasted = e.clipboardData.getData("text");
+            if (!pasted) return;
+            e.preventDefault();
+            const el = e.currentTarget;
+            const merged =
+              el.value.slice(0, el.selectionStart ?? el.value.length) +
+              pasted +
+              el.value.slice(el.selectionEnd ?? el.value.length);
+            apply(parse(merged));
+          }}
+          placeholder={
+            "/* 라벤더 노트 */\nbackground: #F4C6CE;   ← 배경\ncolor: #2B1F23;        ← 글자\nfont-family: Playfair Display;"
+          }
         />
       </Row>
+
+      <div className="rounded-md border border-line bg-cream px-4 py-3 text-[0.6875rem] leading-relaxed text-ink-soft">
+        <b className="text-ink">어떤 값이 어디로 들어가는지</b>
+        <ul className="mt-1.5 grid gap-0.5">
+          <li>
+            <code>background</code> · <code>fill</code> → 배경 (두 번째로 나온
+            값은 보조색)
+          </li>
+          <li>
+            <code>color</code> → 글자색
+          </li>
+          <li>나머지 색 중 가장 선명한 것 → 포인트색</li>
+          <li>
+            <code>font-family</code> → 명조/고딕 판별
+          </li>
+          <li>
+            <code>{"/* 주석 */"}</code> 또는 첫 클래스 이름 → 템플릿 이름
+          </li>
+        </ul>
+      </div>
 
       {result && (
         <>
@@ -814,12 +857,17 @@ function FigmaImport({ onApply }: { onApply: (r: FigmaExtract) => void }) {
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={apply}
+              onClick={() => apply()}
               disabled={!result.theme}
-              className="rounded-full bg-ink px-5 py-2.5 text-[0.8125rem] text-ivory disabled:opacity-40"
+              className="rounded-full border border-line bg-white px-5 py-2.5 text-[0.8125rem] text-ink disabled:opacity-40"
             >
-              색·글꼴 적용하기
+              {applied ? "다시 적용" : "색·글꼴 적용하기"}
             </button>
+            {applied && (
+              <span className="text-[0.75rem] text-rose-deep">
+                아래 색상과 글꼴에 반영했습니다.
+              </span>
+            )}
             {!result.theme && (
               <span className="text-[0.75rem] text-muted">
                 색이 두 개 이상 있어야 배치할 수 있습니다.
