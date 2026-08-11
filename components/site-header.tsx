@@ -59,9 +59,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <span className="rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] text-rose-deep">
-            모든 기능 무료
-          </span>
+          <Link
+            href="/pricing"
+            className="rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] text-rose-deep transition-colors hover:bg-rose-mist"
+          >
+            요금 안내
+          </Link>
           <Link href="/templates" className="btn btn-primary btn-sm">
             청첩장 만들기
           </Link>

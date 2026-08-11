@@ -41,6 +41,24 @@ export const RAIL: RailItem[] = [
   { id: "order", label: "순서 변경", icon: <><rect x="3.5" y="3.5" width="11" height="11" rx="2" {...s} /><rect x="9.5" y="9.5" width="11" height="11" rx="2" {...s} /></> },
 ];
 
+/**
+ * 프리미엄에서 열리는 항목.
+ * 어떤 기능이 유료인지는 lib/plan.ts 가 기준이고, 여기서는 그 목록을
+ * 레일 항목 이름으로 옮겨 놓은 것뿐입니다.
+ */
+const PREMIUM_RAIL: SectionId[] = [
+  "rsvp",
+  "guestbook",
+  "snap",
+  "album",
+  "timeline",
+  "couple",
+  "video",
+  "opening",
+  "effect",
+  "bgm",
+];
+
 export function Rail({
   active,
   onSelect,
@@ -55,24 +73,33 @@ export function Rail({
     >
       {RAIL.map((item) => {
         const on = item.id === active;
+        const premium = PREMIUM_RAIL.includes(item.id);
         return (
           <button
             key={item.id}
             type="button"
             onClick={() => onSelect(item.id)}
             aria-current={on ? "page" : undefined}
+            aria-label={premium ? `${item.label} (프리미엄)` : undefined}
             className={`press group flex shrink-0 flex-col items-center gap-1 rounded-md px-1.5 py-2 lg:w-full ${
               on ? "text-ink" : "text-muted hover:text-ink"
             }`}
           >
             <span
-              className={`grid h-8 w-8 place-items-center rounded-lg transition-colors duration-200 ${
+              className={`relative grid h-8 w-8 place-items-center rounded-lg transition-colors duration-200 ${
                 on ? "bg-ink text-ivory" : "bg-transparent group-hover:bg-sand"
               }`}
             >
               <svg viewBox="0 0 24 24" className="h-[1.15rem] w-[1.15rem]" aria-hidden>
                 {item.icon}
               </svg>
+              {PREMIUM_RAIL.includes(item.id) && (
+                <span
+                  aria-hidden
+                  title="프리미엄 기능"
+                  className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-rose-deep ring-2 ring-ivory"
+                />
+              )}
             </span>
             <span className="text-[0.625rem] leading-tight whitespace-nowrap">
               {item.label}

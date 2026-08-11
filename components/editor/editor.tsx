@@ -243,9 +243,12 @@ export function Editor({ templateId }: { templateId: string }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="hidden rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] text-rose-deep sm:inline">
-            모든 기능 무료
-          </span>
+          <Link
+            href="/pricing"
+            className="hidden rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] text-rose-deep transition-colors hover:bg-rose-mist sm:inline"
+          >
+            요금 안내
+          </Link>
           <Link href="/templates" className="press hidden rounded-full bg-ink px-4 py-2 text-[0.75rem] text-ivory sm:inline-block">
             + 새로 만들기
           </Link>
@@ -335,9 +338,6 @@ export function Editor({ templateId }: { templateId: string }) {
           <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-8">
             <p className="flex items-center gap-2">
               <span className="font-serif text-[0.9375rem] text-ink">청첩장 미리보기</span>
-              <span className="rounded bg-sand px-1.5 py-0.5 text-[0.5625rem] tracking-wide text-ink-soft">
-                FREE
-              </span>
             </p>
             <div className="flex items-center gap-2">
               {saved && <span className="hidden text-[0.6875rem] text-muted sm:inline">{saved} 저장됨</span>}

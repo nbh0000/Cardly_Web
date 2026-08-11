@@ -7,6 +7,7 @@ const COLUMNS = [
       { label: "청첩장 템플릿", href: "/templates" },
       { label: "편집기", href: "/editor/linen" },
       { label: "샘플 청첩장", href: "/preview/linen" },
+      { label: "요금 안내", href: "/pricing" },
     ],
   },
   {
@@ -43,7 +44,7 @@ export function SiteFooter() {
             </p>
             <p className="mt-4 max-w-72 text-caption text-muted">
               모든 좋은 일이 다 온다는 뜻. 두 사람의 시작을 가장 아름답게
-              전합니다. 모든 기능은 무료입니다.
+              전합니다. 만들어 보고 마음에 들면 그때 결제하세요.
             </p>
           </div>
 

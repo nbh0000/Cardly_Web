@@ -42,7 +42,7 @@ export function Hero() {
           </div>
 
           <p className="mt-6 text-caption text-muted">
-            모든 기능 무료 · 무제한 수정 · 평균 제작 시간 7분
+            만드는 건 무료 · 무제한 수정 · 평균 제작 시간 7분
           </p>
         </div>
 
