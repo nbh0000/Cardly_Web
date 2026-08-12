@@ -171,14 +171,31 @@ function RestOfInvitation({
   live: boolean;
   flash: string | null;
 }) {
-  // 각 섹션에 앵커를 달아두면 에디터가 해당 위치로 미리보기를 스크롤할 수 있습니다.
-  const render = (key: SectionKey) => {
-    const node = renderSection(key);
-    return node ? (
-      <div key={key} id={`sec-${key}`} data-sec={key} className={`iv-anchor${flash === key ? " is-flash" : ""}`}>
-        {node}
-      </div>
-    ) : null;
+  /* 섹션끼리 붙어 있으면 어디서 끊기는지 보이지 않아, 한 칸 걸러 옅은 면을
+     깔아 경계를 만듭니다. 숨긴 섹션은 아예 그리지 않으므로 실제로 그려진
+     것만 세야 면이 두 번 이어지지 않습니다.
+     "인사말" 자리는 인사말과 연락처 두 덩어리를 함께 그려 두 칸을 씁니다. */
+  const sections = () => {
+    const out: React.ReactNode[] = [];
+    let band = 0;
+    for (const key of data.sectionOrder) {
+      const node = renderSection(key);
+      if (!node) continue;
+      // 앵커를 달아두면 에디터가 해당 위치로 미리보기를 스크롤할 수 있습니다.
+      out.push(
+        <div
+          key={key}
+          id={`sec-${key}`}
+          data-sec={key}
+          data-band={band % 2}
+          className={`iv-anchor${flash === key ? " is-flash" : ""}`}
+        >
+          {node}
+        </div>,
+      );
+      band += key === "invitation" ? 2 : 1;
+    }
+    return out;
   };
 
   const renderSection = (key: SectionKey) => {
@@ -221,7 +238,7 @@ function RestOfInvitation({
 
   return (
     <>
-      {data.sectionOrder.map(render)}
+      {sections()}
       <ShareBlock data={data} />
     </>
   );
