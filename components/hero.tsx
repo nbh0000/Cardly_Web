@@ -2,6 +2,7 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate } from "@/lib/invitation";
+import { formatPrice, PREMIUM_PRICE } from "@/lib/plan";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -116,8 +117,9 @@ const TOOLS = [
     eyebrow: "Wedding",
     title: "모바일 청첩장",
     body: "사진과 인사말을 넣으면 결과가 바로 보이고, 링크 하나로 카카오톡에 보냅니다.",
-    meta: "참석 응답 · 마음 전하는 곳 · 링크 공유",
-    badge: "유료",
+    meta: `링크 공유 · 참석 응답 · 발행 ${formatPrice(PREMIUM_PRICE)}`,
+    // 만드는 것도 링크를 보내 보는 것도 무료라, 다른 둘과 같은 배지를 씁니다.
+    badge: "무료 시작",
     preview: <InvitationPreview />,
   },
 ];
@@ -159,7 +161,7 @@ export function Hero() {
                 <span className="eyebrow">{tool.eyebrow}</span>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-[0.625rem] tracking-[0.1em] ${
-                    tool.badge === "무료"
+                    tool.badge.startsWith("무료")
                       ? "bg-rose-veil text-rose-deep"
                       : "bg-sand text-ink-soft"
                   }`}

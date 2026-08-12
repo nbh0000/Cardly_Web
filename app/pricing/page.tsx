@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { formatPrice, PLANS, PREMIUM_PRICE } from "@/lib/plan";
+import {
+  FREE_LINK_DAYS,
+  formatPrice,
+  PAID_GRACE_DAYS,
+  PLANS,
+  PREMIUM_PRICE,
+} from "@/lib/plan";
 
 export const metadata: Metadata = {
   title: "요금 안내",
-  description: `청첩장 제작은 무료입니다. 하객 응답과 꾸미기 기능은 ${formatPrice(PREMIUM_PRICE)}에 한 번만 결제하면 예식일까지 쓰실 수 있습니다.`,
+  description: `청첩장 제작과 링크 공유는 무료입니다. 무료 링크는 ${FREE_LINK_DAYS}일 뒤 닫히고, ${formatPrice(PREMIUM_PRICE)}에 한 번만 결제하면 예식일 이후까지 유지됩니다.`,
 };
 
 export default function PricingPage() {
@@ -19,8 +25,9 @@ export default function PricingPage() {
             <span className="eyebrow eyebrow-center">Pricing</span>
             <h1 className="mt-5 font-serif text-h1 text-ink">요금 안내</h1>
             <p className="mt-5 text-body text-ink-soft">
-              만들어 보고 마음에 들면 그때 결제하세요. 결제 전에 완성된 청첩장을
-              끝까지 확인하실 수 있습니다.
+              만드는 것도, 링크를 만들어 보내 보는 것도 무료입니다. 무료 링크는{" "}
+              {FREE_LINK_DAYS}일 뒤에 닫히므로, 청첩장을 정말 돌리실 때 한 번만
+              결제하시면 됩니다.
             </p>
           </header>
 
@@ -99,15 +106,19 @@ export default function PricingPage() {
               {[
                 {
                   q: "결제하지 않으면 청첩장을 못 보내나요?",
-                  a: "보낼 수 있습니다. 무료로도 청첩장을 만들어 링크와 QR로 공유하실 수 있습니다. 프리미엄은 하객의 응답을 받는 기능과 꾸미기 추가분입니다.",
+                  a: `보낼 수 있습니다. 무료로도 링크와 QR을 만들어 카카오톡으로 공유하실 수 있습니다. 다만 무료 링크는 만든 날부터 ${FREE_LINK_DAYS}일이 지나면 닫히고, 그 뒤에 열면 안내 화면이 뜹니다.`,
+                },
+                {
+                  q: `${FREE_LINK_DAYS}일이 지나면 만든 내용이 사라지나요?`,
+                  a: "링크만 닫힙니다. 편집하던 내용은 그대로 남아 있어, 결제하시면 같은 주소가 그대로 다시 열립니다. 하객에게 이미 보낸 링크를 다시 보내지 않으셔도 됩니다.",
                 },
                 {
                   q: "한 번 결제하면 언제까지 쓰나요?",
-                  a: "청첩장 하나에 한 번만 결제하시면 예식일까지 유지됩니다. 매달 빠져나가는 구독이 아닙니다.",
+                  a: `청첩장 하나에 한 번만 결제하시면 예식일에서 ${PAID_GRACE_DAYS}일 뒤까지 유지됩니다. 예식이 끝난 뒤에도 하객이 사진과 방명록을 볼 수 있도록 여유를 둔 것이고, 매달 빠져나가는 구독이 아닙니다.`,
                 },
                 {
                   q: "만들다가 마음이 바뀌면요?",
-                  a: "결제는 발행 직전에만 받습니다. 그전까지는 몇 개를 만들든, 몇 번을 고치든 비용이 들지 않습니다.",
+                  a: "만드는 동안에는 비용이 들지 않습니다. 몇 개를 만들든, 몇 번을 고치든, 링크를 만들어 미리 보내 보든 마찬가지입니다.",
                 },
               ].map((item) => (
                 <div key={item.q}>
