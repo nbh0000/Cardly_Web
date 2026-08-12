@@ -26,11 +26,11 @@ import {
 } from "@/lib/template-store";
 import { signIn, signOut } from "@/lib/supabase";
 import { extractFromFigma, type FigmaExtract } from "@/lib/figma-css";
+import { fontGroupsFor } from "@/lib/fonts";
 import {
   CATEGORY_LABELS,
   COVER_LAYOUTS,
   createDefaultData,
-  FONT_OPTIONS,
   PHOTO_TONES,
   type CoverLayout,
   type HeadingFont,
@@ -363,11 +363,21 @@ export function TemplateBuilder() {
             />
           </Row>
           <Row label="제목 글꼴">
-            <Chips
-              options={FONT_OPTIONS.map((f) => ({ id: f.id, label: f.label }))}
+            <select
+              className="ipt"
               value={draft.headingFont}
-              onChange={(v) => set("headingFont", v as HeadingFont)}
-            />
+              onChange={(e) => set("headingFont", e.target.value as HeadingFont)}
+            >
+              {fontGroupsFor("invitation").map(({ group, fonts }) => (
+                <optgroup key={group} label={group}>
+                  {fonts.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </Row>
           <Row label="사진 톤" hint="커버와 갤러리 사진 전체에 걸립니다.">
             <Chips

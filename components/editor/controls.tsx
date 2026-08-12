@@ -197,6 +197,65 @@ export function ChipGroup<T extends string>({
   );
 }
 
+/**
+ * 글꼴 고르기 — 이름만 늘어놓으면 어떤 글씨인지 알 수 없어,
+ * 보기 글을 그 글꼴로 직접 찍어 보여 줍니다.
+ * 고른 칩은 배경을 채우지 않고 테두리로만 표시합니다. 글씨체가 가려지면
+ * 고르는 의미가 없기 때문입니다.
+ */
+export function FontPicker<T extends string>({
+  label,
+  groups,
+  value,
+  onChange,
+  sample,
+}: {
+  label?: string;
+  groups: { group: string; fonts: { id: T; label: string; stack: string }[] }[];
+  value: T;
+  onChange: (v: T) => void;
+  sample: string;
+}) {
+  return (
+    <div className="grid gap-2.5">
+      {label && <span className="text-[0.75rem] text-ink-soft">{label}</span>}
+      {groups.map(({ group, fonts }) => (
+        <div key={group} className="grid gap-1.5">
+          <span className="text-[0.625rem] tracking-[0.14em] text-hint">
+            {group}
+          </span>
+          <div className="grid grid-cols-2 gap-1.5">
+            {fonts.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => onChange(f.id)}
+                aria-pressed={f.id === value}
+                title={f.label}
+                className={`grid gap-0.5 rounded-lg border px-2.5 py-2 text-left transition-colors ${
+                  f.id === value
+                    ? "border-rose-deep bg-rose-veil"
+                    : "border-line bg-white hover:border-rose"
+                }`}
+              >
+                <span
+                  className="truncate text-[0.9375rem] leading-snug text-ink"
+                  style={{ fontFamily: f.stack }}
+                >
+                  {sample}
+                </span>
+                <span className="truncate text-[0.625rem] text-muted">
+                  {f.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const ACCENTS = [
   "#B08D80",
   "#8A6558",

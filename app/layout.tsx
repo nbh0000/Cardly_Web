@@ -1,72 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Caveat,
-  Cormorant_Garamond,
-  Noto_Sans_KR,
-  Noto_Serif_KR,
-  Parisienne,
-  Playfair_Display,
-} from "next/font/google";
 import Script from "next/script";
 import { TEMPLATES } from "@/lib/invitation";
+import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
-
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  display: "swap",
-  preload: false,
-});
-
-const notoSansKr = Noto_Sans_KR({
-  variable: "--font-noto-sans-kr",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  display: "swap",
-  preload: false,
-});
-
-/* 커버 장식용 라틴 폰트 3종.
-   한글은 Noto 가 맡고, 아래 글꼴은 영문 문구·큰 숫자에만 씁니다. */
-
-/** 큰 제목용 디스플레이 세리프 — "WEDDING" 같은 대문자 조판 */
-const playfair = Playfair_Display({
-  variable: "--ff-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  style: ["normal", "italic"],
-  display: "swap",
-  preload: false,
-});
-
-/** 캘리그래피 — "We are getting Married" */
-const parisienne = Parisienne({
-  variable: "--ff-script",
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  preload: false,
-});
-
-/** 손글씨 마커 — "Save the date!" 같은 스티커 문구 */
-const caveat = Caveat({
-  variable: "--ff-hand",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-  preload: false,
-});
-
-/** 얇은 세리프 — 날짜·영문 이름의 가는 조판 */
-const cormorant = Cormorant_Garamond({
-  variable: "--ff-thin-serif",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  style: ["normal", "italic"],
-  display: "swap",
-  preload: false,
-});
 
 const DESCRIPTION = `이력서와 명함은 무료로, 모바일 청첩장은 ${TEMPLATES.length}종 템플릿으로. 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요.`;
 
@@ -178,7 +114,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="ko"
-      className={`${notoSerifKr.variable} ${notoSansKr.variable} ${playfair.variable} ${parisienne.variable} ${caveat.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${FONT_VARIABLES} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ivory text-ink">
         <a

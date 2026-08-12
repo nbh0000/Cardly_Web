@@ -5,6 +5,7 @@ import {
   ChipGroup,
   ColorPicker,
   Field,
+  FontPicker,
   ImageUpload,
   MultiImageUpload,
   Repeater,
@@ -15,6 +16,7 @@ import {
 } from "@/components/editor/controls";
 import { samplePhoto } from "@/components/invitation/sample-photo";
 import type { SectionId } from "@/components/editor/rail";
+import { fontGroupsFor } from "@/lib/fonts";
 import {
   BGM_TRACKS,
   COVER_LAYOUTS,
@@ -22,7 +24,7 @@ import {
   DAUGHTER_RELATIONS,
   EFFECTS,
   EFFECT_DENSITIES,
-  FONT_OPTIONS,
+  FONT_SAMPLE,
   FONT_SCALES,
   PHOTO_TONES,
   GALLERY_TYPES,
@@ -327,7 +329,7 @@ function Design({ data, set, setData }: Props) {
         </div>
 
         <ChipGroup label="사진 톤" options={PHOTO_TONES} value={data.photoTone} onChange={(v) => set("photoTone", v)} />
-        <ChipGroup label="글꼴" options={FONT_OPTIONS.map((f) => ({ id: f.id, label: f.label }))} value={data.headingFont} onChange={(v) => set("headingFont", v)} />
+        <FontPicker label="글꼴" groups={fontGroupsFor("invitation")} value={data.headingFont} onChange={(v) => set("headingFont", v)} sample={FONT_SAMPLE} />
         <ChipGroup label="글자 크기" options={FONT_SCALES.map((f) => ({ id: f.id, label: f.label }))} value={data.fontScale} onChange={(v) => set("fontScale", v)} />
       </Group>
     </>

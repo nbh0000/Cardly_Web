@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { type FontId, fontGroupsFor, fontStack, toFontId } from "@/lib/fonts";
 import {
   ADDABLE,
   CARD_TEMPLATES,
@@ -34,10 +35,7 @@ import { ICON, PanelHead, StudioShell, type StudioSection } from "./shell";
 
 const KEY = "cardly-card-v2";
 
-const FONTS: [string, string][] = [
-  ["var(--font-sans), sans-serif", "고딕"],
-  ["var(--font-serif), serif", "명조"],
-];
+const FONT_GROUPS = fontGroupsFor("card");
 
 const SECTIONS: StudioSection[] = [
   { id: "template", label: "템플릿", icon: ICON.template },
@@ -78,7 +76,7 @@ export function CardStudio() {
   });
   const [paper, setPaper] = useState<CardPaper>(DEFAULT_CARD_TEMPLATE.paper);
   const [corner, setCorner] = useState<CardCorner>(DEFAULT_CARD_TEMPLATE.corner);
-  const [font, setFont] = useState(FONTS[0][0]);
+  const [font, setFont] = useState<FontId>("sans");
   const [side, setSide] = useState<"front" | "back">("front");
   const [selected, setSelected] = useState<string | null>(null);
   const [addType, setAddType] = useState("text");
@@ -102,7 +100,7 @@ export function CardStudio() {
     if (draft.colors) setColors(draft.colors);
     if (draft.paper) setPaper(draft.paper);
     if (draft.corner) setCorner(draft.corner);
-    if (draft.font) setFont(draft.font);
+    if (draft.font) setFont(toFontId(draft.font));
   }, []);
 
   const snapshot: Draft = useMemo(
@@ -462,12 +460,16 @@ export function CardStudio() {
               <select
                 className="ipt"
                 value={font}
-                onChange={(e) => setFont(e.target.value)}
+                onChange={(e) => setFont(e.target.value as FontId)}
               >
-                {FONTS.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+                {FONT_GROUPS.map(({ group, fonts }) => (
+                  <optgroup key={group} label={group}>
+                    {fonts.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </Field>
@@ -671,7 +673,7 @@ export function CardStudio() {
                   "--ac": colors.accent,
                   "--bg": colors.bg,
                   "--tx": colors.text,
-                  fontFamily: font,
+                  fontFamily: fontStack(font),
                 } as React.CSSProperties
               }
               onPointerDown={(e) => {

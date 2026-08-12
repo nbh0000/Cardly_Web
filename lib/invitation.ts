@@ -5,6 +5,8 @@
    두 가지를 합쳐 <InvitationView /> 가 실제 청첩장을 렌더링합니다.
    ============================================================ */
 
+import { type FontId, fontsFor } from "./fonts";
+
 export type CoverLayout =
   | "center" /* 정중앙 미니멀 */
   | "arch" /* 아치 프레임 */
@@ -46,13 +48,13 @@ export const PHOTO_TONES: { id: PhotoTone; label: string }[] = [
   { id: "fade", label: "페이드" },
 ];
 
-export type HeadingFont = "serif" | "sans";
+/** 청첩장 제목에 쓰는 글꼴. 목록은 `lib/fonts.ts` 가 들고 있습니다. */
+export type HeadingFont = FontId;
 
-export const FONT_OPTIONS: { id: HeadingFont; label: string; sample: string }[] =
-  [
-    { id: "serif", label: "명조", sample: "우리 결혼합니다" },
-    { id: "sans", label: "고딕", sample: "우리 결혼합니다" },
-  ];
+export const FONT_OPTIONS = fontsFor("invitation");
+
+/** 글꼴 칩에 찍어 보여 주는 미리보기 문구 */
+export const FONT_SAMPLE = "우리 결혼합니다";
 
 export type FontScale = "sm" | "md" | "lg";
 

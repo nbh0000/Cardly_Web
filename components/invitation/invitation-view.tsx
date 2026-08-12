@@ -14,6 +14,7 @@ import {
 import { createPortal } from "react-dom";
 import { SamplePhoto } from "@/components/invitation/sample-photo";
 import { asset } from "@/lib/asset";
+import { fontStack } from "@/lib/fonts";
 import {
   daysUntil,
   formatDateDots,
@@ -99,8 +100,7 @@ export function InvitationView({
   const openingActive = !coverOnly && data.opening !== "none" && !openingDone;
 
   const theme = resolveTheme(template, data);
-  const headingFamily =
-    data.headingFont === "serif" ? "var(--font-serif)" : "var(--font-sans)";
+  const headingFamily = fontStack(data.headingFont);
 
   const style = {
     "--iv-dim": String(data.titleDim / 100),

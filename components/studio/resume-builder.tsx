@@ -2,6 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  type FontId,
+  fontFamily,
+  fontGroupsFor,
+  fontStack,
+  toFontId,
+} from "@/lib/fonts";
+import {
   canvasToBlob,
   captureCanvas,
   escapeHtml,
@@ -43,10 +50,9 @@ import { ICON, PanelHead, StudioShell, type StudioSection } from "./shell";
 
 const KEY = "cardly-resume-v2";
 
-const FONTS: [string, string][] = [
-  ["var(--font-sans), sans-serif", "고딕 — 대부분의 지원처에 무난"],
-  ["var(--font-serif), serif", "명조 — 격식 있는 인상"],
-];
+/* 이력서는 장식 글꼴을 내보내지 않습니다 — 읽는 사람이 서류로 보는 문서라
+   또렷한 고딕·명조만 고를 수 있게 둡니다. */
+const FONT_GROUPS = fontGroupsFor("resume");
 
 const FORMATS: [string, string, string, string][] = [
   ["pdf", "PDF 문서", "application/pdf", "pdf"],
@@ -85,7 +91,7 @@ export function ResumeBuilder() {
   const [template, setTemplate] = useState<ResumeTemplate>(
     DEFAULT_RESUME_TEMPLATE,
   );
-  const [font, setFont] = useState(FONTS[0][0]);
+  const [font, setFont] = useState<FontId>("sans");
   const [photo, setPhoto] = useState("");
   const [layout, setLayout] = useState<ResumeLayout>(blankLayout);
   const [data, setData] = useState<ResumeData>(SAMPLE_RESUME);
@@ -107,7 +113,7 @@ export function ResumeBuilder() {
   const restore = useCallback((draft: Draft) => {
     const found = RESUME_TEMPLATES.find((t) => t.id === draft.templateId);
     if (found) setTemplate(found);
-    if (draft.font) setFont(draft.font);
+    if (draft.font) setFont(toFontId(draft.font));
     if (typeof draft.photo === "string") setPhoto(draft.photo);
     if (draft.layout) setLayout({ ...blankLayout(), ...draft.layout });
     if (draft.data) setData({ ...SAMPLE_RESUME, ...draft.data });
@@ -269,7 +275,7 @@ export function ResumeBuilder() {
     )} 이력서</title><style>
 @page{size:A4;margin:18mm}
 *{box-sizing:border-box}
-body{max-width:174mm;margin:0 auto;color:#23201d;font-family:"Malgun Gothic",Arial,sans-serif;line-height:1.6;font-size:10.5pt}
+body{max-width:174mm;margin:0 auto;color:#23201d;font-family:${fontFamily(font).print};line-height:1.6;font-size:10.5pt}
 header{display:flex;align-items:flex-end;gap:18px;padding-bottom:12px;border-bottom:2px solid ${template.accent};margin-bottom:18px}
 h1{margin:0;font-size:24pt;letter-spacing:-.02em}
 header .title{margin:4px 0 0;color:${template.accent};font-size:11pt}
@@ -534,12 +540,16 @@ ${
               <select
                 className="ipt"
                 value={font}
-                onChange={(e) => setFont(e.target.value)}
+                onChange={(e) => setFont(e.target.value as FontId)}
               >
-                {FONTS.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+                {FONT_GROUPS.map(({ group, fonts }) => (
+                  <optgroup key={group} label={group}>
+                    {fonts.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </Field>
@@ -852,7 +862,7 @@ ${
               template={template}
               data={data}
               photo={photo}
-              font={font}
+              font={fontStack(font)}
               layout={layout}
               selected={selected}
               onBlockPointerDown={onBlockPointerDown}
