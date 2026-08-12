@@ -84,6 +84,8 @@ export function CardStudio() {
   const [addType, setAddType] = useState("text");
   const [showSafe, setShowSafe] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [confirmReset, setConfirmReset] = useState(false);
   const [decoFilter, setDecoFilter] = useState("all");
 
   const [stageRef, stage] = useStageFit(90, 50, { maxScale: 1.9, padding: 32 });
@@ -205,18 +207,21 @@ export function CardStudio() {
     const el = cardRef.current;
     if (!el || busy) return;
     setBusy(true);
+    setMessage("");
     setSelected(null);
     const wasSafe = showSafe;
     setShowSafe(false);
     try {
       await new Promise((r) => requestAnimationFrame(() => r(null)));
+      let saved = 0;
       const shoot = async (label: string) => {
         const canvas = await captureCanvas(el, 8, true);
-        await saveBlob(await canvasToBlob(canvas), `명함_${label}.png`, {
-          description: "PNG 이미지",
-          mime: "image/png",
-          extension: "png",
-        });
+        const done = await saveBlob(
+          await canvasToBlob(canvas),
+          `명함_${label}.png`,
+          { description: "PNG 이미지", mime: "image/png", extension: "png" },
+        );
+        if (done) saved += 1;
       };
       if (!both) {
         await shoot(side === "front" ? "앞면" : "뒷면");
@@ -227,6 +232,13 @@ export function CardStudio() {
           await shoot(target === "front" ? "앞면" : "뒷면");
         }
       }
+      setMessage(
+        saved > 0 ? `${saved}장을 저장했습니다.` : "저장을 취소했습니다.",
+      );
+    } catch {
+      setMessage(
+        "이미지를 만들지 못했습니다. 올린 로고 파일 크기를 줄여 보세요.",
+      );
     } finally {
       setShowSafe(wasSafe);
       setBusy(false);
@@ -299,6 +311,7 @@ export function CardStudio() {
                   <b />
                   <i />
                 </span>
+                <span className="pick-name">{t.name}</span>
               </button>
             ))}
           </div>
@@ -537,18 +550,38 @@ export function CardStudio() {
               앞뒤 모두 저장
             </button>
           </div>
+          {message ? (
+            <p className="text-[0.75rem] text-rose-deep">{message}</p>
+          ) : null}
+
           <p className="text-[0.75rem] text-muted">
             입력한 연락처는 서버로 보내지 않고 이 브라우저 안에서만 처리됩니다.
           </p>
-          <ToolButton
-            onClick={() => {
-              clearDraft(KEY);
-              setItems(SAMPLE_ITEMS);
-              setSelected(null);
-            }}
-          >
-            처음부터 다시 만들기
-          </ToolButton>
+
+          {/* 되돌릴 수 없는 동작이라 한 번 더 묻습니다. */}
+          {confirmReset ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[0.75rem] text-ink">
+                만든 내용이 모두 지워집니다. 계속할까요?
+              </span>
+              <ToolButton
+                onClick={() => {
+                  clearDraft(KEY);
+                  setItems(SAMPLE_ITEMS);
+                  setSelected(null);
+                  setConfirmReset(false);
+                  setMessage("처음 상태로 되돌렸습니다.");
+                }}
+              >
+                네, 지웁니다
+              </ToolButton>
+              <ToolButton onClick={() => setConfirmReset(false)}>취소</ToolButton>
+            </div>
+          ) : (
+            <ToolButton onClick={() => setConfirmReset(true)}>
+              처음부터 다시 만들기
+            </ToolButton>
+          )}
         </div>
       </>
     );

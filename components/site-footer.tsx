@@ -11,20 +11,18 @@ const COLUMNS = [
     ],
   },
   {
-    title: "고객지원",
+    title: "안내",
     links: [
-      { label: "자주 묻는 질문", href: "/" },
-      { label: "카카오톡 문의", href: "/" },
-      { label: "제휴 문의", href: "/" },
-      { label: "공지사항", href: "/" },
+      { label: "이력서 작성 기준", href: "/resume" },
+      { label: "명함 인쇄 규격", href: "/business-card" },
+      { label: "청첩장 샘플 보기", href: "/preview/linen" },
     ],
   },
   {
-    title: "회사",
+    title: "이용 안내",
     links: [
-      { label: "브랜드 소개", href: "/" },
-      { label: "이용약관", href: "/" },
-      { label: "개인정보처리방침", href: "/" },
+      { label: "이용약관", href: "/terms" },
+      { label: "개인정보처리방침", href: "/privacy" },
       { label: "템플릿 관리", href: "/admin" },
     ],
   },

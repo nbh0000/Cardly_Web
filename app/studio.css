@@ -33,7 +33,10 @@
 
   position: relative;
   width: 210mm;
-  min-height: 297mm;
+  /* A4 한 장에 고정합니다. min-height 로 두면 내용이 길어질 때 시트가
+     늘어나고, PDF 는 210 × 297 mm 한 장에 그 이미지를 밀어 넣으므로
+     결과물이 세로로 눌립니다. 넘친 내용은 잘라 내고 경고로 알립니다. */
+  height: 297mm;
   background: var(--pp);
   color: var(--tx);
   font-size: 3.7mm; /* 10.5pt */

@@ -7,6 +7,7 @@ import {
   Parisienne,
   Playfair_Display,
 } from "next/font/google";
+import Script from "next/script";
 import { TEMPLATES } from "@/lib/invitation";
 import "./globals.css";
 
@@ -102,6 +103,10 @@ export const metadata: Metadata = {
       ],
     },
   },
+  other: {
+    // 애드센스 계정 확인용 — 광고 스크립트와 짝을 이룹니다.
+    "google-adsense-account": "ca-pub-8336109969969326",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -187,6 +192,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           type="application/ld+json"
           // 저장소 안의 상수만 직렬화하므로 외부 입력이 섞이지 않습니다.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
+        />
+        {/* Google AdSense — 첫 렌더를 막지 않도록 상호작용 이후에 불러옵니다. */}
+        <Script
+          id="adsbygoogle"
+          async
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8336109969969326"
         />
       </body>
     </html>

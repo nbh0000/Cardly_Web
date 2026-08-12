@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   canvasToBlob,
   captureCanvas,
@@ -92,6 +92,9 @@ export function ResumeBuilder() {
   const [selected, setSelected] = useState<ResumeBlockId | null>(null);
   const [format, setFormat] = useState("pdf");
   const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [overflow, setOverflow] = useState(false);
   const [layoutFilter, setLayoutFilter] = useState("all");
 
   const [stageRef, stage] = useStageFit(210, 297, { maxScale: 1, padding: 32 });
@@ -110,6 +113,17 @@ export function ResumeBuilder() {
     [template.id, font, photo, layout, data],
   );
   useDraft<Draft>(KEY, snapshot, restore);
+
+  /* 시트는 A4 한 장에 고정돼 있어 넘친 내용은 잘립니다.
+     조판이 끝난 다음 프레임에 재어 보고 미리 알려 줍니다. */
+  useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+    const id = requestAnimationFrame(() =>
+      setOverflow(el.scrollHeight > el.clientHeight + 2),
+    );
+    return () => cancelAnimationFrame(id);
+  }, [data, layout, template, photo, font]);
 
   /* -------------------- 블록 이동 -------------------- */
 
@@ -305,19 +319,21 @@ ${
     const el = sheetRef.current;
     if (!el || busy) return;
     setBusy(true);
+    setMessage("");
     setSelected(null);
     try {
       const meta = FORMATS.find((f) => f[0] === format)!;
       const [, description, mime, ext] = meta;
       const picker = { description, mime, extension: ext };
+      let done: boolean;
 
       if (format === "pdf") {
-        await saveBlob(await sheetToPdfBlob(el), filename("pdf"), picker);
+        done = await saveBlob(await sheetToPdfBlob(el), filename("pdf"), picker);
       } else if (format === "png") {
         const canvas = await captureCanvas(el, 2.5);
-        await saveBlob(await canvasToBlob(canvas), filename("png"), picker);
+        done = await saveBlob(await canvasToBlob(canvas), filename("png"), picker);
       } else {
-        await saveBlob(
+        done = await saveBlob(
           new Blob(
             [
               "﻿",
@@ -332,6 +348,12 @@ ${
           picker,
         );
       }
+      // 저장 창을 닫았을 때와 실제로 저장했을 때를 구분해 알려 줍니다.
+      setMessage(done ? "저장했습니다." : "저장을 취소했습니다.");
+    } catch {
+      setMessage(
+        "파일을 만들지 못했습니다. 사진 크기를 줄이거나 다른 형식으로 시도해 주세요.",
+      );
     } finally {
       setBusy(false);
     }
@@ -498,6 +520,7 @@ ${
                   <i />
                   <em />
                 </span>
+                <span className="pick-name">{t.name}</span>
               </label>
             ))}
           </div>
@@ -691,21 +714,41 @@ ${
             </select>
           </Field>
 
+          {message ? (
+            <p className="text-[0.75rem] text-rose-deep">{message}</p>
+          ) : null}
+
           <p className="text-[0.75rem] text-muted">
             입력한 내용과 사진은 서버로 보내지 않고 이 브라우저 안에서만
             처리됩니다.
           </p>
-          <ToolButton
-            onClick={() => {
-              clearDraft(KEY);
-              setData(SAMPLE_RESUME);
-              setPhoto("");
-              setLayout(blankLayout());
-              setSelected(null);
-            }}
-          >
-            처음부터 다시 쓰기
-          </ToolButton>
+
+          {/* 되돌릴 수 없는 동작이라 한 번 더 묻습니다. */}
+          {confirmReset ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[0.75rem] text-ink">
+                작성한 내용이 모두 지워집니다. 계속할까요?
+              </span>
+              <ToolButton
+                onClick={() => {
+                  clearDraft(KEY);
+                  setData(SAMPLE_RESUME);
+                  setPhoto("");
+                  setLayout(blankLayout());
+                  setSelected(null);
+                  setConfirmReset(false);
+                  setMessage("처음 상태로 되돌렸습니다.");
+                }}
+              >
+                네, 지웁니다
+              </ToolButton>
+              <ToolButton onClick={() => setConfirmReset(false)}>취소</ToolButton>
+            </div>
+          ) : (
+            <ToolButton onClick={() => setConfirmReset(true)}>
+              처음부터 다시 쓰기
+            </ToolButton>
+          )}
         </div>
       </>
     );
@@ -733,7 +776,15 @@ ${
         </button>
       }
       toolbar={
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-ivory px-3 py-2">
+        <div className="space-y-2">
+          {/* A4 한 장을 넘기면 아래가 잘립니다. 저장하기 전에 알려 줍니다. */}
+          {overflow ? (
+            <p className="rounded-md border border-rose-mist bg-rose-veil px-3 py-2 text-[0.75rem] text-rose-deep">
+              내용이 A4 한 장을 넘어 아래가 잘립니다. 오래된 항목을 줄이거나
+              블록 크기를 낮춰 주세요.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-ivory px-3 py-2">
           <span className="mr-auto text-[0.6875rem] text-muted">
             {selected
               ? `${RESUME_BLOCK_LABEL[selected]} 선택됨 — 끌어서 옮기세요`
@@ -771,6 +822,7 @@ ${
           >
             배치 초기화
           </ToolButton>
+          </div>
         </div>
       }
     >
