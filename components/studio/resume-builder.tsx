@@ -97,7 +97,12 @@ export function ResumeBuilder() {
   const [overflow, setOverflow] = useState(false);
   const [layoutFilter, setLayoutFilter] = useState("all");
 
-  const [stageRef, stage] = useStageFit(210, 297, { maxScale: 1, padding: 32 });
+  // 좁은 화면에서는 0.55 배 아래로 줄이지 않고 가로로 스크롤해서 봅니다.
+  const [stageRef, stage] = useStageFit(210, 297, {
+    maxScale: 1,
+    minScale: 0.55,
+    padding: 32,
+  });
 
   const restore = useCallback((draft: Draft) => {
     const found = RESUME_TEMPLATES.find((t) => t.id === draft.templateId);

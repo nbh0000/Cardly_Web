@@ -88,7 +88,11 @@ export function CardStudio() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [decoFilter, setDecoFilter] = useState("all");
 
-  const [stageRef, stage] = useStageFit(90, 50, { maxScale: 1.9, padding: 32 });
+  const [stageRef, stage] = useStageFit(90, 50, {
+    maxScale: 1.9,
+    minScale: 0.95,
+    padding: 32,
+  });
   const history = useHistory(items, setItems);
 
   const restore = useCallback((draft: Draft) => {

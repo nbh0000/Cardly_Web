@@ -26,7 +26,11 @@ export const MM = 96 / 25.4; // 1mm 를 CSS px 로
 export function useStageFit(
   naturalWidthMm: number,
   naturalHeightMm: number,
-  { maxScale = 1, padding = 0 }: { maxScale?: number; padding?: number } = {},
+  {
+    maxScale = 1,
+    minScale = 0,
+    padding = 0,
+  }: { maxScale?: number; minScale?: number; padding?: number } = {},
 ) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(maxScale);
@@ -37,13 +41,16 @@ export function useStageFit(
     const naturalWidth = naturalWidthMm * MM;
     const measure = () => {
       const width = node.clientWidth - padding;
-      if (width > 0) setScale(Math.min(maxScale, width / naturalWidth));
+      // 좁은 화면에서 끝까지 줄이면 글자를 읽을 수 없습니다.
+      // 하한 아래로는 줄이지 않고 가로 스크롤로 보게 둡니다.
+      if (width > 0)
+        setScale(Math.max(minScale, Math.min(maxScale, width / naturalWidth)));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [naturalWidthMm, maxScale, padding]);
+  }, [naturalWidthMm, maxScale, minScale, padding]);
 
   // ref 와 치수를 한 객체에 담으면 정적 분석이 객체 전체를 ref 로 보고
   // "렌더 중 ref 접근" 으로 잡습니다. 그래서 따로 돌려줍니다.
