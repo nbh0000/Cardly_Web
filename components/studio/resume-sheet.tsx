@@ -57,7 +57,7 @@ export function ResumeSheet({
     return (
       <div
         key={id}
-        className={`sheet-block ${className} ${selected === id ? "is-on" : ""}`}
+        className={`sheet-block sh-b-${id} ${className} ${selected === id ? "is-on" : ""}`}
         style={{
           left: `${spot.x}%`,
           top: `${spot.y}%`,
@@ -233,7 +233,9 @@ export function ResumeSheet({
 
   return (
     <article {...rootProps}>
-      <header className="sh-head">
+      {/* 증명사진을 올리면 표제가 「좌측 사진 + 우측 인적사항」 짜임으로
+          바뀝니다. 한국 이력서 표준 양식이 그렇게 되어 있습니다. */}
+      <header className={`sh-head${photo ? " has-photo" : ""}`}>
         {photoBlock()}
         {identityBlock()}
         {contactBlock()}

@@ -232,6 +232,41 @@
   background: #ece7e0;
 }
 
+/* --- 증명사진을 넣었을 때의 표제 ---
+   한국 이력서 표준 양식은 증명사진을 좌측 상단에 두고, 그 오른쪽에 성명과
+   연락처를 세웁니다. 사진을 넣기 전에는 레이아웃마다 정한 표제(가운데 정렬,
+   배너, 헤어라인…)를 그대로 쓰고, 사진이 생겼을 때만 이 짜임으로 바꿉니다.
+   사진 칸 높이만큼 오른쪽을 채워야 표준 양식처럼 읽히므로, 성명은 위에
+   연락처는 아래에 붙입니다. */
+.sheet .sh-head.has-photo {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "photo identity"
+    "photo contact";
+  align-content: start;
+  justify-items: start;
+  gap: 3mm 7mm;
+  text-align: left;
+}
+.sheet .sh-head.has-photo .sh-b-photo {
+  grid-area: photo;
+  align-self: start;
+}
+.sheet .sh-head.has-photo .sh-b-identity {
+  grid-area: identity;
+  align-self: start;
+}
+.sheet .sh-head.has-photo .sh-b-contact {
+  grid-area: contact;
+  /* 레이아웃별로 우측으로 밀어 두었던 연락처를 사진 옆으로 되돌립니다. */
+  margin-left: 0;
+  align-self: end;
+  flex-direction: column;
+  gap: 1.3mm;
+  text-align: left;
+}
+
 /* ============ 레이아웃 1 · classic : 가운데 정렬 표제 ============ */
 .sheet-classic {
   padding: 19mm 18mm;
