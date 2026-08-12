@@ -2,8 +2,10 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import { type FontId, fontGroupsFor, fontStack, toFontId } from "@/lib/fonts";
+import { asset } from "@/lib/asset";
 import {
   ADDABLE,
+  CARD_GROUPS,
   CARD_TEMPLATES,
   type CardCorner,
   type CardItem,
@@ -14,6 +16,7 @@ import {
   PAPER_LABEL,
   SAMPLE_ITEMS,
   SHAPE_TYPES,
+  type Slot,
 } from "@/lib/studio/card-templates";
 import {
   canvasToBlob,
@@ -118,8 +121,9 @@ export function CardStudio() {
     setPaper(t.paper);
     setCorner(t.corner);
     // 앞면 기본 요소만 템플릿이 정한 자리로 옮깁니다. 직접 추가한
-    // 요소와 뒷면은 그대로 둡니다.
-    const spots: Record<string, [number, number]> = {
+    // 요소와 뒷면은 그대로 둡니다. 배치에는 글자 크기도 들어 있어,
+    // 이름을 크게 앉히는 템플릿과 절제된 템플릿이 서로 다르게 읽힙니다.
+    const spots: Record<string, Slot> = {
       company: t.placement.company,
       name: t.placement.name,
       role: t.placement.role,
@@ -131,7 +135,13 @@ export function CardStudio() {
       list.map((item) => {
         const spot = item.side === "front" ? spots[item.id] : undefined;
         if (!spot) return item;
-        return { ...item, x: spot[0], y: spot[1], align: t.placement.align };
+        return {
+          ...item,
+          x: spot[0],
+          y: spot[1],
+          size: spot[2] ?? 100,
+          align: t.placement.align,
+        };
       }),
     );
   };
@@ -249,15 +259,12 @@ export function CardStudio() {
 
   /* -------------------- 패널 -------------------- */
 
-  const decoIds = useMemo(
-    () => Array.from(new Set(CARD_TEMPLATES.map((t) => t.deco))),
-    [],
-  );
+  // 198종을 한 줄로 늘어놓으면 고를 수가 없어 갈래로 거릅니다.
   const visible = useMemo(
     () =>
       decoFilter === "all"
         ? CARD_TEMPLATES
-        : CARD_TEMPLATES.filter((t) => t.deco === decoFilter),
+        : CARD_TEMPLATES.filter((t) => t.group === decoFilter),
     [decoFilter],
   );
 
@@ -273,12 +280,12 @@ export function CardStudio() {
                 value={decoFilter}
                 onChange={(e) => setDecoFilter(e.target.value)}
                 className="ipt w-auto py-1 text-[0.6875rem]"
-                aria-label="장식으로 거르기"
+                aria-label="갈래로 거르기"
               >
                 <option value="all">전체</option>
-                {decoIds.map((id) => (
-                  <option key={id} value={id}>
-                    {CARD_TEMPLATES.find((t) => t.deco === id)!.name.split(" ")[1]}
+                {CARD_GROUPS.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
                   </option>
                 ))}
               </select>
@@ -303,6 +310,14 @@ export function CardStudio() {
                       "--ac": t.accent,
                       "--bg": t.bg,
                       "--tx": t.text,
+                      // 아트는 배경 사진을, 심플은 CSS 로 그린 면을 깝니다.
+                      backgroundImage: t.art
+                        ? `url(${asset("/" + t.art.url)})`
+                        : undefined,
+                      backgroundPosition: t.art?.position,
+                      // 아틀라스는 4열 × 5행이라 한 칸이 카드 한 장 크기가 됩니다.
+                      backgroundSize: t.art ? "400% 500%" : undefined,
+                      background: t.surface,
                       borderColor: template.id === t.id ? "#8a6558" : undefined,
                       boxShadow:
                         template.id === t.id ? "0 0 0 2px #8a6558" : undefined,
@@ -680,6 +695,22 @@ export function CardStudio() {
                 if (e.target === e.currentTarget) setSelected(null);
               }}
             >
+              {/* 배경 사진·CSS 면은 글자 아래 별도 층에 깔아, 색을 바꿔도
+                  배경이 지워지지 않게 합니다. 뒷면에는 깔지 않습니다. */}
+              {side === "front" && (template.art || template.surface) && (
+                <span
+                  className="card-art"
+                  style={
+                    template.art
+                      ? {
+                          backgroundImage: `url(${asset("/" + template.art.url)})`,
+                          backgroundPosition: template.art.position,
+                          backgroundSize: "400% 500%",
+                        }
+                      : { background: template.surface }
+                  }
+                />
+              )}
               <span className="card-deco" />
               {showSafe ? <span className="card-safe" /> : null}
               {items

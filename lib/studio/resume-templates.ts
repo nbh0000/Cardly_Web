@@ -1,5 +1,5 @@
 /**
- * 이력서 템플릿 — 레이아웃 6종 × 색 팔레트 6종 = 36종.
+ * 이력서 템플릿 — 레이아웃 6종 × 색 팔레트 11종 = 66종.
  *
  * 썸네일과 A4 시트 모두 CSS(app/studio.css)로만 그립니다. 이미지 에셋이
  * 없으므로 배포 용량이 늘지 않고, html2canvas 캡처에서도 그대로 재현됩니다.
@@ -38,6 +38,12 @@ const LAYOUTS: { id: ResumeLayoutId; label: string }[] = [
   { id: "split", label: "스플릿" },
 ];
 
+/**
+ * 색 팔레트 11종.
+ *
+ * 뒤쪽 다섯은 예전 Cardly 가 쓰던 색조를 되살린 것입니다. 앞의 여섯보다
+ * 채도가 조금 높아, 같은 계열이라도 인상이 다르게 읽힙니다.
+ */
 const PALETTES = [
   { key: "ink", label: "뉴트럴", accent: "#33302c", soft: "#f2efea", paper: "#ffffff", ink: "#23201d" },
   { key: "navy", label: "네이비", accent: "#22364f", soft: "#eaeff6", paper: "#ffffff", ink: "#1f242b" },
@@ -45,6 +51,11 @@ const PALETTES = [
   { key: "burgundy", label: "버건디", accent: "#5c2b33", soft: "#f6ebed", paper: "#ffffff", ink: "#262023" },
   { key: "taupe", label: "토프", accent: "#8a6558", soft: "#f4eae5", paper: "#fffdfa", ink: "#2e2a27" },
   { key: "slate", label: "슬레이트", accent: "#3c4450", soft: "#eef0f3", paper: "#ffffff", ink: "#222528" },
+  { key: "midnight", label: "미드나잇", accent: "#182433", soft: "#edf1f5", paper: "#ffffff", ink: "#1d232b" },
+  { key: "cobalt", label: "코발트", accent: "#254a73", soft: "#edf4fa", paper: "#ffffff", ink: "#1f2730" },
+  { key: "sage", label: "세이지", accent: "#315f52", soft: "#edf5f1", paper: "#ffffff", ink: "#1f2724" },
+  { key: "rosewood", label: "로즈우드", accent: "#70464c", soft: "#f7efef", paper: "#ffffff", ink: "#282124" },
+  { key: "violet", label: "바이올렛", accent: "#5c536e", soft: "#f2eff7", paper: "#ffffff", ink: "#242128" },
 ];
 
 export const RESUME_TEMPLATES: ResumeTemplate[] = LAYOUTS.flatMap(
@@ -58,7 +69,7 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = LAYOUTS.flatMap(
       paper: palette.paper,
       ink: palette.ink,
       // 레이아웃마다 한 종류씩만 영문 헤딩으로 — 외국계 지원용
-      english: (layoutIndex + paletteIndex) % 6 === 5,
+      english: (layoutIndex + paletteIndex) % 11 === 5,
     })),
 );
 

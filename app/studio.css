@@ -662,6 +662,17 @@
   );
 }
 
+/* --- 배경 사진·면 ---
+   아트 템플릿의 배경 사진과 심플 템플릿의 CSS 면이 깔리는 층입니다.
+   글자(z-index 1 이상)보다 아래, 종이 질감보다 위에 놓습니다. */
+.card-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
 /* --- 장식 --- */
 .card-deco {
   position: absolute;

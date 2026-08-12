@@ -54,9 +54,17 @@ const KEY = "cardly-resume-v2";
    또렷한 고딕·명조만 고를 수 있게 둡니다. */
 const FONT_GROUPS = fontGroupsFor("resume");
 
+/**
+ * 저장 형식. 지원처가 요구하는 형식이 제각각이라 다섯 가지를 모두 둡니다.
+ * PDF·이미지는 지금 보고 있는 A4 조판을 그대로 뜨고, Word·HTML·TXT 는
+ * 입력한 글을 문서로 다시 짭니다. TXT 는 채용 시스템이 기계로 읽는 경우에
+ * 씁니다 — 조판은 사라지지만 글자는 확실히 전달됩니다.
+ */
 const FORMATS: [string, string, string, string][] = [
   ["pdf", "PDF 문서", "application/pdf", "pdf"],
   ["docx", "Word 문서", "application/msword", "doc"],
+  ["html", "HTML 문서", "text/html", "html"],
+  ["txt", "텍스트 문서", "text/plain", "txt"],
   ["png", "이미지", "image/png", "png"],
 ];
 
@@ -241,6 +249,56 @@ export function ResumeBuilder() {
   const filename = (ext: string) =>
     `${(data.name || "resume").replace(/\s+/g, "")}_이력서.${ext}`;
 
+  /**
+   * 조판 없이 글자만 남기는 판.
+   *
+   * 채용 시스템이 파일을 기계로 훑는 경우 표와 段이 오히려 방해가 됩니다.
+   * 기간은 줄 끝이 아니라 괄호 안에 넣어, 줄바꿈이 달라져도 어느 경력의
+   * 기간인지 잃지 않게 했습니다.
+   */
+  const documentText = () => {
+    const lines: string[] = [];
+    const heading = (key: string) =>
+      SECTION_HEADING[key]![template.english ? 1 : 0];
+
+    lines.push(data.name + (data.nameEn ? ` (${data.nameEn})` : ""));
+    if (data.title) lines.push(data.title);
+    const contact = [data.email, data.phone, data.links].filter(Boolean);
+    if (contact.length) lines.push(contact.join("  |  "));
+
+    if (data.summary.trim()) {
+      lines.push("", heading("summary"), "-".repeat(24));
+      lines.push(...data.summary.split("\n").filter((l) => l.trim()));
+    }
+
+    for (const key of ENTRY_SECTIONS) {
+      const rows = data[key].filter(
+        (e) => e.org.trim() || e.role.trim() || e.bullets.trim(),
+      );
+      if (!rows.length) continue;
+      lines.push("", heading(key), "-".repeat(24));
+      for (const e of rows) {
+        const head = [e.org, e.role].filter(Boolean).join(" · ");
+        lines.push(e.period ? `${head} (${e.period})` : head);
+        for (const bullet of e.bullets.split("\n").filter((l) => l.trim())) {
+          lines.push(`  - ${bullet.trim()}`);
+        }
+      }
+    }
+
+    if (data.skills.trim()) {
+      lines.push("", heading("skills"), "-".repeat(24));
+      lines.push(
+        data.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .join(", "),
+      );
+    }
+    return lines.join("\r\n");
+  };
+
   const documentHtml = () => {
     const entries = (key: EntrySection) =>
       data[key]
@@ -343,6 +401,21 @@ ${
       } else if (format === "png") {
         const canvas = await captureCanvas(el, 2.5);
         done = await saveBlob(await canvasToBlob(canvas), filename("png"), picker);
+      } else if (format === "html") {
+        done = await saveBlob(
+          new Blob([documentHtml()], { type: `${mime};charset=utf-8` }),
+          filename("html"),
+          picker,
+        );
+      } else if (format === "txt") {
+        // BOM 을 붙여야 메모장이 한글을 깨뜨리지 않고 엽니다.
+        done = await saveBlob(
+          new Blob(["﻿", documentText()], {
+            type: `${mime};charset=utf-8`,
+          }),
+          filename("txt"),
+          picker,
+        );
       } else {
         done = await saveBlob(
           new Blob(
