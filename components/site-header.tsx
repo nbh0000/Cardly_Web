@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const NAV = [
-  { href: "/templates", label: "청첩장 템플릿" },
-  { href: "/editor/linen", label: "편집기" },
-  { href: "/preview/linen", label: "샘플 보기" },
+  { href: "/resume", label: "이력서" },
+  { href: "/business-card", label: "명함" },
+  { href: "/templates", label: "모바일 청첩장" },
 ];
 
 export function SiteHeader() {
@@ -40,9 +40,9 @@ export function SiteHeader() {
           href="/"
           className="font-serif text-xl tracking-tight text-ink md:text-2xl"
         >
-          다온
+          Cardly
           <span className="ml-1.5 align-super text-[0.5em] tracking-[0.24em] text-rose-deep">
-            DAON
+            KR
           </span>
         </Link>
 
@@ -65,8 +65,8 @@ export function SiteHeader() {
           >
             요금 안내
           </Link>
-          <Link href="/templates" className="btn btn-primary btn-sm">
-            청첩장 만들기
+          <Link href="/resume" className="btn btn-primary btn-sm">
+            무료로 만들기
           </Link>
         </div>
 
@@ -111,11 +111,11 @@ export function SiteHeader() {
           ))}
           <div className="py-6">
             <Link
-              href="/templates"
+              href="/resume"
               onClick={() => setOpen(false)}
               className="btn btn-primary w-full"
             >
-              청첩장 만들기
+              무료로 만들기
             </Link>
           </div>
         </nav>

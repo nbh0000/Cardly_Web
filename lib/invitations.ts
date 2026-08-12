@@ -45,9 +45,8 @@ export function getInvitationTemplate(rec: InvitationRecord) {
 /**
  * 카카오톡 링크 미리보기에 쓸 이미지 경로.
  *
- * metadataBase 가 https://…/wedding-web/ 라서, 앞에 슬래시가 붙은 경로를
- * 주면 basePath 가 날아가고 https://…github.io/invitations/… 가 됩니다.
- * 그래서 슬래시를 떼어 상대 경로로 돌려줍니다.
+ * basePath 아래에 배포될 때 앞에 슬래시가 붙은 경로를 주면 basePath 가
+ * 날아가 버립니다. 그래서 슬래시를 떼어 상대 경로로 돌려줍니다.
  */
 export function ogImagePath(data: InvitationData): string {
   const src = data.shareImage ?? data.coverPhoto;

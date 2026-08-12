@@ -1,0 +1,656 @@
+"use client";
+
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  ADDABLE,
+  CARD_TEMPLATES,
+  type CardCorner,
+  type CardItem,
+  type CardPaper,
+  type CardTemplate,
+  CORNER_LABEL,
+  DEFAULT_CARD_TEMPLATE,
+  PAPER_LABEL,
+  SAMPLE_ITEMS,
+  SHAPE_TYPES,
+} from "@/lib/studio/card-templates";
+import { canvasToBlob, captureCanvas, readImageFile, saveBlob } from "@/lib/studio/export";
+import {
+  DataPanel,
+  Field,
+  MM,
+  Panel,
+  ToolButton,
+  useDraft,
+  useHistory,
+  usePointerDrag,
+  useStageFit,
+} from "./kit";
+
+const KEY = "cardly-card-v2";
+
+const FONTS: [string, string][] = [
+  ["var(--font-sans), sans-serif", "고딕"],
+  ["var(--font-serif), serif", "명조"],
+];
+
+type Draft = {
+  templateId: string;
+  items: CardItem[];
+  colors: { bg: string; text: string; accent: string };
+  paper: CardPaper;
+  corner: CardCorner;
+  font: string;
+};
+
+export function CardStudio() {
+  const cardRef = useRef<HTMLElement>(null);
+  const [template, setTemplate] = useState<CardTemplate>(DEFAULT_CARD_TEMPLATE);
+  const [items, setItems] = useState<CardItem[]>(SAMPLE_ITEMS);
+  const [colors, setColors] = useState({
+    bg: DEFAULT_CARD_TEMPLATE.bg,
+    text: DEFAULT_CARD_TEMPLATE.text,
+    accent: DEFAULT_CARD_TEMPLATE.accent,
+  });
+  const [paper, setPaper] = useState<CardPaper>(DEFAULT_CARD_TEMPLATE.paper);
+  const [corner, setCorner] = useState<CardCorner>(DEFAULT_CARD_TEMPLATE.corner);
+  const [font, setFont] = useState(FONTS[0][0]);
+  const [side, setSide] = useState<"front" | "back">("front");
+  const [selected, setSelected] = useState<string | null>(null);
+  const [addType, setAddType] = useState("text");
+  const [showSafe, setShowSafe] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [decoFilter, setDecoFilter] = useState("all");
+
+  // 명함은 실제 크기가 작아 확대해서 보여줍니다 (좌우 여백 48px 제외).
+  const [stageRef, stage] = useStageFit(90, 50, { maxScale: 1.9, padding: 48 });
+  const history = useHistory(items, setItems);
+
+  const restore = useCallback((draft: Draft) => {
+    const found = CARD_TEMPLATES.find((t) => t.id === draft.templateId);
+    if (found) setTemplate(found);
+    if (Array.isArray(draft.items) && draft.items.length) setItems(draft.items);
+    if (draft.colors) setColors(draft.colors);
+    if (draft.paper) setPaper(draft.paper);
+    if (draft.corner) setCorner(draft.corner);
+    if (draft.font) setFont(draft.font);
+  }, []);
+
+  const snapshot: Draft = useMemo(
+    () => ({ templateId: template.id, items, colors, paper, corner, font }),
+    [template.id, items, colors, paper, corner, font],
+  );
+  useDraft<Draft>(KEY, snapshot, restore);
+
+  /* -------------------- 템플릿 적용 -------------------- */
+
+  const applyTemplate = (t: CardTemplate) => {
+    history.remember();
+    setTemplate(t);
+    setColors({ bg: t.bg, text: t.text, accent: t.accent });
+    setPaper(t.paper);
+    setCorner(t.corner);
+    // 앞면 기본 요소는 템플릿이 정한 자리로 옮깁니다. 사용자가 추가한
+    // 요소와 뒷면은 건드리지 않습니다.
+    const spots: Record<string, [number, number]> = {
+      company: t.placement.company,
+      name: t.placement.name,
+      role: t.placement.role,
+      email: t.placement.contacts[0],
+      phone: t.placement.contacts[1],
+      website: t.placement.contacts[2],
+    };
+    setItems((list) =>
+      list.map((item) => {
+        const spot = item.side === "front" ? spots[item.id] : undefined;
+        if (!spot) return item;
+        return { ...item, x: spot[0], y: spot[1], align: t.placement.align };
+      }),
+    );
+  };
+
+  /* -------------------- 요소 편집 -------------------- */
+
+  const patch = useCallback(
+    (id: string, next: Partial<CardItem>) =>
+      setItems((list) =>
+        list.map((item) => (item.id === id ? { ...item, ...next } : item)),
+      ),
+    [],
+  );
+
+  const dragOrigin = useRef<{ id: string; x: number; y: number } | null>(null);
+
+  const startDrag = usePointerDrag({
+    boundsRef: cardRef as React.RefObject<HTMLElement | null>,
+    onMove: (dx, dy) => {
+      const origin = dragOrigin.current;
+      if (!origin) return;
+      patch(origin.id, {
+        x: Math.max(0, Math.min(96, origin.x + dx)),
+        y: Math.max(0, Math.min(94, origin.y + dy)),
+      });
+    },
+  });
+
+  const onItemPointerDown = (e: React.PointerEvent, item: CardItem) => {
+    dragOrigin.current = { id: item.id, x: item.x, y: item.y };
+    history.remember();
+    setSelected(item.id);
+    startDrag(e);
+  };
+
+  const addItem = () => {
+    const preset = ADDABLE.find(([type]) => type === addType);
+    if (!preset) return;
+    history.remember();
+    const id = `el-${Date.now().toString(36)}`;
+    setItems((list) => [
+      ...list,
+      {
+        id,
+        type: preset[0],
+        text: preset[2],
+        x: 40,
+        y: 45,
+        size: 100,
+        side,
+        align: template.placement.align,
+      },
+    ]);
+    setSelected(id);
+  };
+
+  const addImage = async (file: File | undefined) => {
+    const src = await readImageFile(file);
+    if (!src) return;
+    history.remember();
+    const id = `img-${Date.now().toString(36)}`;
+    setItems((list) => [
+      ...list,
+      { id, type: "image", text: "", src, x: 10, y: 12, size: 100, side },
+    ]);
+    setSelected(id);
+  };
+
+  const current = items.find((i) => i.id === selected) ?? null;
+
+  const duplicate = () => {
+    if (!current) return;
+    history.remember();
+    const copy = {
+      ...current,
+      id: `el-${Date.now().toString(36)}`,
+      x: Math.min(90, current.x + 4),
+      y: Math.min(88, current.y + 4),
+    };
+    setItems((list) => [...list, copy]);
+    setSelected(copy.id);
+  };
+
+  const removeItem = () => {
+    if (!current) return;
+    history.remember();
+    setItems((list) => list.filter((i) => i.id !== current.id));
+    setSelected(null);
+  };
+
+  /* -------------------- 저장 -------------------- */
+
+  const save = async (both = false) => {
+    const el = cardRef.current;
+    if (!el || busy) return;
+    setBusy(true);
+    setSelected(null);
+    const wasSafe = showSafe;
+    setShowSafe(false);
+    try {
+      await new Promise((r) => requestAnimationFrame(() => r(null)));
+      if (!both) {
+        const canvas = await captureCanvas(el, 8, true);
+        await saveBlob(
+          await canvasToBlob(canvas),
+          `명함_${side === "front" ? "앞면" : "뒷면"}.png`,
+          { description: "PNG 이미지", mime: "image/png", extension: "png" },
+        );
+      } else {
+        for (const target of ["front", "back"] as const) {
+          setSide(target);
+          await new Promise((r) => setTimeout(r, 60));
+          const canvas = await captureCanvas(el, 8, true);
+          await saveBlob(
+            await canvasToBlob(canvas),
+            `명함_${target === "front" ? "앞면" : "뒷면"}.png`,
+          );
+        }
+      }
+    } finally {
+      setShowSafe(wasSafe);
+      setBusy(false);
+    }
+  };
+
+  /* -------------------- 화면 -------------------- */
+
+  const decoIds = useMemo(
+    () => Array.from(new Set(CARD_TEMPLATES.map((t) => t.deco))),
+    [],
+  );
+  const visible = useMemo(
+    () =>
+      decoFilter === "all"
+        ? CARD_TEMPLATES
+        : CARD_TEMPLATES.filter((t) => t.deco === decoFilter),
+    [decoFilter],
+  );
+
+  const isShape = current ? SHAPE_TYPES.includes(current.type) : false;
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[380px_1fr] lg:items-start">
+      {/* ---------------- 왼쪽 ---------------- */}
+      <div className="space-y-5">
+        <Panel
+          title={`템플릿 ${CARD_TEMPLATES.length}종`}
+          action={
+            <select
+              value={decoFilter}
+              onChange={(e) => setDecoFilter(e.target.value)}
+              className="ipt w-auto py-1 text-[0.6875rem]"
+              aria-label="장식 종류로 거르기"
+            >
+              <option value="all">전체</option>
+              {decoIds.map((id) => (
+                <option key={id} value={id}>
+                  {CARD_TEMPLATES.find((t) => t.deco === id)!.name.split(" ")[1]}
+                </option>
+              ))}
+            </select>
+          }
+        >
+          <div className="grid max-h-96 grid-cols-3 gap-2.5 overflow-y-auto pr-1">
+            {visible.map((t) => (
+              <button
+                type="button"
+                key={t.id}
+                title={t.name}
+                aria-pressed={template.id === t.id}
+                onClick={() => applyTemplate(t)}
+                className="pick"
+              >
+                <span
+                  className="cthumb"
+                  data-deco={t.deco}
+                  data-align={t.placement.align}
+                  style={
+                    {
+                      "--ac": t.accent,
+                      "--bg": t.bg,
+                      "--tx": t.text,
+                      borderColor: template.id === t.id ? "#8a6558" : undefined,
+                      boxShadow:
+                        template.id === t.id ? "0 0 0 2px #8a6558" : undefined,
+                    } as React.CSSProperties
+                  }
+                >
+                  <em />
+                  <b />
+                  <i />
+                </span>
+              </button>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="종이와 색">
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-3">
+              {(
+                [
+                  ["accent", "포인트"],
+                  ["bg", "배경"],
+                  ["text", "글자"],
+                ] as const
+              ).map(([key, label]) => (
+                <Field key={key} label={label}>
+                  <input
+                    type="color"
+                    className="h-9 w-full cursor-pointer rounded-md border border-line bg-white"
+                    value={colors[key]}
+                    onChange={(e) =>
+                      setColors({ ...colors, [key]: e.target.value })
+                    }
+                  />
+                </Field>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="용지">
+                <select
+                  className="ipt"
+                  value={paper}
+                  onChange={(e) => setPaper(e.target.value as CardPaper)}
+                >
+                  {PAPER_LABEL.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="모서리">
+                <select
+                  className="ipt"
+                  value={corner}
+                  onChange={(e) => setCorner(e.target.value as CardCorner)}
+                >
+                  {CORNER_LABEL.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <Field label="글꼴">
+              <select
+                className="ipt"
+                value={font}
+                onChange={(e) => setFont(e.target.value)}
+              >
+                {FONTS.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-line px-3 py-3 text-[0.75rem] text-ink-soft transition-colors hover:border-rose">
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={(e) => addImage(e.target.files?.[0])}
+              />
+              로고·이미지 추가
+              <span className="ml-auto text-[0.6875rem] text-hint">
+                {side === "front" ? "앞면" : "뒷면"}에 올라갑니다
+              </span>
+            </label>
+            <label className="flex items-center gap-2 text-[0.75rem] text-ink-soft">
+              <input
+                type="checkbox"
+                checked={showSafe}
+                onChange={(e) => setShowSafe(e.target.checked)}
+              />
+              재단 안전선 보기 (사방 3mm)
+            </label>
+          </div>
+        </Panel>
+
+        {/* 선택한 요소 */}
+        <Panel
+          title="선택한 요소"
+          action={
+            <ToolButton
+              onClick={() => {
+                history.remember();
+                setItems(SAMPLE_ITEMS);
+                setSelected(null);
+              }}
+            >
+              내용 초기화
+            </ToolButton>
+          }
+        >
+          {current ? (
+            <div className="space-y-3">
+              {!isShape ? (
+                <Field label="텍스트">
+                  <input
+                    className="ipt"
+                    value={current.text}
+                    onChange={(e) => patch(current.id, { text: e.target.value })}
+                  />
+                </Field>
+              ) : null}
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="크기">
+                  <input
+                    type="range"
+                    min={50}
+                    max={200}
+                    className="w-full"
+                    value={current.size}
+                    onChange={(e) => patch(current.id, { size: +e.target.value })}
+                  />
+                </Field>
+                <Field label="개별 색상">
+                  <input
+                    type="color"
+                    className="h-9 w-full cursor-pointer rounded-md border border-line bg-white"
+                    value={current.color || colors.text}
+                    onChange={(e) => patch(current.id, { color: e.target.value })}
+                  />
+                </Field>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <ToolButton
+                  onClick={() =>
+                    patch(current.id, {
+                      align: current.align === "center" ? "left" : "center",
+                    })
+                  }
+                >
+                  {current.align === "center" ? "왼쪽 정렬" : "가운데 정렬"}
+                </ToolButton>
+                <ToolButton onClick={duplicate}>복제</ToolButton>
+                <ToolButton
+                  onClick={() => {
+                    history.remember();
+                    patch(current.id, { x: 50, y: 45, align: "center" });
+                  }}
+                >
+                  가운데로
+                </ToolButton>
+                <ToolButton onClick={removeItem}>삭제</ToolButton>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[0.75rem] text-hint">
+              캔버스에서 요소를 누르면 여기서 편집할 수 있습니다. 글자는 캔버스
+              위에서 두 번 눌러 바로 고칠 수도 있습니다.
+            </p>
+          )}
+        </Panel>
+
+        <Panel title="요소 추가">
+          <div className="flex gap-2">
+            <select
+              className="ipt"
+              value={addType}
+              onChange={(e) => setAddType(e.target.value)}
+              aria-label="추가할 요소"
+            >
+              {ADDABLE.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm shrink-0"
+              onClick={addItem}
+            >
+              ＋ 추가
+            </button>
+          </div>
+        </Panel>
+
+        <DataPanel<Draft>
+          storageKey={KEY}
+          filename="cardly-card-backup.json"
+          snapshot={() => snapshot}
+          onRestore={restore}
+          onReset={() => {
+            setItems(SAMPLE_ITEMS);
+            setSelected(null);
+          }}
+        />
+      </div>
+
+      {/* ---------------- 오른쪽 ---------------- */}
+      <div className="space-y-4 lg:sticky lg:top-24">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-white px-4 py-3">
+          <div className="mr-auto flex rounded-full bg-cream p-0.5">
+            {(["front", "back"] as const).map((value) => (
+              <button
+                type="button"
+                key={value}
+                onClick={() => {
+                  setSide(value);
+                  setSelected(null);
+                }}
+                aria-pressed={side === value}
+                className={`rounded-full px-4 py-1.5 text-[0.75rem] transition-colors ${
+                  side === value
+                    ? "bg-white text-ink shadow-soft"
+                    : "text-muted hover:text-ink"
+                }`}
+              >
+                {value === "front" ? "앞면" : "뒷면"}
+              </button>
+            ))}
+          </div>
+          <span className="text-[0.6875rem] text-hint">90 × 50 mm</span>
+          <ToolButton disabled={!history.canUndo} onClick={history.undo}>
+            ↶ 되돌리기
+          </ToolButton>
+          <ToolButton disabled={!history.canRedo} onClick={history.redo}>
+            ↷ 다시
+          </ToolButton>
+        </div>
+
+        <div
+          ref={stageRef}
+          className="stage grid place-items-center rounded-lg bg-sand/50 p-6"
+        >
+          {/* 바깥 상자는 배율이 적용된 크기를 차지해 가운데 정렬이 맞고,
+              안쪽 상자만 실제 mm 크기로 두고 transform 으로 키웁니다. */}
+          <div
+            style={{
+              width: stage.width,
+              height: stage.height,
+              filter: "drop-shadow(0 12px 26px rgb(46 42 39 / 0.18))",
+            }}
+          >
+            <div
+              data-fit
+              style={{
+                transform: `scale(${stage.scale})`,
+                transformOrigin: "top left",
+                width: 90 * MM,
+                height: 50 * MM,
+              }}
+            >
+            <article
+              ref={cardRef}
+              className="card"
+              data-paper={paper}
+              data-corner={corner}
+              data-deco={template.deco}
+              style={
+                {
+                  "--ac": colors.accent,
+                  "--bg": colors.bg,
+                  "--tx": colors.text,
+                  fontFamily: font,
+                } as React.CSSProperties
+              }
+              onPointerDown={(e) => {
+                if (e.target === e.currentTarget) setSelected(null);
+              }}
+            >
+              <span className="card-deco" />
+              {showSafe ? <span className="card-safe" /> : null}
+              {items
+                .filter((item) => item.side === side)
+                .map((item) => {
+                  const shape = SHAPE_TYPES.includes(item.type);
+                  const centered = item.align === "center";
+                  return (
+                    <div
+                      key={item.id}
+                      className={`card-el el-${item.type} ${
+                        selected === item.id ? "is-on" : ""
+                      }`}
+                      data-align={item.align ?? "left"}
+                      style={{
+                        left: `${item.x}%`,
+                        top: `${item.y}%`,
+                        transform: `${centered ? "translateX(-50%) " : ""}scale(${
+                          item.size / 100
+                        })`,
+                        color: item.color || undefined,
+                      }}
+                      onPointerDown={(e) => onItemPointerDown(e, item)}
+                      onClick={() => setSelected(item.id)}
+                      tabIndex={0}
+                      role={shape ? "button" : "textbox"}
+                      aria-label={
+                        shape
+                          ? `${item.type} 요소`
+                          : `${item.text || "빈 텍스트"} 편집`
+                      }
+                      contentEditable={!shape}
+                      suppressContentEditableWarning
+                      onBlur={(e) => {
+                        const text = e.currentTarget.textContent ?? "";
+                        if (text === item.text) return;
+                        history.remember();
+                        patch(item.id, { text });
+                      }}
+                    >
+                      {item.type === "image" && item.src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.src} alt="올린 이미지" />
+                      ) : shape ? null : (
+                        item.text
+                      )}
+                    </div>
+                  );
+                })}
+            </article>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white px-4 py-4">
+          <div className="mr-auto">
+            <p className="text-[0.8125rem] text-ink">인쇄용 PNG 저장</p>
+            <p className="text-[0.6875rem] text-hint">
+              90 × 50 mm 실제 크기, 약 800dpi로 저장됩니다
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => save(true)}
+            disabled={busy}
+          >
+            앞뒤 모두
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => save(false)}
+            disabled={busy}
+          >
+            {busy ? "만드는 중…" : `${side === "front" ? "앞면" : "뒷면"} 저장 ↓`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

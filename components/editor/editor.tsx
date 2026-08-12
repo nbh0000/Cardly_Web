@@ -159,7 +159,7 @@ export function Editor({ templateId }: { templateId: string }) {
 
   /** 청첩장 링크 QR 을 SVG 로 만들어 내려받습니다. */
   const downloadQr = () => {
-    // GitHub Pages 는 /wedding-web 아래에 배포되므로 origin 만 쓰면 404 가 됩니다.
+    // basePath 아래에 배포될 수도 있어 origin 만 쓰면 404 가 됩니다.
     // 현재 주소(.../editor/<id>)에서 basePath 를 그대로 떼어 씁니다.
     const base = window.location.pathname.replace(/\/editor\/.*$/, "");
     const url = `${window.location.origin}${base}/preview/${template.id}`;
@@ -224,9 +224,9 @@ export function Editor({ templateId }: { templateId: string }) {
       <header className="flex h-14 shrink-0 items-center justify-between gap-6 border-b border-line bg-ivory px-4 lg:px-6">
         <div className="flex items-center gap-8">
           <Link href="/" className="font-serif text-lg tracking-tight text-ink">
-            다온
+            Cardly
             <span className="ml-1 align-super text-[0.5em] tracking-[0.24em] text-rose-deep">
-              DAON
+              KR
             </span>
           </Link>
           <nav className="hidden items-center gap-7 xl:flex">

@@ -67,29 +67,101 @@ const cormorant = Cormorant_Garamond({
   preload: false,
 });
 
+const DESCRIPTION = `이력서와 명함은 무료로, 모바일 청첩장은 ${TEMPLATES.length}종 템플릿으로. 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요.`;
+
 export const metadata: Metadata = {
-  // GitHub Pages 배포 주소. 커스텀 도메인을 붙이면 여기만 바꾸면 됩니다.
-  metadataBase: new URL("https://nbh0000.github.io/wedding-web/"),
+  // 운영 도메인. 상대 경로로 적은 canonical·OG 주소가 모두 이 값을 기준으로 절대화됩니다.
+  metadataBase: new URL("https://cardly.kr"),
   title: {
-    default: "다온 · 모바일 청첩장 — 두 사람의 이야기를 가장 아름답게",
-    template: "%s | 다온",
+    default: "Cardly — 무료 이력서·명함 제작과 모바일 청첩장",
+    template: "%s | Cardly",
   },
-  description: `감성적인 모바일 청첩장을 5분 만에. ${TEMPLATES.length}종의 디자인 템플릿, 실시간 참석 응답, 마음 전하는 곳, 카카오톡 공유 최적화까지 한 번에.`,
+  description: DESCRIPTION,
+  applicationName: "Cardly",
   keywords: [
+    "이력서 양식",
+    "무료 이력서",
+    "명함 만들기",
+    "명함 템플릿",
     "모바일청첩장",
-    "청첩장",
-    "웨딩",
-    "결혼식",
-    "모바일초대장",
-    "청첩장제작",
+    "청첩장 제작",
+    "무료 디자인 도구",
   ],
+  alternates: { canonical: "/" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  verification: {
+    // 네이버 서치어드바이저에 등록된 소유확인 토큰 (cardly.kr)
+    other: {
+      "naver-site-verification": [
+        "da5859227b656d21349aeddc0596b4a8fc0ed51d",
+        "b4bb26ab0352b04a9bf6de04d74bfde792625e4b",
+      ],
+    },
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
-    siteName: "다온",
-    title: "다온 · 모바일 청첩장",
-    description: `감성적인 모바일 청첩장을 5분 만에. ${TEMPLATES.length}종의 디자인 템플릿과 하객 응답 기능.`,
+    url: "/",
+    siteName: "Cardly",
+    title: "Cardly — 무료 이력서·명함 제작과 모바일 청첩장",
+    description: DESCRIPTION,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cardly — 무료 이력서·명함 제작과 모바일 청첩장",
+    description: DESCRIPTION,
+  },
+};
+
+/** 사이트 전체를 설명하는 구조화 데이터 — 검색 결과의 사이트명·도구 목록에 쓰입니다. */
+const SITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://cardly.kr/#website",
+      url: "https://cardly.kr/",
+      name: "Cardly",
+      alternateName: "카들리",
+      inLanguage: "ko-KR",
+      description: DESCRIPTION,
+      publisher: { "@id": "https://cardly.kr/#organization" },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://cardly.kr/#organization",
+      name: "Cardly",
+      url: "https://cardly.kr/",
+    },
+    {
+      "@type": "ItemList",
+      name: "Cardly 제작 도구",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "무료 이력서 만들기",
+          url: "https://cardly.kr/resume/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "무료 명함 만들기",
+          url: "https://cardly.kr/business-card/",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "모바일 청첩장 만들기",
+          url: "https://cardly.kr/templates/",
+        },
+      ],
+    },
+  ],
 };
 
 export const viewport: Viewport = {
@@ -111,6 +183,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           본문 바로가기
         </a>
         {children}
+        <script
+          type="application/ld+json"
+          // 저장소 안의 상수만 직렬화하므로 외부 입력이 섞이지 않습니다.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(SITE_JSON_LD) }}
+        />
       </body>
     </html>
   );

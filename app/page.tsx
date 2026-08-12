@@ -23,13 +23,13 @@ export default function Home() {
         <section className="py-section">
           <div className="shell">
             <div className="mx-auto max-w-narrow text-center">
-              <span className="eyebrow eyebrow-center">Templates</span>
+              <span className="eyebrow eyebrow-center">Wedding Templates</span>
               <h2 className="mt-5 font-serif text-h1 text-ink">
-                템플릿을 누르면 바로 편집할 수 있어요
+                청첩장은 템플릿을 누르면 바로 편집됩니다
               </h2>
               <p className="mt-5 text-body text-ink-soft">
                 미니멀부터 플라워, 모던 에디토리얼까지 {TEMPLATES.length}종.
-                색상과 글꼴은 편집기에서 취향대로 바꿀 수 있습니다.
+                만들어 보는 데는 비용이 들지 않고, 마음에 들 때 결제합니다.
               </p>
             </div>
 

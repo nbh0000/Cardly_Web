@@ -1,0 +1,1000 @@
+/* ============================================================
+   STUDIO — 이력서 · 명함 제작기
+   ------------------------------------------------------------
+   여기 있는 규칙은 전부 html2canvas 로 캡처되는 DOM(이력서 A4
+   시트, 명함 캔버스)에 적용됩니다. html2canvas 는 oklch()·
+   color-mix() 같은 최신 색 함수를 이해하지 못하므로, 내보내기
+   대상 안에서는 Tailwind 유틸리티를 쓰지 않고 이 파일의 hex 값만
+   씁니다. 편집기 껍데기(패널·툴바)는 Tailwind 로 조판합니다.
+
+   치수는 전부 mm 로 적습니다. 화면에서는 부모가 transform:
+   scale() 로 줄이고, 저장할 때는 배율을 1 로 되돌려 캡처하므로
+   결과물이 인쇄 규격 그대로 나옵니다.
+
+   활자 크기 기준 (1pt = 0.3528mm)
+     명함  이름 13pt·직함 8pt·연락처 7.5pt — 실무 권장 하한이 7pt,
+           이름은 10–16pt 사이. 재단 안전선은 사방 3mm.
+     이력서 본문 10.5pt·이름 24pt — A4 한 장 분량 기준.
+
+   색은 템플릿이 CSS 변수로 주입합니다.
+     --ac  액센트   --sf  액센트 틴트
+     --pp  용지색   --tx  본문색
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. 이력서 A4 시트
+   ------------------------------------------------------------ */
+
+.sheet {
+  --ac: #33302c;
+  --sf: #f2efea;
+  --pp: #ffffff;
+  --tx: #23201d;
+
+  position: relative;
+  width: 210mm;
+  min-height: 297mm;
+  background: var(--pp);
+  color: var(--tx);
+  font-size: 3.7mm; /* 10.5pt */
+  line-height: 1.58;
+  overflow: hidden;
+  transform-origin: top left;
+}
+
+.sheet h2,
+.sheet h3,
+.sheet p,
+.sheet ul,
+.sheet li {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  list-style: none;
+}
+
+/* 자유 배치 블록 — 편집 중에만 점선이 보입니다 */
+.sheet-block {
+  position: relative;
+  transform-origin: top left;
+}
+.sheet-block::after {
+  content: "";
+  position: absolute;
+  inset: -2mm -2.5mm;
+  border: 1px dashed transparent;
+  border-radius: 1.5mm;
+  pointer-events: none;
+  transition: border-color 0.15s ease;
+}
+.sheet-block:hover::after {
+  border-color: #c9c2b8;
+}
+.sheet-block.is-on::after {
+  border: 1px solid #8a6558;
+  background: rgb(138 101 88 / 0.06);
+}
+.is-export .sheet-block::after {
+  display: none !important;
+}
+
+/* --- 인적사항 --- */
+.sh-name {
+  font-size: 8.5mm; /* 24pt */
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  font-weight: 600;
+}
+.sh-name small {
+  display: block;
+  margin-top: 1.2mm;
+  font-size: 3.2mm;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: #6f6862;
+}
+.sh-title {
+  margin-top: 2mm;
+  font-size: 3.9mm;
+  letter-spacing: 0.01em;
+  color: var(--ac);
+}
+
+/* 연락처 — 라벨 없이 값만, 가운뎃점으로 잇습니다 */
+.sh-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1mm;
+  font-size: 3.2mm;
+  color: #5b5751;
+  font-variant-numeric: tabular-nums;
+}
+.sh-contact a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- 섹션 제목 --- */
+.sh-h {
+  display: flex;
+  align-items: center;
+  gap: 2.4mm;
+  font-size: 3.1mm;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ac);
+  margin-bottom: 3.4mm;
+}
+.sh-h::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.sh-body > * + * {
+  margin-top: 7.5mm;
+}
+
+/* --- 경력 · 프로젝트 · 학력 항목 ---
+   실제 이력서의 뼈대: 좌측에 소속과 역할, 우측에 기간을
+   숫자 정렬로 붙이고, 그 아래 성과 불릿을 답니다. --- */
+.sh-entry + .sh-entry {
+  margin-top: 4.6mm;
+}
+.sh-entry-top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  column-gap: 6mm;
+}
+.sh-entry-org {
+  font-size: 3.9mm;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.sh-entry-role {
+  font-size: 3.4mm;
+  color: #5f5952;
+}
+.sh-entry-role::before {
+  content: "·";
+  margin: 0 1.4mm;
+  color: #b3aca4;
+}
+.sh-entry-period {
+  font-size: 3.2mm;
+  color: #6f6862;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.sh-bullets {
+  margin-top: 1.8mm;
+}
+.sh-bullets li {
+  position: relative;
+  padding-left: 3.6mm;
+  font-size: 3.4mm;
+  line-height: 1.62;
+  color: #3c3833;
+}
+.sh-bullets li + li {
+  margin-top: 0.8mm;
+}
+.sh-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2.4mm;
+  width: 1.3mm;
+  height: 1.3mm;
+  border-radius: 50%;
+  background: var(--ac);
+  opacity: 0.65;
+}
+
+.sh-summary {
+  font-size: 3.5mm;
+  line-height: 1.68;
+  color: #3c3833;
+}
+.sh-summary + .sh-summary {
+  margin-top: 1.6mm;
+}
+
+/* --- 기술 --- */
+.sh-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.7mm;
+}
+.sh-skills span {
+  padding: 1.1mm 2.8mm;
+  background: var(--sf);
+  border-radius: 1mm;
+  font-size: 3.1mm;
+  color: var(--ac);
+}
+
+/* --- 증명사진 — 한국 이력서 규격 3 × 4 cm --- */
+.sh-photo {
+  width: 30mm;
+  height: 40mm;
+  object-fit: cover;
+  display: block;
+  background: #ece7e0;
+}
+
+/* ============ 레이아웃 1 · classic : 가운데 정렬 표제 ============ */
+.sheet-classic {
+  padding: 19mm 18mm;
+}
+.sheet-classic .sh-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.4mm;
+  text-align: center;
+  padding-bottom: 6mm;
+  border-bottom: 0.7mm solid var(--ac);
+  margin-bottom: 1.6mm;
+}
+.sheet-classic .sh-head::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2.4mm;
+  height: 0.3mm;
+  background: var(--ac);
+  opacity: 0.4;
+}
+.sheet-classic .sh-contact {
+  flex-direction: row;
+  gap: 4.5mm;
+}
+.sheet-classic .sh-body {
+  margin-top: 9mm;
+}
+
+/* ============ 레이아웃 2 · banner : 상단 컬러 배너 ============ */
+.sheet-banner {
+  padding-bottom: 19mm;
+}
+.sheet-banner .sh-head {
+  display: flex;
+  align-items: center;
+  gap: 7mm;
+  padding: 16mm 18mm 13mm;
+  background: var(--ac);
+  color: #fff;
+  margin-bottom: 11mm;
+}
+.sheet-banner .sh-name small,
+.sheet-banner .sh-title,
+.sheet-banner .sh-contact {
+  color: rgb(255 255 255 / 0.84);
+}
+.sheet-banner .sh-contact {
+  margin-left: auto;
+  text-align: right;
+}
+.sheet-banner .sh-body {
+  padding: 0 18mm;
+}
+.sheet-banner .sh-photo {
+  border: 1mm solid rgb(255 255 255 / 0.28);
+}
+
+/* ============ 레이아웃 3 · sidebar : 좌측 틴트 컬럼 ============ */
+.sheet-sidebar {
+  display: grid;
+  grid-template-columns: 68mm 1fr;
+}
+.sheet-sidebar .sh-side {
+  background: var(--sf);
+  padding: 17mm 11mm;
+  display: flex;
+  flex-direction: column;
+  gap: 8mm;
+}
+.sheet-sidebar .sh-main {
+  padding: 17mm 15mm 17mm 12mm;
+  min-width: 0;
+}
+.sheet-sidebar .sh-name {
+  font-size: 7.2mm;
+}
+.sheet-sidebar .sh-skills span {
+  background: rgb(255 255 255 / 0.72);
+}
+.sheet-sidebar .sh-entry-top {
+  grid-template-columns: 1fr;
+}
+.sheet-sidebar .sh-entry-period {
+  text-align: left;
+  margin-top: 0.6mm;
+}
+
+/* ============ 레이아웃 4 · rule : 헤어라인 미니멀 ============ */
+.sheet-rule {
+  padding: 23mm 20mm;
+}
+.sheet-rule .sh-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 6mm;
+  padding-bottom: 5mm;
+  border-bottom: 0.3mm solid #d9d3ca;
+  margin-bottom: 10mm;
+}
+.sheet-rule .sh-contact {
+  margin-left: auto;
+  text-align: right;
+}
+.sheet-rule .sh-name {
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}
+.sheet-rule .sh-h {
+  color: #857e75;
+}
+.sheet-rule .sh-h::after {
+  display: none;
+}
+.sheet-rule .sh-body > * + * {
+  margin-top: 7.5mm;
+  padding-top: 7.5mm;
+  border-top: 0.3mm solid #ece7e0;
+}
+.sheet-rule .sh-skills span {
+  background: transparent;
+  border: 0.3mm solid var(--ac);
+}
+
+/* ============ 레이아웃 5 · editorial : 큰 이름 + 번호 인덱스 ============ */
+.sheet-editorial {
+  padding: 21mm 18mm;
+}
+.sheet-editorial .sh-head {
+  display: flex;
+  align-items: flex-end;
+  gap: 6mm;
+  margin-bottom: 11mm;
+}
+.sheet-editorial .sh-name {
+  font-size: 12mm;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+.sheet-editorial .sh-contact {
+  margin-left: auto;
+  text-align: right;
+}
+.sheet-editorial .sh-body {
+  counter-reset: sec;
+}
+.sheet-editorial .sh-h {
+  counter-increment: sec;
+}
+.sheet-editorial .sh-h::before {
+  content: counter(sec, decimal-leading-zero);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.5;
+}
+
+/* ============ 레이아웃 6 · split : 좌측 세로 액센트 ============ */
+.sheet-split {
+  padding: 18mm 18mm 18mm 22mm;
+}
+.sheet-split::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6mm;
+  background: var(--ac);
+}
+.sheet-split .sh-head {
+  display: flex;
+  align-items: center;
+  gap: 6mm;
+  padding-bottom: 5.5mm;
+  border-bottom: 0.3mm solid #e5dfd7;
+  margin-bottom: 9mm;
+}
+.sheet-split .sh-contact {
+  margin-left: auto;
+  text-align: right;
+}
+.sheet-split .sh-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8mm;
+}
+
+/* ------------------------------------------------------------
+   2. 이력서 템플릿 썸네일
+   ------------------------------------------------------------ */
+
+.rthumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 210 / 297;
+  background: var(--pp, #fff);
+  border: 1px solid #e4dcd1;
+  border-radius: 3px;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.rthumb i,
+.rthumb em {
+  position: absolute;
+  display: block;
+}
+/* 이름 줄 */
+.rthumb i {
+  left: 13%;
+  top: 14%;
+  width: 42%;
+  height: 6.5%;
+  background: #b9b2a9;
+  border-radius: 1px;
+}
+/* 섹션 라벨 + 본문 줄들 */
+.rthumb em {
+  left: 13%;
+  top: 30%;
+  width: 20%;
+  height: 3%;
+  background: var(--ac);
+  opacity: 0.9;
+  box-shadow:
+    0 200% 0 -0.2% #ded8d0,
+    0 340% 0 -0.2% #ded8d0,
+    0 480% 0 -0.2% #ded8d0,
+    0 620% 0 -0.2% #ded8d0;
+}
+.rthumb::before,
+.rthumb::after {
+  content: "";
+  position: absolute;
+}
+/* 우측 기간 표시 — 실제 이력서의 특징 */
+.rthumb::before {
+  right: 13%;
+  top: 30%;
+  width: 12%;
+  height: 3%;
+  background: #ded8d0;
+}
+
+.rthumb[data-l="banner"]::after {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 21%;
+  background: var(--ac);
+}
+.rthumb[data-l="banner"] i {
+  background: rgb(255 255 255 / 0.88);
+  top: 7%;
+}
+.rthumb[data-l="sidebar"]::after {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 31%;
+  background: var(--sf);
+}
+.rthumb[data-l="sidebar"] i {
+  left: 38%;
+  width: 36%;
+}
+.rthumb[data-l="sidebar"] em {
+  left: 38%;
+}
+.rthumb[data-l="sidebar"]::before {
+  display: none;
+}
+.rthumb[data-l="classic"] i {
+  left: 29%;
+  width: 42%;
+}
+.rthumb[data-l="classic"]::after {
+  left: 13%;
+  right: 13%;
+  top: 24%;
+  height: 1.4%;
+  background: var(--ac);
+}
+.rthumb[data-l="rule"]::after {
+  left: 13%;
+  right: 13%;
+  top: 24%;
+  height: 1px;
+  background: #d8d2c9;
+}
+.rthumb[data-l="rule"] em {
+  background: #a8a099;
+}
+.rthumb[data-l="editorial"] i {
+  height: 9%;
+  top: 11%;
+  width: 54%;
+}
+.rthumb[data-l="editorial"]::after {
+  left: 13%;
+  width: 5%;
+  top: 30%;
+  height: 3%;
+  background: var(--ac);
+}
+.rthumb[data-l="editorial"] em {
+  left: 20%;
+  width: 15%;
+}
+.rthumb[data-l="split"]::after {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 5.5%;
+  background: var(--ac);
+}
+.rthumb[data-l="split"] i,
+.rthumb[data-l="split"] em {
+  left: 17%;
+}
+
+.pick {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.pick input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.pick:hover .rthumb,
+.pick:hover .cthumb {
+  border-color: #b08d80;
+  transform: translateY(-2px);
+}
+.pick input:checked ~ .rthumb,
+.pick input:checked ~ .cthumb {
+  border-color: #8a6558;
+  box-shadow: 0 0 0 2px #8a6558;
+}
+.pick input:focus-visible ~ .rthumb,
+.pick input:focus-visible ~ .cthumb {
+  outline: 2px solid #8a6558;
+  outline-offset: 2px;
+}
+.pick-name {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.625rem;
+  line-height: 1.3;
+  color: #7a716a;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------
+   3. 명함 캔버스 (90 × 50 mm)
+   ------------------------------------------------------------ */
+
+.card {
+  --ac: #8a6558;
+  --bg: #ffffff;
+  --tx: #23201d;
+
+  position: relative;
+  width: 90mm;
+  height: 50mm;
+  background: var(--bg);
+  color: var(--tx);
+  overflow: hidden;
+  isolation: isolate;
+  transform-origin: top left;
+}
+
+.card[data-corner="soft"] {
+  border-radius: 1.6mm;
+}
+.card[data-corner="round"] {
+  border-radius: 4mm;
+}
+.card[data-corner="square"] {
+  border-radius: 0;
+}
+
+/* --- 용지 질감 — 그라디언트로만, 인쇄 시 과하지 않게 --- */
+.card[data-paper="cotton"] {
+  background-image:
+    repeating-linear-gradient(45deg, rgb(0 0 0 / 0.013) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.013) 0 1px, transparent 1px 3px);
+}
+.card[data-paper="kraft"] {
+  background-image: linear-gradient(
+    145deg,
+    rgb(150 110 60 / 0.12),
+    rgb(150 110 60 / 0.03) 45%,
+    rgb(120 85 45 / 0.1)
+  );
+}
+.card[data-paper="linen"] {
+  background-image:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.02) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.02) 0 1px, transparent 1px 4px);
+}
+.card[data-paper="pearl"] {
+  background-image: linear-gradient(
+    118deg,
+    rgb(255 255 255 / 0.5),
+    rgb(238 232 246 / 0.36) 32%,
+    rgb(255 250 240 / 0.46) 58%,
+    rgb(232 240 248 / 0.38)
+  );
+}
+.card[data-paper="metal"] {
+  background-image: linear-gradient(
+    100deg,
+    rgb(255 255 255 / 0.34) 0 18%,
+    rgb(0 0 0 / 0.045) 34%,
+    rgb(255 255 255 / 0.3) 52%,
+    rgb(0 0 0 / 0.045) 70%,
+    rgb(255 255 255 / 0.26)
+  );
+}
+
+/* --- 장식 --- */
+.card-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.card-deco::before,
+.card-deco::after {
+  content: "";
+  position: absolute;
+}
+
+.card[data-deco="bar"] .card-deco::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3mm;
+  background: var(--ac);
+}
+.card[data-deco="band"] .card-deco::before {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6.5mm;
+  background: var(--ac);
+}
+.card[data-deco="frame"] .card-deco::before {
+  inset: 3.4mm;
+  border: 0.3mm solid var(--ac);
+  opacity: 0.7;
+}
+.card[data-deco="arc"] .card-deco::before {
+  right: -6mm;
+  top: -6mm;
+  width: 17mm;
+  height: 17mm;
+  border-radius: 50%;
+  background: var(--ac);
+}
+.card[data-deco="arc"] .card-deco::after {
+  right: -13mm;
+  top: -13mm;
+  width: 32mm;
+  height: 32mm;
+  border-radius: 50%;
+  border: 0.3mm solid var(--ac);
+  opacity: 0.45;
+}
+.card[data-deco="panel"] .card-deco::before {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14mm;
+  background: var(--ac);
+  opacity: 0.09;
+}
+.card[data-deco="panel"] .card-deco::after {
+  left: 0;
+  right: 0;
+  bottom: 14mm;
+  height: 0.3mm;
+  background: var(--ac);
+}
+.card[data-deco="diagonal"] .card-deco::before {
+  inset: 0;
+  background: linear-gradient(106deg, var(--ac) 0 24%, transparent 24.2%);
+  opacity: 0.12;
+}
+.card[data-deco="rules"] .card-deco::before {
+  left: 9mm;
+  right: 9mm;
+  top: 8.5mm;
+  height: 0.25mm;
+  background: var(--ac);
+}
+.card[data-deco="rules"] .card-deco::after {
+  left: 9mm;
+  right: 9mm;
+  bottom: 8.5mm;
+  height: 0.25mm;
+  background: var(--ac);
+}
+.card[data-deco="corner"] .card-deco::before {
+  left: 4.5mm;
+  top: 4.5mm;
+  width: 8mm;
+  height: 8mm;
+  border-left: 0.35mm solid var(--ac);
+  border-top: 0.35mm solid var(--ac);
+}
+.card[data-deco="corner"] .card-deco::after {
+  right: 4.5mm;
+  bottom: 4.5mm;
+  width: 8mm;
+  height: 8mm;
+  border-right: 0.35mm solid var(--ac);
+  border-bottom: 0.35mm solid var(--ac);
+}
+
+/* --- 재단 안전선 (사방 3mm) — 편집 중 참고용, 저장물에는 안 나옵니다 --- */
+.card-safe {
+  position: absolute;
+  inset: 3mm;
+  border: 0.25mm dashed #d0483f;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+.is-export .card-safe {
+  display: none !important;
+}
+
+/* --- 캔버스 위 요소 --- */
+.card-el {
+  position: absolute;
+  z-index: 1;
+  transform-origin: top left;
+  white-space: pre-wrap;
+  cursor: grab;
+  outline: none;
+  max-width: 78%;
+}
+.card-el[data-align="center"] {
+  text-align: center;
+}
+.card-el:active {
+  cursor: grabbing;
+}
+.card-el::before {
+  content: "";
+  position: absolute;
+  inset: -1.3mm -1.7mm;
+  border: 1px dashed transparent;
+  border-radius: 1mm;
+  pointer-events: none;
+  transition: border-color 0.15s ease;
+}
+.card-el:hover::before {
+  border-color: #c9c2b8;
+}
+.card-el.is-on::before {
+  border: 1px solid #8a6558;
+  background: rgb(138 101 88 / 0.07);
+}
+.is-export .card-el::before {
+  display: none !important;
+}
+
+/* 활자 — 인쇄 실무 크기 */
+.el-company {
+  font-size: 2.5mm; /* 7pt */
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ac);
+}
+.el-name {
+  font-size: 4.6mm; /* 13pt */
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+.el-role {
+  font-size: 2.8mm; /* 8pt */
+  letter-spacing: 0.05em;
+  opacity: 0.72;
+}
+.el-detail {
+  font-size: 2.65mm; /* 7.5pt */
+  letter-spacing: 0.015em;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.86;
+}
+.el-logo {
+  font-size: 3.9mm; /* 11pt */
+  letter-spacing: 0.2em;
+  font-weight: 700;
+  color: var(--ac);
+}
+.el-text {
+  font-size: 2.8mm;
+}
+.el-line {
+  width: 18mm;
+  height: 0.3mm;
+  background: var(--ac);
+}
+.el-dot {
+  width: 5mm;
+  height: 5mm;
+  border-radius: 50%;
+  background: var(--ac);
+}
+.el-square {
+  width: 5mm;
+  height: 5mm;
+  background: var(--ac);
+}
+.el-image img {
+  display: block;
+  width: 14mm;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ------------------------------------------------------------
+   4. 명함 템플릿 썸네일
+   ------------------------------------------------------------ */
+
+.cthumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 90 / 50;
+  background: var(--bg, #fff);
+  color: var(--tx, #23201d);
+  border: 1px solid #e4dcd1;
+  border-radius: 2px;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.cthumb i,
+.cthumb em,
+.cthumb b {
+  position: absolute;
+  display: block;
+  border-radius: 1px;
+}
+.cthumb b {
+  left: 11%;
+  top: 41%;
+  width: 34%;
+  height: 9%;
+  background: currentColor;
+  opacity: 0.85;
+}
+.cthumb em {
+  left: 11%;
+  top: 24%;
+  width: 20%;
+  height: 4.5%;
+  background: var(--ac);
+}
+.cthumb i {
+  left: 11%;
+  bottom: 17%;
+  width: 44%;
+  height: 4%;
+  background: currentColor;
+  opacity: 0.3;
+  box-shadow: 0 -160% 0 currentColor;
+}
+.cthumb::before {
+  content: "";
+  position: absolute;
+}
+.cthumb[data-deco="bar"]::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 8%;
+  background: var(--ac);
+}
+.cthumb[data-deco="band"]::before {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 7.5%;
+  background: var(--ac);
+}
+.cthumb[data-deco="frame"]::before {
+  inset: 7%;
+  border: 1px solid var(--ac);
+  opacity: 0.7;
+}
+.cthumb[data-deco="arc"]::before {
+  right: -6%;
+  top: -11%;
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--ac);
+}
+.cthumb[data-deco="panel"]::before {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28%;
+  background: var(--ac);
+  opacity: 0.13;
+}
+.cthumb[data-deco="diagonal"]::before {
+  inset: 0;
+  background: linear-gradient(106deg, var(--ac) 0 24%, transparent 24.2%);
+  opacity: 0.14;
+}
+.cthumb[data-deco="rules"]::before {
+  left: 10%;
+  right: 10%;
+  top: 17%;
+  height: 1px;
+  background: var(--ac);
+  box-shadow: 0 380% 0 var(--ac);
+}
+.cthumb[data-deco="corner"]::before {
+  left: 8%;
+  top: 14%;
+  width: 14%;
+  height: 22%;
+  border-left: 1px solid var(--ac);
+  border-top: 1px solid var(--ac);
+}
+/* 가운데 정렬 계열 */
+.cthumb[data-align="center"] b {
+  left: 33%;
+  width: 34%;
+}
+.cthumb[data-align="center"] em {
+  left: 40%;
+  width: 20%;
+}
+.cthumb[data-align="center"] i {
+  left: 28%;
+  width: 44%;
+}
+
+/* ------------------------------------------------------------
+   5. 무대 — 실제 mm 크기를 화면 폭에 맞춰 축소
+   ------------------------------------------------------------ */
+
+.stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}

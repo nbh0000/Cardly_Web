@@ -3,16 +3,12 @@ import type { NextConfig } from "next";
 /**
  * GitHub Pages 는 정적 파일만 서빙하므로 `next export` 결과를 올립니다.
  *
- * - 로컬 개발(`npm run dev`)에서는 basePath 없이 http://localhost:3000/ 그대로.
- * - GitHub Actions 빌드에서는 GITHUB_PAGES=true 가 주어져
- *   https://<user>.github.io/<repo>/ 경로에 맞게 basePath 가 붙습니다.
- *
- * 저장소 이름을 바꾸면 NEXT_PUBLIC_BASE_PATH 만 바꾸면 됩니다.
+ * 운영 도메인이 cardly.kr 이고 사이트가 그 루트에 올라가므로 basePath 는
+ * 비어 있습니다. 다시 user.github.io/<repo> 형태로 되돌려야 할 때만
+ * NEXT_PUBLIC_BASE_PATH 에 "/저장소이름" 을 넣어 빌드하세요.
  */
 const isPages = process.env.GITHUB_PAGES === "true";
-const basePath = isPages
-  ? (process.env.NEXT_PUBLIC_BASE_PATH ?? "/wedding-web")
-  : "";
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 const nextConfig: NextConfig = {
   // public/ 의 정적 파일을 <img src> 로 직접 참조할 때 붙일 접두사.
