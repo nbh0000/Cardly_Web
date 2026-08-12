@@ -7,15 +7,8 @@ import {
   useEffect,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
-import {
-  clearDraft,
-  hasDraft,
-  readDraft,
-  subscribeDrafts,
-  writeDraft,
-} from "@/lib/studio/storage";
+import { readDraft, writeDraft } from "@/lib/studio/storage";
 
 export const MM = 96 / 25.4; // 1mm 를 CSS px 로
 
@@ -192,28 +185,6 @@ export function useDraft<T>(key: string, value: T, restore: (draft: T) => void) 
    편집기 공통 UI
    ------------------------------------------------------------------ */
 
-export function Panel({
-  title,
-  action,
-  children,
-}: {
-  title: string;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-line bg-white p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="font-sans text-[0.75rem] tracking-[0.14em] text-ink uppercase">
-          {title}
-        </h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-
 export function Field({
   label,
   hint,
@@ -246,95 +217,5 @@ export function ToolButton({
     >
       {children}
     </button>
-  );
-}
-
-/* ------------------------------------------------------------------
-   데이터 보호 — 백업 / 복원 / 삭제
-   ------------------------------------------------------------------ */
-
-export function DataPanel<T>({
-  storageKey,
-  filename,
-  snapshot,
-  onRestore,
-  onReset,
-}: {
-  storageKey: string;
-  filename: string;
-  snapshot: () => T;
-  onRestore: (value: T) => void;
-  onReset: () => void;
-}) {
-  const [message, setMessage] = useState("");
-  // 자동 저장이 돌 때마다 표시가 같이 바뀌도록 저장소를 직접 구독합니다.
-  // 서버 렌더에서는 localStorage 가 없으므로 항상 false 로 시작합니다.
-  const saved = useSyncExternalStore(
-    subscribeDrafts,
-    () => hasDraft(storageKey),
-    () => false,
-  );
-
-  const backup = () => {
-    const blob = new Blob([JSON.stringify(snapshot(), null, 2)], {
-      type: "application/json",
-    });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(link.href);
-  };
-
-  const restore = (file: File | undefined) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        onRestore(JSON.parse(String(reader.result)) as T);
-        setMessage("불러왔습니다.");
-      } catch {
-        setMessage("이 파일은 백업 형식이 아닙니다.");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  return (
-    <details className="rounded-lg border border-line bg-cream/60 px-5 py-4">
-      <summary className="cursor-pointer text-[0.8125rem] text-ink">
-        데이터 보호 설정
-      </summary>
-      <p className="mt-3 text-caption text-muted">
-        입력한 내용과 사진은 서버로 전송되지 않고 이 브라우저 안에서만
-        처리됩니다. 브라우저 저장 데이터는 현재{" "}
-        <b className="text-ink">{saved ? "있음" : "없음"}</b>.
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <ToolButton onClick={backup}>JSON 백업</ToolButton>
-        <label className="cursor-pointer rounded-full border border-line px-3 py-1.5 text-[0.75rem] text-ink transition-colors hover:border-rose hover:text-rose-deep">
-          JSON 복원
-          <input
-            type="file"
-            accept="application/json"
-            className="sr-only"
-            onChange={(e) => restore(e.target.files?.[0])}
-          />
-        </label>
-        <ToolButton
-          onClick={() => {
-            clearDraft(storageKey);
-            onReset();
-            // 지운 뒤에도 편집을 이어가면 자동 저장이 다시 동작합니다.
-            setMessage("지웠습니다. 이후 편집분은 다시 저장됩니다.");
-          }}
-        >
-          저장 데이터 삭제
-        </ToolButton>
-      </div>
-      {message ? (
-        <p className="mt-3 text-[0.6875rem] text-rose-deep">{message}</p>
-      ) : null}
-    </details>
   );
 }

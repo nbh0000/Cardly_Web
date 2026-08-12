@@ -33,21 +33,16 @@ export default function ResumePage() {
   return (
     <>
       <SiteHeader />
-      <main id="main" className="flex-1 pt-28 md:pt-32">
-        <div className="shell">
-          <header className="mx-auto max-w-narrow text-center">
-            <span className="eyebrow eyebrow-center">Resume</span>
-            <h1 className="mt-5 font-serif text-h1 text-ink">이력서 만들기</h1>
-            <p className="mt-5 text-body text-ink-soft">
-              항목을 채우면 A4 한 장이 실시간으로 조판됩니다. 가입도 결제도
-              없고, 입력한 내용은 이 브라우저를 벗어나지 않습니다.
-            </p>
-          </header>
-
-          <div className="mt-block pb-section-sm">
-            <ResumeBuilder />
-          </div>
+      <main id="main" className="flex-1 pt-16 md:pt-20">
+        <div className="shell flex flex-wrap items-baseline gap-x-4 gap-y-1 py-5">
+          <h1 className="font-serif text-h3 text-ink">이력서 만들기</h1>
+          <p className="text-[0.75rem] text-muted">
+            A4 한 장이 실시간으로 조판됩니다 · 가입도 결제도 없고, 입력한 내용은
+            이 브라우저를 벗어나지 않습니다
+          </p>
         </div>
+
+        <ResumeBuilder />
 
         <Guide content={RESUME_GUIDE} />
       </main>

@@ -33,21 +33,16 @@ export default function BusinessCardPage() {
   return (
     <>
       <SiteHeader />
-      <main id="main" className="flex-1 pt-28 md:pt-32">
-        <div className="shell">
-          <header className="mx-auto max-w-narrow text-center">
-            <span className="eyebrow eyebrow-center">Business Card</span>
-            <h1 className="mt-5 font-serif text-h1 text-ink">명함 만들기</h1>
-            <p className="mt-5 text-body text-ink-soft">
-              90 × 50 mm 실제 크기로 편집합니다. 재단 안전선을 보면서 배치하고,
-              인쇄소에 그대로 넘길 수 있는 해상도로 저장하세요.
-            </p>
-          </header>
-
-          <div className="mt-block pb-section-sm">
-            <CardStudio />
-          </div>
+      <main id="main" className="flex-1 pt-16 md:pt-20">
+        <div className="shell flex flex-wrap items-baseline gap-x-4 gap-y-1 py-5">
+          <h1 className="font-serif text-h3 text-ink">명함 만들기</h1>
+          <p className="text-[0.75rem] text-muted">
+            90 × 50 mm 실제 크기로 편집 · 재단 안전선을 보면서 배치하고 인쇄용
+            해상도로 저장하세요
+          </p>
         </div>
+
+        <CardStudio />
 
         <Guide content={CARD_GUIDE} />
       </main>

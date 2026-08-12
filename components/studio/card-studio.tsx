@@ -14,24 +14,47 @@ import {
   SAMPLE_ITEMS,
   SHAPE_TYPES,
 } from "@/lib/studio/card-templates";
-import { canvasToBlob, captureCanvas, readImageFile, saveBlob } from "@/lib/studio/export";
 import {
-  DataPanel,
+  canvasToBlob,
+  captureCanvas,
+  readImageFile,
+  saveBlob,
+} from "@/lib/studio/export";
+import { clearDraft } from "@/lib/studio/storage";
+import {
   Field,
   MM,
-  Panel,
   ToolButton,
   useDraft,
   useHistory,
   usePointerDrag,
   useStageFit,
 } from "./kit";
+import { ICON, PanelHead, StudioShell, type StudioSection } from "./shell";
 
 const KEY = "cardly-card-v2";
 
 const FONTS: [string, string][] = [
   ["var(--font-sans), sans-serif", "고딕"],
   ["var(--font-serif), serif", "명조"],
+];
+
+const SECTIONS: StudioSection[] = [
+  { id: "template", label: "템플릿", icon: ICON.template },
+  { id: "content", label: "내용", icon: ICON.text },
+  { id: "paper", label: "종이·색", icon: ICON.palette },
+  { id: "elements", label: "요소", icon: ICON.shapes },
+  { id: "save", label: "저장", icon: ICON.save },
+];
+
+/** 캔버스에서 고르지 않아도 패널에서 바로 고칠 수 있는 기본 항목 */
+const QUICK: [string, string][] = [
+  ["company", "회사·브랜드"],
+  ["name", "이름"],
+  ["role", "직함"],
+  ["email", "이메일"],
+  ["phone", "전화번호"],
+  ["website", "웹사이트"],
 ];
 
 type Draft = {
@@ -45,6 +68,7 @@ type Draft = {
 
 export function CardStudio() {
   const cardRef = useRef<HTMLElement>(null);
+  const [section, setSection] = useState("template");
   const [template, setTemplate] = useState<CardTemplate>(DEFAULT_CARD_TEMPLATE);
   const [items, setItems] = useState<CardItem[]>(SAMPLE_ITEMS);
   const [colors, setColors] = useState({
@@ -62,8 +86,7 @@ export function CardStudio() {
   const [busy, setBusy] = useState(false);
   const [decoFilter, setDecoFilter] = useState("all");
 
-  // 명함은 실제 크기가 작아 확대해서 보여줍니다 (좌우 여백 48px 제외).
-  const [stageRef, stage] = useStageFit(90, 50, { maxScale: 1.9, padding: 48 });
+  const [stageRef, stage] = useStageFit(90, 50, { maxScale: 1.9, padding: 32 });
   const history = useHistory(items, setItems);
 
   const restore = useCallback((draft: Draft) => {
@@ -82,7 +105,7 @@ export function CardStudio() {
   );
   useDraft<Draft>(KEY, snapshot, restore);
 
-  /* -------------------- 템플릿 적용 -------------------- */
+  /* -------------------- 템플릿 -------------------- */
 
   const applyTemplate = (t: CardTemplate) => {
     history.remember();
@@ -90,8 +113,8 @@ export function CardStudio() {
     setColors({ bg: t.bg, text: t.text, accent: t.accent });
     setPaper(t.paper);
     setCorner(t.corner);
-    // 앞면 기본 요소는 템플릿이 정한 자리로 옮깁니다. 사용자가 추가한
-    // 요소와 뒷면은 건드리지 않습니다.
+    // 앞면 기본 요소만 템플릿이 정한 자리로 옮깁니다. 직접 추가한
+    // 요소와 뒷면은 그대로 둡니다.
     const spots: Record<string, [number, number]> = {
       company: t.placement.company,
       name: t.placement.name,
@@ -109,7 +132,7 @@ export function CardStudio() {
     );
   };
 
-  /* -------------------- 요소 편집 -------------------- */
+  /* -------------------- 요소 -------------------- */
 
   const patch = useCallback(
     (id: string, next: Partial<CardItem>) =>
@@ -174,30 +197,11 @@ export function CardStudio() {
   };
 
   const current = items.find((i) => i.id === selected) ?? null;
-
-  const duplicate = () => {
-    if (!current) return;
-    history.remember();
-    const copy = {
-      ...current,
-      id: `el-${Date.now().toString(36)}`,
-      x: Math.min(90, current.x + 4),
-      y: Math.min(88, current.y + 4),
-    };
-    setItems((list) => [...list, copy]);
-    setSelected(copy.id);
-  };
-
-  const removeItem = () => {
-    if (!current) return;
-    history.remember();
-    setItems((list) => list.filter((i) => i.id !== current.id));
-    setSelected(null);
-  };
+  const isShape = current ? SHAPE_TYPES.includes(current.type) : false;
 
   /* -------------------- 저장 -------------------- */
 
-  const save = async (both = false) => {
+  const save = async (both: boolean) => {
     const el = cardRef.current;
     if (!el || busy) return;
     setBusy(true);
@@ -206,22 +210,21 @@ export function CardStudio() {
     setShowSafe(false);
     try {
       await new Promise((r) => requestAnimationFrame(() => r(null)));
-      if (!both) {
+      const shoot = async (label: string) => {
         const canvas = await captureCanvas(el, 8, true);
-        await saveBlob(
-          await canvasToBlob(canvas),
-          `명함_${side === "front" ? "앞면" : "뒷면"}.png`,
-          { description: "PNG 이미지", mime: "image/png", extension: "png" },
-        );
+        await saveBlob(await canvasToBlob(canvas), `명함_${label}.png`, {
+          description: "PNG 이미지",
+          mime: "image/png",
+          extension: "png",
+        });
+      };
+      if (!both) {
+        await shoot(side === "front" ? "앞면" : "뒷면");
       } else {
         for (const target of ["front", "back"] as const) {
           setSide(target);
-          await new Promise((r) => setTimeout(r, 60));
-          const canvas = await captureCanvas(el, 8, true);
-          await saveBlob(
-            await canvasToBlob(canvas),
-            `명함_${target === "front" ? "앞면" : "뒷면"}.png`,
-          );
+          await new Promise((r) => setTimeout(r, 80));
+          await shoot(target === "front" ? "앞면" : "뒷면");
         }
       }
     } finally {
@@ -230,7 +233,7 @@ export function CardStudio() {
     }
   };
 
-  /* -------------------- 화면 -------------------- */
+  /* -------------------- 패널 -------------------- */
 
   const decoIds = useMemo(
     () => Array.from(new Set(CARD_TEMPLATES.map((t) => t.deco))),
@@ -244,31 +247,30 @@ export function CardStudio() {
     [decoFilter],
   );
 
-  const isShape = current ? SHAPE_TYPES.includes(current.type) : false;
-
-  return (
-    <div className="grid gap-8 lg:grid-cols-[380px_1fr] lg:items-start">
-      {/* ---------------- 왼쪽 ---------------- */}
-      <div className="space-y-5">
-        <Panel
-          title={`템플릿 ${CARD_TEMPLATES.length}종`}
-          action={
-            <select
-              value={decoFilter}
-              onChange={(e) => setDecoFilter(e.target.value)}
-              className="ipt w-auto py-1 text-[0.6875rem]"
-              aria-label="장식 종류로 거르기"
-            >
-              <option value="all">전체</option>
-              {decoIds.map((id) => (
-                <option key={id} value={id}>
-                  {CARD_TEMPLATES.find((t) => t.deco === id)!.name.split(" ")[1]}
-                </option>
-              ))}
-            </select>
-          }
-        >
-          <div className="grid max-h-96 grid-cols-3 gap-2.5 overflow-y-auto pr-1">
+  const panel = (() => {
+    if (section === "template")
+      return (
+        <>
+          <PanelHead
+            title="템플릿"
+            note={`${CARD_TEMPLATES.length}종 · 색과 종이까지 함께 바뀝니다`}
+            action={
+              <select
+                value={decoFilter}
+                onChange={(e) => setDecoFilter(e.target.value)}
+                className="ipt w-auto py-1 text-[0.6875rem]"
+                aria-label="장식으로 거르기"
+              >
+                <option value="all">전체</option>
+                {decoIds.map((id) => (
+                  <option key={id} value={id}>
+                    {CARD_TEMPLATES.find((t) => t.deco === id)!.name.split(" ")[1]}
+                  </option>
+                ))}
+              </select>
+            }
+          />
+          <div className="grid grid-cols-3 gap-2.5">
             {visible.map((t) => (
               <button
                 type="button"
@@ -300,10 +302,97 @@ export function CardStudio() {
               </button>
             ))}
           </div>
-        </Panel>
+        </>
+      );
 
-        <Panel title="종이와 색">
+    if (section === "content")
+      return (
+        <>
+          <PanelHead
+            title="내용"
+            note="캔버스에서 글자를 두 번 눌러 바로 고칠 수도 있습니다."
+          />
           <div className="space-y-3">
+            {QUICK.map(([id, label]) => {
+              const item = items.find(
+                (i) => i.id === id && i.side === side,
+              );
+              if (!item) return null;
+              return (
+                <Field key={id} label={label}>
+                  <input
+                    className="ipt"
+                    value={item.text}
+                    onFocus={() => setSelected(item.id)}
+                    onChange={(e) => patch(item.id, { text: e.target.value })}
+                  />
+                </Field>
+              );
+            })}
+          </div>
+
+          {current ? (
+            <div className="mt-6 rounded-md border border-line bg-white p-4">
+              <p className="mb-3 text-[0.75rem] text-ink">선택한 요소</p>
+              {!isShape ? (
+                <Field label="텍스트">
+                  <input
+                    className="ipt"
+                    value={current.text}
+                    onChange={(e) => patch(current.id, { text: e.target.value })}
+                  />
+                </Field>
+              ) : null}
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <Field label="크기">
+                  <input
+                    type="range"
+                    min={50}
+                    max={200}
+                    className="w-full"
+                    value={current.size}
+                    onChange={(e) => patch(current.id, { size: +e.target.value })}
+                  />
+                </Field>
+                <Field label="글자색">
+                  <input
+                    type="color"
+                    className="h-9 w-full cursor-pointer rounded-md border border-line bg-white"
+                    value={current.color || colors.text}
+                    onChange={(e) => patch(current.id, { color: e.target.value })}
+                  />
+                </Field>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <ToolButton
+                  onClick={() =>
+                    patch(current.id, {
+                      align: current.align === "center" ? "left" : "center",
+                    })
+                  }
+                >
+                  {current.align === "center" ? "왼쪽 정렬" : "가운데 정렬"}
+                </ToolButton>
+                <ToolButton
+                  onClick={() => {
+                    history.remember();
+                    setItems((list) => list.filter((i) => i.id !== current.id));
+                    setSelected(null);
+                  }}
+                >
+                  삭제
+                </ToolButton>
+              </div>
+            </div>
+          ) : null}
+        </>
+      );
+
+    if (section === "paper")
+      return (
+        <>
+          <PanelHead title="종이와 색" note="포인트 색 하나만 정하는 편이 깔끔합니다." />
+          <div className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
               {(
                 [
@@ -365,16 +454,49 @@ export function CardStudio() {
                 ))}
               </select>
             </Field>
-            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-line px-3 py-3 text-[0.75rem] text-ink-soft transition-colors hover:border-rose">
+          </div>
+        </>
+      );
+
+    if (section === "elements")
+      return (
+        <>
+          <PanelHead
+            title="요소 추가"
+            note={`${side === "front" ? "앞면" : "뒷면"}에 올라갑니다.`}
+          />
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <select
+                className="ipt"
+                value={addType}
+                onChange={(e) => setAddType(e.target.value)}
+                aria-label="추가할 요소"
+              >
+                {ADDABLE.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm shrink-0"
+                onClick={addItem}
+              >
+                ＋ 추가
+              </button>
+            </div>
+            <label className="flex cursor-pointer items-center gap-3 rounded-md border border-dashed border-line bg-white px-3 py-3 text-[0.75rem] text-ink-soft transition-colors hover:border-rose">
               <input
                 type="file"
                 accept="image/*"
                 className="sr-only"
                 onChange={(e) => addImage(e.target.files?.[0])}
               />
-              로고·이미지 추가
+              로고·이미지 올리기
               <span className="ml-auto text-[0.6875rem] text-hint">
-                {side === "front" ? "앞면" : "뒷면"}에 올라갑니다
+                선명한 원본으로
               </span>
             </label>
             <label className="flex items-center gap-2 text-[0.75rem] text-ink-soft">
@@ -386,124 +508,73 @@ export function CardStudio() {
               재단 안전선 보기 (사방 3mm)
             </label>
           </div>
-        </Panel>
+        </>
+      );
 
-        {/* 선택한 요소 */}
-        <Panel
-          title="선택한 요소"
-          action={
-            <ToolButton
-              onClick={() => {
-                history.remember();
-                setItems(SAMPLE_ITEMS);
-                setSelected(null);
-              }}
-            >
-              내용 초기화
-            </ToolButton>
-          }
-        >
-          {current ? (
-            <div className="space-y-3">
-              {!isShape ? (
-                <Field label="텍스트">
-                  <input
-                    className="ipt"
-                    value={current.text}
-                    onChange={(e) => patch(current.id, { text: e.target.value })}
-                  />
-                </Field>
-              ) : null}
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="크기">
-                  <input
-                    type="range"
-                    min={50}
-                    max={200}
-                    className="w-full"
-                    value={current.size}
-                    onChange={(e) => patch(current.id, { size: +e.target.value })}
-                  />
-                </Field>
-                <Field label="개별 색상">
-                  <input
-                    type="color"
-                    className="h-9 w-full cursor-pointer rounded-md border border-line bg-white"
-                    value={current.color || colors.text}
-                    onChange={(e) => patch(current.id, { color: e.target.value })}
-                  />
-                </Field>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <ToolButton
-                  onClick={() =>
-                    patch(current.id, {
-                      align: current.align === "center" ? "left" : "center",
-                    })
-                  }
-                >
-                  {current.align === "center" ? "왼쪽 정렬" : "가운데 정렬"}
-                </ToolButton>
-                <ToolButton onClick={duplicate}>복제</ToolButton>
-                <ToolButton
-                  onClick={() => {
-                    history.remember();
-                    patch(current.id, { x: 50, y: 45, align: "center" });
-                  }}
-                >
-                  가운데로
-                </ToolButton>
-                <ToolButton onClick={removeItem}>삭제</ToolButton>
-              </div>
-            </div>
-          ) : (
-            <p className="text-[0.75rem] text-hint">
-              캔버스에서 요소를 누르면 여기서 편집할 수 있습니다. 글자는 캔버스
-              위에서 두 번 눌러 바로 고칠 수도 있습니다.
-            </p>
-          )}
-        </Panel>
-
-        <Panel title="요소 추가">
-          <div className="flex gap-2">
-            <select
-              className="ipt"
-              value={addType}
-              onChange={(e) => setAddType(e.target.value)}
-              aria-label="추가할 요소"
-            >
-              {ADDABLE.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+    return (
+      <>
+        <PanelHead title="저장" note="편집 내용은 이 브라우저에 자동 저장됩니다." />
+        <div className="space-y-4">
+          <p className="text-[0.8125rem] text-ink-soft">
+            90 × 50 mm 실제 크기, 약 800dpi PNG 로 저장됩니다. 대부분의 온라인
+            인쇄소에 그대로 넘길 수 있습니다.
+          </p>
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              className="btn btn-ghost btn-sm shrink-0"
-              onClick={addItem}
+              className="btn btn-ghost btn-sm"
+              onClick={() => save(false)}
+              disabled={busy}
             >
-              ＋ 추가
+              {side === "front" ? "앞면" : "뒷면"}만 저장
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => save(true)}
+              disabled={busy}
+            >
+              앞뒤 모두 저장
             </button>
           </div>
-        </Panel>
+          <p className="text-[0.75rem] text-muted">
+            입력한 연락처는 서버로 보내지 않고 이 브라우저 안에서만 처리됩니다.
+          </p>
+          <ToolButton
+            onClick={() => {
+              clearDraft(KEY);
+              setItems(SAMPLE_ITEMS);
+              setSelected(null);
+            }}
+          >
+            처음부터 다시 만들기
+          </ToolButton>
+        </div>
+      </>
+    );
+  })();
 
-        <DataPanel<Draft>
-          storageKey={KEY}
-          filename="cardly-card-backup.json"
-          snapshot={() => snapshot}
-          onRestore={restore}
-          onReset={() => {
-            setItems(SAMPLE_ITEMS);
-            setSelected(null);
-          }}
-        />
-      </div>
-
-      {/* ---------------- 오른쪽 ---------------- */}
-      <div className="space-y-4 lg:sticky lg:top-24">
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-white px-4 py-3">
-          <div className="mr-auto flex rounded-full bg-cream p-0.5">
+  return (
+    <StudioShell
+      sections={SECTIONS}
+      active={section}
+      onSelect={setSection}
+      panel={panel}
+      previewTitle="명함 미리보기"
+      previewNote="90 × 50 mm"
+      actions={
+        <button
+          type="button"
+          className="rounded-md bg-ink px-4 py-2 text-[0.75rem] text-ivory transition-transform active:translate-y-px disabled:opacity-50"
+          onClick={() => save(false)}
+          disabled={busy}
+        >
+          {busy ? "만드는 중…" : `${side === "front" ? "앞면" : "뒷면"} 저장`}
+        </button>
+      }
+      toolbar={
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-ivory px-3 py-2">
+          <div className="flex rounded-full bg-cream p-0.5">
             {(["front", "back"] as const).map((value) => (
               <button
                 type="button"
@@ -513,7 +584,7 @@ export function CardStudio() {
                   setSelected(null);
                 }}
                 aria-pressed={side === value}
-                className={`rounded-full px-4 py-1.5 text-[0.75rem] transition-colors ${
+                className={`rounded-full px-3.5 py-1 text-[0.75rem] transition-colors ${
                   side === value
                     ? "bg-white text-ink shadow-soft"
                     : "text-muted hover:text-ink"
@@ -523,7 +594,9 @@ export function CardStudio() {
               </button>
             ))}
           </div>
-          <span className="text-[0.6875rem] text-hint">90 × 50 mm</span>
+          <span className="mr-auto text-[0.6875rem] text-muted">
+            요소를 끌어서 옮기고, 두 번 눌러 글자를 고칩니다
+          </span>
           <ToolButton disabled={!history.canUndo} onClick={history.undo}>
             ↶ 되돌리기
           </ToolButton>
@@ -531,29 +604,25 @@ export function CardStudio() {
             ↷ 다시
           </ToolButton>
         </div>
-
+      }
+    >
+      <div ref={stageRef} className="grid h-full place-items-center py-4">
         <div
-          ref={stageRef}
-          className="stage grid place-items-center rounded-lg bg-sand/50 p-6"
+          style={{
+            width: stage.width,
+            height: stage.height,
+            filter: "drop-shadow(0 12px 26px rgb(46 42 39 / 0.18))",
+          }}
         >
-          {/* 바깥 상자는 배율이 적용된 크기를 차지해 가운데 정렬이 맞고,
-              안쪽 상자만 실제 mm 크기로 두고 transform 으로 키웁니다. */}
           <div
+            data-fit
             style={{
-              width: stage.width,
-              height: stage.height,
-              filter: "drop-shadow(0 12px 26px rgb(46 42 39 / 0.18))",
+              transform: `scale(${stage.scale})`,
+              transformOrigin: "top left",
+              width: 90 * MM,
+              height: 50 * MM,
             }}
           >
-            <div
-              data-fit
-              style={{
-                transform: `scale(${stage.scale})`,
-                transformOrigin: "top left",
-                width: 90 * MM,
-                height: 50 * MM,
-              }}
-            >
             <article
               ref={cardRef}
               className="card"
@@ -599,9 +668,7 @@ export function CardStudio() {
                       tabIndex={0}
                       role={shape ? "button" : "textbox"}
                       aria-label={
-                        shape
-                          ? `${item.type} 요소`
-                          : `${item.text || "빈 텍스트"} 편집`
+                        shape ? `${item.type} 요소` : `${item.text || "빈 텍스트"} 편집`
                       }
                       contentEditable={!shape}
                       suppressContentEditableWarning
@@ -622,35 +689,9 @@ export function CardStudio() {
                   );
                 })}
             </article>
-            </div>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-white px-4 py-4">
-          <div className="mr-auto">
-            <p className="text-[0.8125rem] text-ink">인쇄용 PNG 저장</p>
-            <p className="text-[0.6875rem] text-hint">
-              90 × 50 mm 실제 크기, 약 800dpi로 저장됩니다
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            onClick={() => save(true)}
-            disabled={busy}
-          >
-            앞뒤 모두
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => save(false)}
-            disabled={busy}
-          >
-            {busy ? "만드는 중…" : `${side === "front" ? "앞면" : "뒷면"} 저장 ↓`}
-          </button>
         </div>
       </div>
-    </div>
+    </StudioShell>
   );
 }

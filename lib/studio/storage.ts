@@ -7,23 +7,6 @@
  * 빌드가 깨집니다. 항상 마운트 이후(useEffect)에만 읽으세요.
  */
 
-/* 저장 상태 표시를 화면과 맞춰 두기 위한 아주 작은 구독 장치.
-   다른 탭에서 바뀌면 storage 이벤트가, 이 탭에서 바뀌면 emit() 이 알립니다. */
-const listeners = new Set<() => void>();
-
-function emit() {
-  for (const listener of listeners) listener();
-}
-
-export function subscribeDrafts(listener: () => void) {
-  listeners.add(listener);
-  window.addEventListener("storage", listener);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", listener);
-  };
-}
-
 export function readDraft<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
   try {
@@ -38,7 +21,6 @@ export function writeDraft(key: string, value: unknown): boolean {
   if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
-    emit();
     return true;
   } catch {
     // 저장 공간이 가득 차도 편집 자체는 계속할 수 있어야 합니다.
@@ -50,17 +32,7 @@ export function clearDraft(key: string) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(key);
-    emit();
   } catch {
     /* 무시 */
-  }
-}
-
-export function hasDraft(key: string): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(key) !== null;
-  } catch {
-    return false;
   }
 }
