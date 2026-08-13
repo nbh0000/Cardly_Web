@@ -128,12 +128,15 @@ export function InvitationView({
           <EffectLayer
             kind={data.effect}
             density={data.effectDensity ?? "mid"}
+            color={data.effectColor}
+            scale={data.effectScale}
           />
         )}
         {openingActive && (
           <OpeningLayer
             key={openingKey}
             kind={data.opening as Exclude<InvitationData["opening"], "none">}
+            monogram={monogramOf(data)}
             onDone={() => setOpeningDone(true)}
           />
         )}
@@ -1508,13 +1511,20 @@ const CONFETTI_COLORS = [
 function EffectLayer({
   kind,
   density,
+  color,
+  scale,
 }: {
   kind: Exclude<EffectKind, "none">;
   density: EffectDensity;
+  /** 빈 문자열이면 템플릿 포인트색을 그대로 씁니다 */
+  color?: string;
+  /** 입자 크기 배율 */
+  scale?: number;
 }) {
   const count =
     EFFECT_DENSITIES.find((d) => d.id === density)?.count ??
     EFFECT_DENSITIES[1]!.count;
+  const sizeScale = scale && scale > 0 ? scale : 1;
 
   // 빛망울은 크고 느리게, 하트·꽃가루는 작고 가볍게 움직입니다.
   const baseSize = kind === "bokeh" ? 26 : kind === "confetti" ? 8 : 12;
@@ -1532,19 +1542,28 @@ function EffectLayer({
       /** 음수 지연 — 첫 화면부터 이미 흩날리는 중인 상태로 시작합니다 */
       delay: -r(2) * 16,
       dur: (baseDur + r(3) * baseDur * 0.8) * speed,
-      size: (baseSize + r(4) * spread) * scale,
+      size: (baseSize + r(4) * spread) * scale * sizeScale,
       drift: (r(5) * 2 - 1) * (40 + r(6) * 90),
       sway: 3 + r(7) * 4,
       spin: 4 + r(8) * 9,
       spinDir: r(9) > 0.5 ? 1 : -1,
       opacity: [0.34, 0.6, 0.92][depth]!,
       blur: [1.5, 0.5, 0][depth]!,
-      color: CONFETTI_COLORS[Math.floor(r(10) * CONFETTI_COLORS.length)]!,
+      /* 꽃가루는 조각마다 색이 다릅니다. 색을 직접 고른 경우에는
+         고른 색 하나로 통일해야 의도대로 보입니다. */
+      color: color || CONFETTI_COLORS[Math.floor(r(10) * CONFETTI_COLORS.length)]!,
     };
   });
 
   return (
-    <div className={`iv-fx iv-fx-${kind}`} aria-hidden>
+    <div
+      className={`iv-fx iv-fx-${kind}`}
+      aria-hidden
+      /* --fx-c 를 주면 효과 CSS 가 포인트색 대신 이 색을 씁니다.
+         비워 두면 var(--fx-c, var(--iv-accent)) 의 대체값이 살아납니다. */
+      style={color ? ({ "--fx-c": color } as React.CSSProperties) : undefined}
+      data-tinted={color ? "" : undefined}
+    >
       {bits.map((b, i) => (
         <span
           key={i}
@@ -1804,11 +1823,30 @@ function Gift({ data }: { data: InvitationData }) {
    오프닝 애니메이션
    ============================================================ */
 
+/**
+ * 오프닝에 얹을 이니셜. 영문 이름이 있으면 첫 글자를, 없으면 한글 이름의
+ * 첫 글자를 씁니다. 둘 다 비어 있으면 모노그램 글자는 생략됩니다.
+ */
+function monogramOf(data: InvitationData) {
+  const initial = (en: string, ko: string) => {
+    const e = (en ?? "").trim();
+    if (e) return e[0]!.toUpperCase();
+    const k = (ko ?? "").trim();
+    return k ? k[0]! : "";
+  };
+  const g = initial(data.groomEnglish, data.groom.firstName);
+  const b = initial(data.brideEnglish, data.bride.firstName);
+  if (!g && !b) return "";
+  return g && b ? `${g} & ${b}` : g || b;
+}
+
 function OpeningLayer({
   kind,
+  monogram,
   onDone,
 }: {
   kind: Exclude<InvitationData["opening"], "none">;
+  monogram?: string;
   onDone: () => void;
 }) {
   /**
@@ -1834,6 +1872,51 @@ function OpeningLayer({
     const t = setTimeout(onDone, 6000);
     return () => clearTimeout(t);
   }, [onDone]);
+
+  /* ── 모노그램 ──
+     종이 한 장이 화면을 덮고, 가는 겹테두리가 그려진 뒤 두 사람의
+     이니셜이 자간을 좁히며 떠오릅니다. 빛이 한 번 스치고 종이가
+     위로 들리면서 청첩장이 드러납니다. */
+  if (kind === "monogram") {
+    return (
+      <div className="opening op-mono" aria-hidden onAnimationEnd={finish}>
+        <span className="op-mono-paper">
+          <span className="op-mono-frame" />
+          <span className="op-mono-frame op-mono-frame-in" />
+          <span className="op-mono-center">
+            <span className="op-mono-rule op-mono-rule-t" />
+            {monogram ? (
+              <span className="op-mono-initials">{monogram}</span>
+            ) : (
+              <span className="op-mono-initials">&amp;</span>
+            )}
+            <span className="op-mono-rule op-mono-rule-b" />
+            <span className="op-mono-word">INVITATION</span>
+          </span>
+          <span className="op-mono-sheen" />
+        </span>
+      </div>
+    );
+  }
+
+  /* ── 실링 왁스 ──
+     봉인을 누르는 순간이 한 박자 있고, 봉인이 갈라지며 종이가
+     좌우로 물러납니다. */
+  if (kind === "seal") {
+    return (
+      <div className="opening op-seal" aria-hidden onAnimationEnd={finish}>
+        <span className="op-seal-paper l" />
+        <span className="op-seal-paper r" />
+        <span className="op-seal-wax">
+          <span className="op-seal-wax-half l" />
+          <span className="op-seal-wax-half r" />
+          <span className="op-seal-mark">
+            {monogram ? monogram.replace(/\s*&\s*/, "") : "&"}
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   if (kind === "curtain") {
     return (

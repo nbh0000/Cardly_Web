@@ -595,6 +595,319 @@
   animation: zoom-fade 0.9s var(--ease-soft) both;
 }
 
+/* ============================================================
+   프리미엄 오프닝
+   ------------------------------------------------------------
+   기존 연출(이모지·커튼 등)은 "무엇이 튀어나온다"에 가까웠습니다.
+   청첩장은 종이에서 온 물건이라, 종이·인쇄·봉인처럼 실제 재질이
+   움직이는 쪽이 훨씬 격이 있습니다. 아래 두 연출은 모두
+   ① 종이가 화면을 덮고 ② 인쇄 요소가 자리를 잡고 ③ 종이가 물러나는
+   3박자로 짜여 있습니다.
+   ============================================================ */
+
+/* ── 모노그램 ── */
+.op-mono-paper {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 7%, var(--iv-bg, #fff)) 0%,
+      var(--iv-bg, #fff) 60%
+    );
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  /* 마지막에 종이가 들려 올라가며 사라집니다 */
+  animation: mono-paper-lift 1s var(--ease-in-out-soft) 2.65s both;
+}
+
+/* 겹테두리 — 위아래에서 그려 들어옵니다 */
+.op-mono-frame {
+  position: absolute;
+  inset: 7%;
+  border: 1px solid color-mix(in srgb, var(--iv-accent, #b08d80) 55%, transparent);
+  animation: mono-frame-in 1.15s var(--ease-in-out-soft) 0.15s both;
+}
+.op-mono-frame-in {
+  inset: calc(7% + 7px);
+  border-color: color-mix(in srgb, var(--iv-accent, #b08d80) 26%, transparent);
+  animation-delay: 0.3s;
+}
+
+.op-mono-center {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 0 2rem;
+  text-align: center;
+}
+
+.op-mono-rule {
+  display: block;
+  width: 3.25rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--iv-accent, #b08d80) 70%, transparent);
+  transform-origin: center;
+  animation: mono-rule-in 0.85s var(--ease-in-out-soft) 0.75s both;
+}
+.op-mono-rule-b {
+  animation-delay: 0.85s;
+}
+
+.op-mono-initials {
+  font-family: var(--iv-heading, Georgia, serif);
+  font-size: clamp(2.25rem, 12vw, 3.75rem);
+  line-height: 1.1;
+  color: var(--iv-ink, #2e2a27);
+  /* 자간이 넓게 벌어져 있다가 제자리로 모입니다 */
+  animation: mono-initials-in 1.5s var(--ease-in-out-soft) 0.5s both;
+}
+
+.op-mono-word {
+  font-size: 0.625rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: color-mix(in srgb, var(--iv-ink, #2e2a27) 55%, transparent);
+  animation: mono-word-in 1s var(--ease-soft) 1.15s both;
+}
+
+/* 종이 위를 한 번 스치는 빛 */
+.op-mono-sheen {
+  position: absolute;
+  inset: -40% -120%;
+  background: linear-gradient(
+    76deg,
+    transparent 42%,
+    rgb(255 255 255 / 0.55) 50%,
+    transparent 58%
+  );
+  animation: mono-sheen 1.5s var(--ease-in-out-soft) 1.35s both;
+}
+
+@keyframes mono-frame-in {
+  from {
+    opacity: 0;
+    clip-path: inset(50% 0 50% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes mono-rule-in {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+@keyframes mono-initials-in {
+  from {
+    opacity: 0;
+    letter-spacing: 0.6em;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: 0.06em;
+    transform: none;
+  }
+}
+@keyframes mono-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mono-sheen {
+  from {
+    transform: translateX(-42%);
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(42%);
+    opacity: 0;
+  }
+}
+@keyframes mono-paper-lift {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-101%) scale(1.02);
+    opacity: 0;
+  }
+}
+
+/* ── 실링 왁스 ── */
+.op-seal-paper {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 6%, var(--iv-bg, #fff)),
+      var(--iv-bg, #fff)
+    );
+}
+.op-seal-paper.l {
+  left: 0;
+  box-shadow: inset -14px 0 22px -18px rgb(0 0 0 / 0.35);
+  animation: seal-open-l 1.05s var(--ease-in-out-soft) 1.9s both;
+}
+.op-seal-paper.r {
+  right: 0;
+  box-shadow: inset 14px 0 22px -18px rgb(0 0 0 / 0.35);
+  animation: seal-open-r 1.05s var(--ease-in-out-soft) 1.9s both;
+}
+
+.op-seal-wax {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(28%, 7rem);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  /* 봉인이 "찍히는" 한 박자 */
+  animation: seal-press 0.75s var(--spring) 0.15s both;
+}
+.op-seal-wax-half {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 34% 30%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 62%, #fff) 0%,
+      var(--iv-accent, #b08d80) 46%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 72%, #000) 100%
+    );
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.28);
+}
+/* 왁스가 한가운데서 갈라져 좌우로 떨어져 나갑니다.
+   갈라진 선은 일부러 들쭉날쭉하게 잡았습니다 — 자로 자른 듯 곧으면
+   왁스가 아니라 잘린 원판처럼 보입니다. */
+.op-seal-wax-half.l {
+  clip-path: polygon(
+    0 0,
+    55% 0,
+    47% 13%,
+    54% 27%,
+    45% 42%,
+    53% 58%,
+    44% 73%,
+    52% 87%,
+    46% 100%,
+    0 100%
+  );
+  animation: seal-crack-l 0.9s var(--ease-in-out-soft) 1.75s both;
+}
+.op-seal-wax-half.r {
+  clip-path: polygon(
+    55% 0,
+    100% 0,
+    100% 100%,
+    46% 100%,
+    52% 87%,
+    44% 73%,
+    53% 58%,
+    45% 42%,
+    54% 27%,
+    47% 13%
+  );
+  animation: seal-crack-r 0.9s var(--ease-in-out-soft) 1.75s both;
+}
+.op-seal-mark {
+  position: relative;
+  z-index: 1;
+  font-family: var(--iv-heading, Georgia, serif);
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--iv-accent, #b08d80) 30%, #fff);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+  animation: seal-mark 0.8s var(--ease-soft) 1.7s both;
+}
+
+@keyframes seal-press {
+  0% {
+    opacity: 0;
+    transform: scale(1.75);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes seal-crack-l {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translate(-46%, 14%) rotate(-16deg);
+    opacity: 0;
+  }
+}
+@keyframes seal-crack-r {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: translate(46%, 14%) rotate(16deg);
+    opacity: 0;
+  }
+}
+@keyframes seal-mark {
+  from {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes seal-open-l {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(-101%);
+  }
+}
+@keyframes seal-open-r {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateX(101%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sheet,
   .sheet-scrim,

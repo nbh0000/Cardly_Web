@@ -245,11 +245,22 @@ export function Editor({ templateId }: { templateId: string }) {
         <div className="flex items-center gap-2">
           <Link
             href="/pricing"
-            className="hidden rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] text-rose-deep transition-colors hover:bg-rose-mist sm:inline"
+            className="hidden shrink-0 rounded-full bg-rose-veil px-2.5 py-1 text-[0.6875rem] whitespace-nowrap text-rose-deep transition-colors hover:bg-rose-mist sm:inline"
           >
             요금 안내
           </Link>
-          <Link href="/templates" className="press hidden rounded-full bg-ink px-4 py-2 text-[0.75rem] text-ivory sm:inline-block">
+          {/* "+ 새로 만들기" 가 네 줄로 접히면서 높이가 105px 이 돼
+              헤더(h-14 = 56px) 밖으로 삐져나가 잘리던 자리입니다.
+
+              nowrap·shrink-0 으로 줄바꿈과 수축은 막았지만, 크롬이 이
+              flex 항목의 콘텐츠 폭을 웹폰트가 바뀌기 전 기준(56px)으로
+              잡아 두고 다시 계산하지 않아 글자가 알약 배경 밖으로
+              비어져 나왔습니다. w-max·w-auto 를 줘도 그대로였습니다.
+              그래서 글자 폭 측정에 기대지 않고 최소 폭을 직접 정합니다. */}
+          <Link
+            href="/templates"
+            className="press hidden min-w-[6.75rem] shrink-0 items-center justify-center rounded-full bg-ink px-4 py-2 text-[0.75rem] whitespace-nowrap text-ivory sm:inline-flex"
+          >
             + 새로 만들기
           </Link>
         </div>

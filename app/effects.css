@@ -134,13 +134,29 @@
   mask: var(--fx-snowflake) center / contain no-repeat;
 }
 
+/* 눈은 기본이 흰색이라 --fx-c 를 그대로 쓰면 늘 색이 바뀌어 버립니다.
+   색을 직접 고른 경우에만(data-tinted) 그 색을 따르게 합니다. */
+.iv-fx-snow[data-tinted] .iv-fx-shape {
+  background: radial-gradient(
+    circle at 35% 32%,
+    #fff 0%,
+    color-mix(in srgb, var(--fx-c) 55%, #fff) 40%,
+    var(--fx-c) 78%,
+    transparent 100%
+  );
+}
+.iv-fx-snow[data-tinted] .iv-fx-fall[data-depth="2"] .iv-fx-shape {
+  background: var(--fx-c);
+  filter: none;
+}
+
 /* ---------- 꽃잎 ---------- */
 .iv-fx-petal .iv-fx-shape {
   border-radius: 100% 0 100% 0;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--iv-accent) 26%, #fff) 0%,
-    var(--iv-accent) 78%
+    color-mix(in srgb, var(--fx-c, var(--iv-accent)) 26%, #fff) 0%,
+    var(--fx-c, var(--iv-accent)) 78%
   );
   box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.4);
   animation-name: fx-tumble;
@@ -151,8 +167,8 @@
   background: radial-gradient(
     circle,
     #fff 0%,
-    color-mix(in srgb, var(--iv-accent) 65%, #fff) 38%,
-    color-mix(in srgb, var(--iv-accent) 80%, transparent) 62%,
+    color-mix(in srgb, var(--fx-c, var(--iv-accent)) 65%, #fff) 38%,
+    color-mix(in srgb, var(--fx-c, var(--iv-accent)) 80%, transparent) 62%,
     transparent 74%
   );
   clip-path: polygon(
@@ -179,7 +195,7 @@
 
 /* ---------- 하트 ---------- */
 .iv-fx-heart .iv-fx-shape {
-  background: var(--iv-accent);
+  background: var(--fx-c, var(--iv-accent));
   -webkit-mask: var(--fx-heart) center / contain no-repeat;
   mask: var(--fx-heart) center / contain no-repeat;
   animation-name: fx-beat;
@@ -198,7 +214,7 @@
   background: radial-gradient(
     circle at 38% 34%,
     rgb(255 255 255 / 0.95) 0%,
-    color-mix(in srgb, var(--iv-accent) 48%, transparent) 52%,
+    color-mix(in srgb, var(--fx-c, var(--iv-accent)) 48%, transparent) 52%,
     transparent 72%
   );
   animation-name: fx-pulse;

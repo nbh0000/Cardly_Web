@@ -30,7 +30,19 @@ export function useStageFit(
     maxScale = 1,
     minScale = 0,
     padding = 0,
-  }: { maxScale?: number; minScale?: number; padding?: number } = {},
+    /**
+     * 세로도 함께 맞출지. A4 이력서처럼 세로로 긴 문서는 가로만 맞추면
+     * 아래가 잘려서 한 장을 한눈에 볼 수 없습니다. 이 옵션을 켜면
+     * 가로·세로 중 더 빡빡한 쪽에 맞춰 한 장이 통째로 들어옵니다.
+     * (켜려면 ref 를 단 요소가 남는 높이를 차지해야 합니다 — h-full)
+     */
+    fitHeight = false,
+  }: {
+    maxScale?: number;
+    minScale?: number;
+    padding?: number;
+    fitHeight?: boolean;
+  } = {},
 ) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(maxScale);
@@ -39,18 +51,24 @@ export function useStageFit(
     const node = ref.current;
     if (!node) return;
     const naturalWidth = naturalWidthMm * MM;
+    const naturalHeight = naturalHeightMm * MM;
     const measure = () => {
       const width = node.clientWidth - padding;
+      if (width <= 0) return;
+      let next = width / naturalWidth;
+      if (fitHeight) {
+        const height = node.clientHeight - padding;
+        if (height > 0) next = Math.min(next, height / naturalHeight);
+      }
       // 좁은 화면에서 끝까지 줄이면 글자를 읽을 수 없습니다.
-      // 하한 아래로는 줄이지 않고 가로 스크롤로 보게 둡니다.
-      if (width > 0)
-        setScale(Math.max(minScale, Math.min(maxScale, width / naturalWidth)));
+      // 하한 아래로는 줄이지 않고 스크롤로 보게 둡니다.
+      setScale(Math.max(minScale, Math.min(maxScale, next)));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => observer.disconnect();
-  }, [naturalWidthMm, maxScale, minScale, padding]);
+  }, [naturalWidthMm, naturalHeightMm, maxScale, minScale, padding, fitHeight]);
 
   // ref 와 치수를 한 객체에 담으면 정적 분석이 객체 전체를 ref 로 보고
   // "렌더 중 ref 접근" 으로 잡습니다. 그래서 따로 돌려줍니다.

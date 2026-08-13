@@ -129,7 +129,8 @@ export function StudioShell({
   return (
     // 위쪽 사이트 헤더(4~5rem)와 페이지 제목 줄(약 5rem)을 뺀 높이.
     // 편집기가 첫 화면을 채우면서도 아래 안내 본문이 이어지게 합니다.
-    <section className="flex h-[calc(100dvh-9rem)] min-h-[34rem] flex-col overflow-hidden border-y border-line bg-cream md:h-[calc(100dvh-10rem)]">
+    // 미리보기를 한눈에 보려면 세로가 관건이라 위쪽 크롬만큼만 뺍니다.
+    <section className="flex h-[calc(100dvh-8rem)] min-h-[34rem] flex-col overflow-hidden border-y border-line bg-cream md:h-[calc(100dvh-8.5rem)]">
       {/* 모바일 탭 */}
       <div className="grid shrink-0 grid-cols-2 border-b border-line bg-ivory lg:hidden">
         {(["edit", "preview"] as const).map((t) => (
@@ -207,7 +208,7 @@ export function StudioShell({
             tab === "preview" ? "flex" : "hidden lg:flex"
           }`}
         >
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-4 lg:px-8">
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-8">
             <p className="flex items-baseline gap-2">
               <span className="font-serif text-[0.9375rem] text-ink">
                 {previewTitle}
@@ -225,7 +226,7 @@ export function StudioShell({
             <div className="shrink-0 px-4 pb-3 lg:px-8">{toolbar}</div>
           ) : null}
 
-          <div className="min-h-0 flex-1 overflow-auto px-4 pb-8 lg:px-8">
+          <div className="min-h-0 flex-1 overflow-auto px-4 pb-4 lg:px-8">
             {children}
           </div>
         </div>

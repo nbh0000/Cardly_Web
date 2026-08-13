@@ -23,7 +23,9 @@ import {
   DATE_FORMATS,
   DAUGHTER_RELATIONS,
   EFFECTS,
+  EFFECT_COLORS,
   EFFECT_DENSITIES,
+  EFFECT_SCALE_RANGE,
   FONT_SAMPLE,
   FONT_SCALES,
   PHOTO_TONES,
@@ -380,12 +382,82 @@ function Effect({ data, set }: Props) {
         </div>
 
         {data.effect !== "none" && (
-          <ChipGroup
-            label="효과 양"
-            options={EFFECT_DENSITIES.map((d) => ({ id: d.id, label: d.label }))}
-            value={data.effectDensity}
-            onChange={(v) => set("effectDensity", v)}
-          />
+          <>
+            <ChipGroup
+              label="효과 양"
+              options={EFFECT_DENSITIES.map((d) => ({
+                id: d.id,
+                label: d.label,
+              }))}
+              value={data.effectDensity}
+              onChange={(v) => set("effectDensity", v)}
+            />
+
+            <div className="grid gap-2">
+              <span className="text-[0.75rem] text-ink-soft">효과 색</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {EFFECT_COLORS.map((c) => {
+                  const on = (data.effectColor ?? "") === c.id;
+                  return (
+                    <button
+                      key={c.id || "auto"}
+                      type="button"
+                      title={c.label}
+                      aria-label={c.label}
+                      aria-pressed={on}
+                      onClick={() => set("effectColor", c.id)}
+                      className={`press h-8 w-8 rounded-full ring-offset-2 ring-offset-cream transition-shadow ${
+                        on ? "ring-2 ring-ink" : "ring-1 ring-line hover:ring-rose"
+                      }`}
+                      style={
+                        c.id
+                          ? { background: c.id }
+                          : {
+                              // "템플릿 색" 은 실제 포인트색을 그대로 비춰 줍니다.
+                              background: data.accentOverride || "var(--color-rose)",
+                            }
+                      }
+                    >
+                      {!c.id && (
+                        <span className="sr-only">템플릿 포인트색 사용</span>
+                      )}
+                    </button>
+                  );
+                })}
+                <label className="press grid h-8 w-8 cursor-pointer place-items-center rounded-full ring-1 ring-line hover:ring-rose">
+                  <span aria-hidden className="text-[0.75rem] text-muted">
+                    +
+                  </span>
+                  <span className="sr-only">직접 색 고르기</span>
+                  <input
+                    type="color"
+                    value={data.effectColor || "#ffffff"}
+                    onChange={(e) => set("effectColor", e.target.value)}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <div className="flex items-baseline justify-between">
+                <span className="text-[0.75rem] text-ink-soft">효과 크기</span>
+                <span className="text-[0.6875rem] text-muted">
+                  {Math.round((data.effectScale ?? 1) * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min={EFFECT_SCALE_RANGE.min}
+                max={EFFECT_SCALE_RANGE.max}
+                step={EFFECT_SCALE_RANGE.step}
+                value={data.effectScale ?? 1}
+                onChange={(e) => set("effectScale", Number(e.target.value))}
+                aria-label="효과 크기"
+                className="w-full accent-[var(--color-rose-deep)]"
+              />
+            </div>
+          </>
         )}
 
         <p className="text-[0.6875rem] leading-relaxed text-muted">
@@ -440,7 +512,18 @@ function Opening({ data, set, onReplayOpening }: Props) {
               className={`press grid aspect-square place-items-center gap-2 rounded-lg bg-white text-[0.6875rem] ring-offset-2 ring-offset-cream transition-shadow ${o.id === data.opening ? "ring-2 ring-ink" : "ring-1 ring-line hover:ring-rose"}`}
             >
               <span className="text-lg text-muted" aria-hidden>
-                {{ none: "✕", emoji: "💍", lace: "❁", curtain: "↔", envelope: "✉", wrap: "🎁" }[o.id]}
+                {
+                  {
+                    none: "✕",
+                    monogram: "❦",
+                    seal: "✦",
+                    emoji: "💍",
+                    lace: "❁",
+                    curtain: "↔",
+                    envelope: "✉",
+                    wrap: "🎁",
+                  }[o.id]
+                }
               </span>
               <span className="text-ink-soft">{o.label}</span>
             </button>

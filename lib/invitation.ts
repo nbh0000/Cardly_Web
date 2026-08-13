@@ -100,6 +100,22 @@ export const EFFECT_DENSITIES: {
   { id: "high", label: "풍성하게", count: 42 },
 ];
 
+/** 입자 색 프리셋. 빈 값은 "템플릿 포인트색을 따름" 입니다. */
+export const EFFECT_COLORS: { id: string; label: string }[] = [
+  { id: "", label: "템플릿 색" },
+  { id: "#ffffff", label: "화이트" },
+  { id: "#f4c6cf", label: "블러시" },
+  { id: "#e8b4b8", label: "로즈" },
+  { id: "#d9b382", label: "샴페인" },
+  { id: "#c9a227", label: "골드" },
+  { id: "#b8c4b0", label: "세이지" },
+  { id: "#a9c0d4", label: "스카이" },
+  { id: "#c3b2d6", label: "라벤더" },
+];
+
+/** 입자 크기 배율의 허용 범위 */
+export const EFFECT_SCALE_RANGE = { min: 0.5, max: 2.2, step: 0.1 } as const;
+
 export type BgmTrack = "none" | "canon" | "spring" | "lullaby" | "waltz";
 
 export const BGM_TRACKS: { id: BgmTrack; label: string }[] = [
@@ -114,6 +130,8 @@ export const BGM_TRACKS: { id: BgmTrack; label: string }[] = [
 
 export type OpeningAnimation =
   | "none"
+  | "monogram"
+  | "seal"
   | "emoji"
   | "lace"
   | "curtain"
@@ -122,11 +140,13 @@ export type OpeningAnimation =
 
 export const OPENING_ANIMATIONS: { id: OpeningAnimation; label: string }[] = [
   { id: "none", label: "미적용" },
-  { id: "emoji", label: "웨딩 이모지" },
+  { id: "monogram", label: "모노그램" },
+  { id: "seal", label: "실링 왁스" },
   { id: "lace", label: "레이스" },
   { id: "curtain", label: "커튼" },
   { id: "envelope", label: "봉투 열기" },
   { id: "wrap", label: "포장지 뜯기" },
+  { id: "emoji", label: "웨딩 이모지" },
 ];
 
 /* ---------- 날짜 표기 디자인 ---------- */
@@ -418,6 +438,10 @@ export interface InvitationData {
   accentOverride?: string;
   effect: EffectKind;
   effectDensity: EffectDensity;
+  /** 입자 색. 비우면 템플릿 포인트색을 그대로 씁니다. */
+  effectColor?: string;
+  /** 입자 크기 배율 (1 = 기본) */
+  effectScale?: number;
 
   /* 커버 */
   coverEyebrow: string;
@@ -886,6 +910,8 @@ export function createDefaultData(templateId: string): InvitationData {
     fontScale: "md",
     effect: "none",
     effectDensity: "mid",
+    effectColor: "",
+    effectScale: 1,
 
     coverEyebrow: t.eyebrow ?? "WE ARE GETTING MARRIED",
     coverPhoto: t.samplePhoto,

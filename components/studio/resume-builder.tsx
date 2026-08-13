@@ -111,11 +111,20 @@ export function ResumeBuilder() {
   const [overflow, setOverflow] = useState(false);
   const [layoutFilter, setLayoutFilter] = useState("all");
 
-  // 좁은 화면에서는 0.55 배 아래로 줄이지 않고 가로로 스크롤해서 봅니다.
+  /* 미리보기 배율.
+     기본값 1 은 "화면에 맞춤" — A4 한 장이 통째로 들어옵니다.
+     가로로 넓고 세로로 짧은 편집기 화면에 세로로 긴 A4 를 통째로 넣으면
+     아무래도 작아지므로, 자세히 보고 싶을 때 키울 수 있게 배율을 둡니다. */
+  const [zoom, setZoom] = useState(1);
+
+  // A4 한 장이 통째로 보이도록 가로·세로를 함께 맞춥니다.
+  // 예전 하한(0.55)은 세로 맞춤과 함께 쓰면 좁은 화면에서 다시 아래가
+  // 잘리게 만들어, 한눈에 보이는 것을 우선해 하한을 낮췄습니다.
   const [stageRef, stage] = useStageFit(210, 297, {
     maxScale: 1,
-    minScale: 0.55,
-    padding: 32,
+    minScale: 0.2,
+    padding: 16,
+    fitHeight: true,
   });
 
   const restore = useCallback((draft: Draft) => {
@@ -879,7 +888,7 @@ ${
               : "블록을 누르면 위치와 크기를 조절할 수 있습니다"}
           </span>
           <label className="flex items-center gap-2 text-[0.6875rem] text-ink-soft">
-            크기
+            블록 크기
             <input
               type="range"
               min={70}
@@ -890,6 +899,23 @@ ${
                 selected && patchBlock(selected, { size: +e.target.value })
               }
             />
+          </label>
+
+          {/* 보기 배율 — 1 이면 A4 한 장이 화면에 통째로 들어옵니다 */}
+          <label className="flex items-center gap-2 text-[0.6875rem] text-ink-soft">
+            보기
+            <input
+              type="range"
+              min={1}
+              max={2.5}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              aria-label="미리보기 배율"
+            />
+            <span className="w-10 text-right tabular-nums text-muted">
+              {zoom === 1 ? "맞춤" : `${Math.round(zoom * 100)}%`}
+            </span>
           </label>
           <ToolButton
             disabled={!selected}
@@ -914,18 +940,26 @@ ${
         </div>
       }
     >
-      <div ref={stageRef} className="grid place-items-center">
+      {/* h-full 이라야 useStageFit 이 남는 높이를 읽어 세로까지 맞춥니다.
+          배율을 키우면 종이가 칸보다 커지므로 위쪽 정렬로 바꿔
+          윗부분이 잘리지 않게 합니다. */}
+      <div
+        ref={stageRef}
+        className={`grid h-full justify-items-center ${
+          zoom > 1 ? "items-start" : "items-center"
+        }`}
+      >
         <div
           style={{
-            width: stage.width,
-            height: stage.height,
+            width: stage.width * zoom,
+            height: stage.height * zoom,
             boxShadow: "0 14px 34px rgb(46 42 39 / 0.14)",
           }}
         >
           <div
             data-fit
             style={{
-              transform: `scale(${stage.scale})`,
+              transform: `scale(${stage.scale * zoom})`,
               transformOrigin: "top left",
               width: 210 * MM,
             }}
