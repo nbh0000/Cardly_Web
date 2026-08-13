@@ -23,7 +23,7 @@ import type { SectionKey } from "@/lib/invitation";
 export type PlanId = "free" | "premium";
 
 /** 원화. 한 청첩장에 한 번 결제하면 예식이 끝날 때까지 유지됩니다. */
-export const PREMIUM_PRICE = 19_000;
+export const PREMIUM_PRICE = 3_000;
 
 /** 무료로 발행한 링크가 살아 있는 기간(일) */
 export const FREE_LINK_DAYS = 7;
