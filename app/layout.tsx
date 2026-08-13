@@ -4,7 +4,7 @@ import { TEMPLATES } from "@/lib/invitation";
 import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
 
-const DESCRIPTION = `이력서와 명함은 무료로, 모바일 청첩장은 ${TEMPLATES.length}종 템플릿으로. 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요.`;
+const DESCRIPTION = `이력서와 명함을 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요. 모바일 청첩장 ${TEMPLATES.length}종 템플릿도 값 없이 만들어 보실 수 있습니다.`;
 
 export const metadata: Metadata = {
   // 운영 도메인. 상대 경로로 적은 canonical·OG 주소가 모두 이 값을 기준으로 절대화됩니다.

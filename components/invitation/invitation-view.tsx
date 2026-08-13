@@ -1873,6 +1873,49 @@ function OpeningLayer({
     return () => clearTimeout(t);
   }, [onDone]);
 
+  /* ── 양문 열기 (3D) ──
+     닫힌 카드가 가운데서 갈라져, 두 짝이 경첩을 축으로 앞으로 열립니다.
+     각 짝 안의 op-gate-shade 는 열릴수록 진해져서 면이 광원에서
+     돌아앉는 느낌을 냅니다. */
+  if (kind === "gatefold") {
+    return (
+      <div className="opening op-gate" aria-hidden onAnimationEnd={finish}>
+        <span className="op-gate-door l">
+          <span className="op-gate-inner" />
+          <span className="op-gate-shade" />
+        </span>
+        <span className="op-gate-door r">
+          <span className="op-gate-inner" />
+          <span className="op-gate-shade" />
+        </span>
+        <span className="op-gate-seam">
+          {monogram ? (
+            <span className="op-gate-mark">{monogram}</span>
+          ) : null}
+        </span>
+      </div>
+    );
+  }
+
+  /* ── 카드 펼치기 (3D) ──
+     반으로 접힌 카드의 윗장이 접힌 선을 축으로 뒤로 젖혀지고,
+     아랫장이 내려가며 청첩장이 드러납니다. */
+  if (kind === "unfold") {
+    return (
+      <div className="opening op-unfold" aria-hidden onAnimationEnd={finish}>
+        <span className="op-unfold-top">
+          <span className="op-unfold-face">
+            {monogram ? (
+              <span className="op-unfold-mark">{monogram}</span>
+            ) : null}
+          </span>
+          <span className="op-unfold-shade" />
+        </span>
+        <span className="op-unfold-bottom" />
+      </div>
+    );
+  }
+
   /* ── 모노그램 ──
      종이 한 장이 화면을 덮고, 가는 겹테두리가 그려진 뒤 두 사람의
      이니셜이 자간을 좁히며 떠오릅니다. 빛이 한 번 스치고 종이가

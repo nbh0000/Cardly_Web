@@ -515,6 +515,8 @@ function Opening({ data, set, onReplayOpening }: Props) {
                 {
                   {
                     none: "✕",
+                    gatefold: "◫",
+                    unfold: "⬓",
                     monogram: "❦",
                     seal: "✦",
                     emoji: "💍",

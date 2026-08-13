@@ -130,6 +130,8 @@ export const BGM_TRACKS: { id: BgmTrack; label: string }[] = [
 
 export type OpeningAnimation =
   | "none"
+  | "gatefold"
+  | "unfold"
   | "monogram"
   | "seal"
   | "emoji"
@@ -138,8 +140,15 @@ export type OpeningAnimation =
   | "envelope"
   | "wrap";
 
+/**
+ * gatefold·unfold 는 원근을 준 진짜 3D 회전입니다. 종이가 두께를 가지고
+ * 앞으로 열리는 인상을 주려고 경첩(transform-origin)을 카드 가장자리에
+ * 두고, 열리면서 면이 광원에서 멀어지는 만큼 어두워지게 했습니다.
+ */
 export const OPENING_ANIMATIONS: { id: OpeningAnimation; label: string }[] = [
   { id: "none", label: "미적용" },
+  { id: "gatefold", label: "양문 열기 3D" },
+  { id: "unfold", label: "카드 펼치기 3D" },
   { id: "monogram", label: "모노그램" },
   { id: "seal", label: "실링 왁스" },
   { id: "lace", label: "레이스" },

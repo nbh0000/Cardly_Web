@@ -29,7 +29,7 @@ export default function Home() {
               </h2>
               <p className="mt-5 text-body text-ink-soft">
                 미니멀부터 플라워, 모던 에디토리얼까지 {TEMPLATES.length}종.
-                만들어 보는 데는 비용이 들지 않고, 마음에 들 때 결제합니다.
+                가입도 결제도 없이 지금 바로 만들어 보실 수 있습니다.
               </p>
             </div>
 

@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
-import { createDefaultData, getTemplate } from "@/lib/invitation";
-import { formatPrice, PREMIUM_PRICE } from "@/lib/plan";
+import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -146,10 +145,11 @@ const TOOLS = [
     href: "/templates",
     eyebrow: "Wedding",
     title: "모바일 청첩장",
-    body: "사진과 인사말을 넣으면 결과가 바로 보이고, 링크 하나로 카카오톡에 보냅니다.",
-    meta: `링크 공유 · 참석 응답 · 발행 ${formatPrice(PREMIUM_PRICE)}`,
-    // 만드는 것도 링크를 보내 보는 것도 무료라, 다른 둘과 같은 배지를 씁니다.
-    badge: "무료 시작",
+    // 예전에는 "링크 하나로 카카오톡에 보냅니다" 라고 적혀 있었지만
+    // 발행이 아직 열리지 않아 지킬 수 없는 약속이었습니다.
+    body: "사진과 인사말을 넣으면 결과가 바로 보입니다. 지금은 만들고 미리 보는 것까지 됩니다.",
+    meta: `템플릿 ${TEMPLATES.length}종 · 링크 공유는 준비 중`,
+    badge: "미리 만들기",
     preview: <InvitationPreview />,
   },
 ];

@@ -353,7 +353,8 @@ export function Editor({ templateId }: { templateId: string }) {
             <div className="flex items-center gap-2">
               {saved && <span className="hidden text-[0.6875rem] text-muted sm:inline">{saved} 저장됨</span>}
               <button type="button" onClick={downloadQr} className="press hidden items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink sm:flex">
-                <QrGlyph /> 미리보기 QR
+                {/* 이 QR 은 내 청첩장이 아니라 템플릿 샘플 화면을 가리킵니다. */}
+                <QrGlyph /> 템플릿 QR
               </button>
               <button
                 type="button"
