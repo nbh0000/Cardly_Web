@@ -10,67 +10,91 @@ import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 const RESUME_PICKS = ["banner-navy", "sidebar-forest", "rule-ink"];
 const CARD_PICKS = ["band-charcoal", "bar-ivory", "rules-sand"];
 
-function ResumePreview() {
+/* 세 미리보기는 같은 문법을 씁니다.
+   — 앞의 한 장을 크게 보여 주고, 뒤의 두 장은 가장자리만 살짝 내밀어
+     "종류가 더 있다" 는 것만 말합니다.
+   — 세 카드의 그림 면적을 비슷하게 맞춰 시각적 무게를 통일합니다.
+   예전처럼 작은 조각 세 개를 나란히 두면 무엇을 만드는 도구인지
+   한눈에 읽히지 않아, 앞장 하나를 확실히 크게 세웠습니다. */
+
+/** 뒤에 깔리는 종이 — inset-0 이라 앞장과 크기·비율이 저절로 같습니다. */
+function Behind({
+  offset,
+}: {
+  offset: { x: number; y: number; r: number }[];
+}) {
   return (
-    <div className="flex w-full items-end justify-center gap-2.5">
-      {RESUME_PICKS.map((id, i) => {
-        const t = RESUME_TEMPLATES.find((x) => x.id === id);
-        if (!t) return null;
-        return (
-          <span
-            key={id}
-            className="rthumb w-[30%] shadow-card"
-            data-l={t.layout}
-            style={
-              {
-                "--ac": t.accent,
-                "--sf": t.soft,
-                "--pp": t.paper,
-                transform: i === 1 ? "scale(1.14)" : undefined,
-                zIndex: i === 1 ? 1 : 0,
-              } as React.CSSProperties
-            }
-          >
-            <i />
-            <em />
-          </span>
-        );
-      })}
+    <>
+      {offset.map((o, i) => (
+        <span
+          key={i}
+          aria-hidden
+          className="absolute inset-0 rounded-[3px] border border-line bg-white shadow-soft"
+          style={{
+            transform: `translate(${o.x}px, ${o.y}px) rotate(${o.r}deg)`,
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
+function ResumePreview() {
+  const t = RESUME_TEMPLATES.find((x) => x.id === RESUME_PICKS[0]);
+  if (!t) return null;
+  return (
+    <div className="relative h-[10.5rem] aspect-[210/297]">
+      <Behind
+        offset={[
+          { x: 14, y: 10, r: 3 },
+          { x: 7, y: 5, r: 1.5 },
+        ]}
+      />
+      <span
+        className="rthumb absolute inset-0 shadow-card"
+        data-l={t.layout}
+        style={
+          {
+            "--ac": t.accent,
+            "--sf": t.soft,
+            "--pp": t.paper,
+          } as React.CSSProperties
+        }
+      >
+        <i />
+        <em />
+      </span>
     </div>
   );
 }
 
 function CardPreview() {
+  const t = CARD_TEMPLATES.find((x) => x.id === CARD_PICKS[0]);
+  if (!t) return null;
   return (
-    // 명함은 실제 비율이 납작해서 나란히 두면 자리를 많이 먹습니다.
-    // 살짝 겹쳐 쌓아 두면 세 장이 한 묶음처럼 읽힙니다.
-    <div className="flex w-full flex-col items-center">
-      {CARD_PICKS.map((id, i) => {
-        const t = CARD_TEMPLATES.find((x) => x.id === id);
-        if (!t) return null;
-        return (
-          <span
-            key={id}
-            className="cthumb w-[56%] shadow-card"
-            data-deco={t.deco}
-            data-align={t.placement.align}
-            style={
-              {
-                "--ac": t.accent,
-                "--bg": t.bg,
-                "--tx": t.text,
-                marginTop: i === 0 ? 0 : "-20%",
-                transform: `rotate(${(i - 1) * 2.2}deg)`,
-                zIndex: i,
-              } as React.CSSProperties
-            }
-          >
-            <em />
-            <b />
-            <i />
-          </span>
-        );
-      })}
+    <div className="relative aspect-[90/50] w-[12.5rem]">
+      <Behind
+        offset={[
+          { x: 12, y: 14, r: 3.5 },
+          { x: 6, y: 7, r: 1.75 },
+        ]}
+      />
+      <span
+        className="cthumb absolute inset-0 shadow-card"
+        data-deco={t.deco}
+        data-align={t.placement.align}
+        style={
+          {
+            "--ac": t.accent,
+            "--bg": t.bg,
+            "--tx": t.text,
+          } as React.CSSProperties
+        }
+      >
+        <em />
+        <b />
+        <i />
+      </span>
     </div>
   );
 }
@@ -80,9 +104,15 @@ function InvitationPreview() {
   if (!template) return null;
   const data = { ...createDefaultData("noir"), fontScale: "sm" as const };
   return (
-    <div className="flex w-full justify-center">
-      <div className="w-[45%] overflow-hidden rounded-lg bg-white p-1.5 shadow-card ring-1 ring-line">
-        <div className="relative aspect-3/4 overflow-hidden rounded-md">
+    <div className="relative aspect-[3/4] h-[10.5rem]">
+      <Behind
+        offset={[
+          { x: 13, y: 9, r: 3 },
+          { x: 6.5, y: 4.5, r: 1.5 },
+        ]}
+      />
+      <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-white p-1 shadow-card ring-1 ring-line">
+        <div className="relative h-full overflow-hidden rounded-[2px]">
           {/* 축소 기준점이 상단 중앙이면 오른쪽으로 밀려 잘립니다. */}
           <div className="absolute inset-0 origin-top-left scale-[0.62] [height:161%] [width:161%]">
             <InvitationView template={template} data={data} coverOnly />
@@ -126,7 +156,7 @@ const TOOLS = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-section-sm md:pt-36">
+    <section className="relative overflow-hidden pt-24 pb-section md:pt-32">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[70vh]"
@@ -139,12 +169,12 @@ export function Hero() {
       <div className="shell">
         <div className="rise mx-auto max-w-narrow text-center">
           <span className="eyebrow eyebrow-center">Cardly</span>
-          <h1 className="mt-6 font-serif text-display text-ink">
+          <h1 className="mt-5 font-serif text-display text-ink">
             필요한 서류와 카드를,
             <br />
             <em className="not-italic text-rose-deep">브라우저에서 바로</em>
           </h1>
-          <p className="mx-auto mt-7 max-w-narrow text-body-lg text-ink-soft">
+          <p className="mx-auto mt-5 max-w-narrow text-body-lg text-ink-soft">
             이력서와 명함은 회원가입도 결제도 없이 무료입니다. 입력한 내용은
             서버로 보내지 않고 이 브라우저 안에서만 처리됩니다.
           </p>
@@ -160,7 +190,7 @@ export function Hero() {
               <div className="flex items-center justify-between">
                 <span className="eyebrow">{tool.eyebrow}</span>
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[0.625rem] tracking-[0.1em] ${
+                  className={`rounded-full px-2.5 py-0.5 text-[0.6875rem] tracking-[0.1em] ${
                     tool.badge.startsWith("무료")
                       ? "bg-rose-veil text-rose-deep"
                       : "bg-sand text-ink-soft"
@@ -170,13 +200,17 @@ export function Hero() {
                 </span>
               </div>
 
-              <div className="mt-6 grid h-48 place-items-center overflow-hidden rounded-md bg-cream/70 px-5">
-                {tool.preview}
+              {/* 뒤에 깔린 종이가 오른쪽·아래로 밀려 나므로,
+                  묶음 전체를 그만큼 되돌려 광학적으로 가운데 맞춥니다. */}
+              <div className="mt-6 grid h-52 place-items-center overflow-hidden rounded-md bg-cream/70 px-5">
+                <div className="translate-x-[-7px] translate-y-[-5px]">
+                  {tool.preview}
+                </div>
               </div>
 
               <h2 className="mt-6 font-serif text-h2 text-ink">{tool.title}</h2>
               <p className="mt-2.5 text-caption text-ink-soft">{tool.body}</p>
-              <p className="mt-auto pt-5 text-[0.6875rem] text-hint">
+              <p className="mt-auto pt-5 text-[0.6875rem] text-muted">
                 {tool.meta}
               </p>
               <span className="mt-3 text-caption text-rose-deep">

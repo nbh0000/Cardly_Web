@@ -31,7 +31,8 @@ export function SiteHeader() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300 ${
         scrolled || open
-          ? "border-b border-line-soft bg-ivory/85 backdrop-blur-md"
+          ? // 85% 는 헤더 글자와 아래 제목이 겹쳐 보일 만큼 비쳤습니다.
+            "border-b border-line-soft bg-ivory/92 backdrop-blur-md"
           : "border-b border-transparent bg-transparent"
       }`}
     >

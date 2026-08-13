@@ -4,7 +4,7 @@ export function FinalCta() {
   return (
     <section className="pb-section">
       <div className="shell">
-        <div className="relative overflow-hidden rounded-xl bg-rose-veil px-6 py-section-sm text-center">
+        <div className="relative overflow-hidden rounded-xl bg-rose-veil px-6 py-section-lg text-center">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0"

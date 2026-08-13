@@ -62,7 +62,7 @@ const FEATURES = [
 
 export function Features() {
   return (
-    <section id="features" className="scroll-mt-20 bg-cream py-section">
+    <section id="features" className="scroll-mt-20 bg-cream py-section-lg">
       <div className="shell">
         <div className="mx-auto max-w-narrow text-center">
           <span className="eyebrow eyebrow-center">Features</span>

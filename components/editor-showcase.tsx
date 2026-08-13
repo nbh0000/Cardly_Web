@@ -16,7 +16,7 @@ const CAPABILITIES = [
 
 export function EditorShowcase() {
   return (
-    <section className="bg-cream py-section">
+    <section className="bg-cream py-section-lg">
       <div className="shell">
         <div className="grid items-center gap-block lg:grid-cols-2 lg:gap-16">
           <div>

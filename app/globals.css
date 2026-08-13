@@ -32,8 +32,11 @@
   /* Text — 순수 검정 대신 따뜻한 잉크 톤 */
   --color-ink: #2e2a27; /* 제목·본문 (ivory 대비 13.9:1) */
   --color-ink-soft: #57504a; /* 보조 본문 (7.3:1) */
-  --color-muted: #7a716a; /* 캡션·메타 (4.6:1, AA ✓) */
-  --color-hint: #a79d94; /* 장식 텍스트 전용 — 본문에 쓰지 말 것 */
+  --color-muted: #7a716a; /* 캡션·메타 (4.7:1, AA ✓) */
+  /* 장식·플레이스홀더 전용. 이전 값(#a79d94)은 아이보리 위 2.4:1 로
+     본문에 쓰면 AA 에 크게 못 미쳤습니다. 3.3:1 까지 올려 두되,
+     "읽어야 하는 글자"에는 여전히 muted 를 쓰세요. */
+  --color-hint: #938981;
 
   /* ---------- 2. TYPOGRAPHY ---------- */
   /* 세리프 = 제목·이름·숫자 / 산세리프 = 본문·UI */
@@ -76,12 +79,19 @@
   /* 기본 스텝은 Tailwind 4px 스케일 그대로.
      아래는 "여백을 넉넉하게" 원칙을 담은 시맨틱 토큰 */
 
-  --spacing-gutter: 1.25rem; /* 모바일 좌우 여백 20px */
-  --spacing-section: clamp(4.5rem, 11vw, 8.5rem); /* 섹션 상하 여백 */
-  --spacing-section-sm: clamp(3rem, 7vw, 5rem);
+  --spacing-gutter: clamp(1.25rem, 4vw, 2.5rem); /* 좌우 여백 20 → 40px */
+
+  /* 섹션 상하 여백.
+     이웃한 두 섹션이 각각 이 값을 쓰면 사이 간격은 두 배가 됩니다.
+     그래서 "원하는 섹션 간격의 절반"을 토큰 값으로 잡습니다.
+     (원하는 간격 88~136px → 토큰 44~68px) */
+  --spacing-section: clamp(2.75rem, 5.5vw, 4.25rem);
+  /* 배경색이 바뀌는 띠는 색 경계 안쪽에 숨 쉴 공간이 더 필요합니다. */
+  --spacing-section-lg: clamp(4rem, 8vw, 6.5rem);
+  --spacing-section-sm: clamp(2rem, 4.5vw, 3.25rem);
   --spacing-block: clamp(2rem, 5vw, 3.5rem); /* 헤딩 ↔ 콘텐츠 */
 
-  --container-content: 68rem; /* 1088px — 본문 최대폭 */
+  --container-content: 78rem; /* 1248px — 본문 최대폭 */
   --container-narrow: 42rem; /* 672px — 문단 최대폭 */
 
   /* ---------- 4. RADIUS ---------- */

@@ -34,7 +34,8 @@ export default function BusinessCardPage() {
     <>
       <SiteHeader />
       <main id="main" className="flex-1 pt-16 md:pt-20">
-        <div className="shell flex flex-wrap items-baseline gap-x-4 gap-y-1 py-5">
+        {/* 제목 줄은 아래 편집기와 같은 가장자리 여백을 씁니다 — 이력서 쪽과 동일. */}
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-gutter py-5">
           <h1 className="font-serif text-h3 text-ink">명함 만들기</h1>
           <p className="text-[0.75rem] text-muted">
             90 × 50 mm 실제 크기로 편집 · 재단 안전선을 보면서 배치하고 인쇄용

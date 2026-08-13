@@ -37,36 +37,58 @@ export default function PricingPage() {
               return (
                 <section
                   key={plan.id}
-                  className={`rounded-lg p-7 sm:p-8 ${
+                  className={`flex flex-col rounded-lg p-7 sm:p-8 ${
                     premium
                       ? "bg-ink text-ivory shadow-lift"
                       : "border border-line bg-white shadow-soft"
                   }`}
                 >
-                  <div className="flex items-baseline justify-between gap-3">
+                  {/* 요금제 이름보다 금액이 먼저 읽혀야 합니다.
+                      예전에는 둘이 같은 크기라 정작 판단 근거인 숫자가
+                      묻혔습니다. 이름은 라벨로 내리고 금액을 키웠습니다. */}
+                  {/* 배지가 있는 카드만 줄이 두꺼워져 두 금액의 기준선이
+                      어긋납니다. 줄 높이를 고정해 나란히 맞춥니다. */}
+                  <div className="flex h-7 items-center justify-between gap-3">
                     <h2
-                      className={`font-serif text-h3 ${premium ? "text-ivory" : "text-ink"}`}
+                      className={`font-sans text-eyebrow uppercase ${
+                        premium ? "text-ivory/75" : "text-rose-deep"
+                      }`}
                     >
                       {plan.name}
                     </h2>
-                    <p
-                      className={`font-serif text-[1.375rem] ${
-                        premium ? "text-ivory" : "text-ink"
-                      }`}
-                    >
-                      {plan.price}
-                    </p>
+                    {premium && (
+                      <span className="rounded-full bg-ivory/15 px-2.5 py-1 text-[0.6875rem] tracking-[0.1em] text-ivory">
+                        예식 때 필요한 것
+                      </span>
+                    )}
                   </div>
 
                   <p
-                    className={`mt-3 text-caption leading-relaxed ${
+                    className={`mt-4 font-serif text-h1 ${
+                      premium ? "text-ivory" : "text-ink"
+                    }`}
+                  >
+                    {plan.price}
+                  </p>
+                  <p
+                    className={`mt-1.5 text-[0.75rem] ${
+                      premium ? "text-ivory/60" : "text-muted"
+                    }`}
+                  >
+                    {premium
+                      ? "청첩장 하나당 한 번 · 매달 빠져나가는 구독이 아닙니다"
+                      : "카드 등록도, 결제 정보 입력도 없습니다"}
+                  </p>
+
+                  <p
+                    className={`mt-5 text-caption leading-relaxed ${
                       premium ? "text-ivory/70" : "text-ink-soft"
                     }`}
                   >
                     {plan.tagline}
                   </p>
 
-                  <ul className="mt-6 grid gap-2.5">
+                  <ul className="mt-6 mb-7 grid gap-2.5">
                     {plan.features.map((f) => (
                       <li
                         key={f}
@@ -85,9 +107,10 @@ export default function PricingPage() {
                     ))}
                   </ul>
 
+                  {/* mt-auto 로 두 카드의 항목 수가 달라도 버튼이 같은 줄에 섭니다. */}
                   <Link
                     href="/templates"
-                    className={`mt-7 block rounded-full py-3 text-center text-[0.875rem] transition-colors ${
+                    className={`mt-auto block rounded-full py-3 text-center text-[0.875rem] transition-colors ${
                       premium
                         ? "bg-ivory text-ink hover:bg-white"
                         : "border border-line text-ink hover:border-rose"

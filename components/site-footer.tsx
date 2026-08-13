@@ -1,5 +1,27 @@
 import Link from "next/link";
 
+/**
+ * 사업자 정보.
+ *
+ * 청첩장 발행이 유료라 전자상거래법 제10조상 상호·대표자·주소·
+ * 사업자등록번호·통신판매업 신고번호를 표시해야 합니다.
+ * 예전에는 "서울특별시 마포구 양화로 000, 0층" 같은 자리표시 주소가
+ * 그대로 나가고 있었는데, 없는 것보다 나쁩니다 — 틀린 정보를
+ * 사실처럼 보여 주기 때문입니다.
+ *
+ * 실제 값이 정해지면 아래를 채우세요. 빈 항목은 화면에 나오지 않으므로
+ * 지어낸 값 대신 비워 두는 편이 안전합니다.
+ */
+const BUSINESS = {
+  name: "Cardly",
+  owner: "", // 대표자명
+  address: "", // 사업장 주소
+  registrationNo: "", // 사업자등록번호
+  mailOrderNo: "", // 통신판매업 신고번호
+  email: "help@cardly.kr",
+  hours: "평일 10:00–18:00",
+};
+
 const COLUMNS = [
   {
     title: "제작 도구",
@@ -30,7 +52,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-cream pt-section-sm pb-12">
+    <footer className="border-t border-line bg-cream pt-section-lg pb-12">
       <div className="shell">
         <div className="grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
@@ -69,11 +91,21 @@ export function SiteFooter() {
 
         <hr className="rule my-10" />
 
-        <div className="flex flex-col gap-4 text-[0.75rem] leading-relaxed text-hint md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-4 text-[0.75rem] leading-relaxed text-muted md:flex-row md:items-end md:justify-between">
           <address className="not-italic">
-            Cardly · 서울특별시 마포구 양화로 000, 0층
+            {[
+              BUSINESS.name,
+              BUSINESS.owner && `대표 ${BUSINESS.owner}`,
+              BUSINESS.address,
+              BUSINESS.registrationNo &&
+                `사업자등록번호 ${BUSINESS.registrationNo}`,
+              BUSINESS.mailOrderNo &&
+                `통신판매업신고 ${BUSINESS.mailOrderNo}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
             <br />
-            고객문의 help@cardly.kr · 평일 10:00–18:00
+            고객문의 {BUSINESS.email} · {BUSINESS.hours}
           </address>
           <p>&copy; 2026 Cardly. All rights reserved.</p>
         </div>

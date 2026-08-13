@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
-import { createDefaultData, type Template } from "@/lib/invitation";
+import {
+  CATEGORY_LABELS,
+  createDefaultData,
+  type Template,
+} from "@/lib/invitation";
 
 /**
  * 갤러리 썸네일.
@@ -47,12 +51,15 @@ export function TemplateCard({ template }: { template: Template }) {
           </span>
         </div>
 
+        {/* 예전에는 여기에 template.id 를 그대로 찍었지만,
+            "POLAROID-DAY" 같은 내부 식별자는 고르는 데 아무 도움이 안 됩니다.
+            대신 분위기(카테고리)를 보여 주면 옆 카드와 비교가 됩니다. */}
         <div className="mt-3.5 flex items-baseline justify-between gap-2">
           <span className="font-serif text-[0.9375rem] text-ink">
             {template.name}
           </span>
-          <span className="text-[0.6875rem] tracking-[0.1em] text-hint uppercase">
-            {template.id}
+          <span className="text-[0.75rem] text-muted">
+            {template.categories.map((c) => CATEGORY_LABELS[c]).join(" · ")}
           </span>
         </div>
       </Link>

@@ -34,7 +34,10 @@ export default function ResumePage() {
     <>
       <SiteHeader />
       <main id="main" className="flex-1 pt-16 md:pt-20">
-        <div className="shell flex flex-wrap items-baseline gap-x-4 gap-y-1 py-5">
+        {/* 제목 줄은 아래 편집기와 한 덩어리입니다. 편집기가 화면 끝까지
+            차지하므로 제목만 가운데 좁은 단에 두면 두 개의 다른 격자가
+            겹쳐 보입니다. 편집기와 같은 가장자리 여백을 씁니다. */}
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-gutter py-5">
           <h1 className="font-serif text-h3 text-ink">이력서 만들기</h1>
           <p className="text-[0.75rem] text-muted">
             A4 한 장이 실시간으로 조판됩니다 · 가입도 결제도 없고, 입력한 내용은
