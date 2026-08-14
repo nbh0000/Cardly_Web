@@ -279,6 +279,46 @@
   pointer-events: none;
   perspective: 1200px;
   overflow: hidden;
+
+  /* ── 공통 재질 ──
+     오프닝이 조잡해 보이던 가장 큰 이유는 "종이"가 아니라 "단색 사각형"이
+     회전하고 있었기 때문입니다. 아래 세 가지로 종이의 최소 조건을 맞춥니다.
+       ① 균일한 흰색 대신 미세하게 색이 흔들리는 바탕
+       ② 아주 옅은 섬유 노이즈 (외부 파일 없이 SVG 를 인라인으로)
+       ③ 비스듬히 지나가는 은은한 광택
+     노이즈는 feTurbulence 로 그 자리에서 만들어 쓰므로 저작권 문제가 없습니다. */
+  --paper-base: color-mix(in srgb, var(--iv-accent, #b08d80) 7%, #fffdf9);
+  --paper-deep: color-mix(in srgb, var(--iv-accent, #b08d80) 16%, var(--iv-bg, #fff));
+  --paper-edge: color-mix(in srgb, var(--iv-accent, #b08d80) 30%, #fff);
+  --paper-line: color-mix(in srgb, var(--iv-accent, #b08d80) 42%, transparent);
+
+  --paper-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+
+  /* 종이 한 장의 배경 — 노이즈 · 광택 · 바탕 순으로 겹칩니다 */
+  --paper-bg:
+    var(--paper-noise),
+    linear-gradient(
+      104deg,
+      rgb(255 255 255 / 0.55) 0%,
+      rgb(255 255 255 / 0) 34%,
+      rgb(255 255 255 / 0) 66%,
+      rgb(120 100 90 / 0.09) 100%
+    ),
+    linear-gradient(168deg, var(--paper-base), var(--paper-deep));
+
+  /* 경첩으로 열리는 물건의 가속 — 처음엔 뻑뻑하고 끝에서 부드럽게 멎습니다 */
+  --fold: cubic-bezier(0.62, 0.01, 0.16, 1);
+}
+
+/* 노이즈만 곱해 얹고 나머지 층은 그대로 둡니다 */
+.opening .op-paper {
+  background-image: var(--paper-bg);
+  background-size:
+    140px 140px,
+    auto,
+    auto;
+  /* overlay 는 대비가 세서 종이가 지저분해집니다. soft-light 로 결만 남깁니다. */
+  background-blend-mode: soft-light, normal, normal;
 }
 
 /* ── 커튼: 좌우로 갈라짐 ── */
@@ -411,7 +451,7 @@
   position: absolute;
   top: -10%;
   bottom: -10%;
-  width: 56%;
+  width: 60%;
   background: color-mix(in srgb, var(--iv-accent, #b08d80) 22%, var(--iv-bg, #fff));
   background-image: repeating-linear-gradient(
     -45deg,
@@ -419,14 +459,40 @@
     color-mix(in srgb, var(--iv-accent, #b08d80) 26%, transparent) 9px 18px
   );
 }
+/* 지그재그 이음매에서 두 장이 확실히 겹치게 폭을 키웠습니다.
+   예전에는 톱니 끝에서 어긋나 뒤 배경이 검게 비쳤습니다. */
+/* 두 장의 톱니가 반드시 겹치도록 진폭을 잡았습니다.
+   왼쪽 장의 오른쪽 끝은 화면 기준 51%~57%, 오른쪽 장의 왼쪽 끝은
+   43%~49% 라서 어느 높이에서도 최소 2% 는 포개집니다.
+   예전 값은 톱니 끝에서 어긋나 뒤 배경이 검은 마름모로 비쳤습니다. */
 .op-wrap-half.l {
   left: -3%;
-  clip-path: polygon(0 0, 100% 0, 88% 22%, 100% 44%, 86% 66%, 100% 88%, 92% 100%, 0 100%);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    92% 18%,
+    100% 36%,
+    90% 54%,
+    100% 72%,
+    93% 90%,
+    100% 100%,
+    0 100%
+  );
   animation: wrap-l 1.15s var(--ease-in-out-soft) 0.5s both;
 }
 .op-wrap-half.r {
   right: -3%;
-  clip-path: polygon(100% 0, 0 0, 12% 22%, 0 44%, 14% 66%, 0 88%, 8% 100%, 100% 100%);
+  clip-path: polygon(
+    0 0,
+    8% 18%,
+    0 36%,
+    10% 54%,
+    0 72%,
+    7% 90%,
+    0 100%,
+    100% 100%,
+    100% 0
+  );
   animation: wrap-r 1.15s var(--ease-in-out-soft) 0.5s both;
 }
 .op-wrap-ribbon {
@@ -440,17 +506,21 @@
   opacity: 0.9;
   animation: ribbon-split 0.5s var(--ease-soft) 0.15s both;
 }
+/* 리본 매듭.
+   예전에는 둥근 사각형 테두리 하나여서 리본이 아니라 알약으로 보였습니다.
+   가운데 매듭을 본체로 두고, 좌우 고리를 기울인 타원으로 붙입니다. */
 .op-wrap-bow {
   position: absolute;
-  top: 42%;
+  top: 38%;
   left: 50%;
-  width: 4.5rem;
-  height: 2.2rem;
+  width: min(46%, 9rem);
+  height: auto;
   translate: -50% 0;
-  border-radius: 999px;
-  border: 3px solid var(--iv-accent, #b08d80);
-  background: var(--iv-bg, #fff);
-  animation: bow-pop 0.55s var(--spring) 0.05s both, veil-out 0.3s linear 0.55s both;
+  z-index: 1;
+  filter: drop-shadow(0 3px 6px rgb(24 18 15 / 0.32));
+  animation:
+    bow-pop 0.55s var(--spring) 0.05s both,
+    veil-out 0.3s linear 0.55s both;
 }
 
 /* ── 레이스 ── */
@@ -606,34 +676,71 @@
    ============================================================ */
 
 /* ── 양문 열기 ── */
+
+/* 문이 열리면 안쪽은 원래 그늘입니다. 열리는 동안 이 그늘이 걷히면서
+   청첩장이 빛을 받는 것처럼 보이게 하는 층 — 이게 없으면 문짝만
+   따로 노는 슬라이드처럼 보입니다. */
+.op-gate-void {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    75% 55% at 50% 45%,
+    rgb(24 18 15 / 0.5) 0%,
+    rgb(24 18 15 / 0.78) 100%
+  );
+  animation: gate-void 1.25s var(--ease-soft) 1.05s both;
+}
+
 .op-gate-door {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 50.2%;
-  background:
-    linear-gradient(
-      100deg,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 10%, var(--iv-bg, #fff)) 0%,
-      var(--iv-bg, #fff) 45%,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 6%, var(--iv-bg, #fff)) 100%
-    );
-  /* 90도를 넘어가면 종이의 뒷면이 보이면서 글자가 거울처럼 뒤집힙니다.
-     정확히 90도에서는 폭이 0 이라 이미 보이지 않으므로, 뒷면을 감춰도
-     끊기는 느낌 없이 그 순간에 자연스럽게 사라집니다. */
-  backface-visibility: hidden;
+  /* 두께를 붙이려면 자식이 같은 3D 공간에 있어야 합니다 */
+  transform-style: preserve-3d;
   will-change: transform;
+}
+/* 종이의 단면 — 자유단에 세워 두는 얇은 띠.
+   이것 하나로 "면"이 "장"으로 읽힙니다. */
+.op-gate-door::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  background: linear-gradient(
+    to bottom,
+    var(--paper-edge),
+    color-mix(in srgb, var(--iv-accent, #b08d80) 46%, #fff)
+  );
 }
 .op-gate-door.l {
   left: 0;
   transform-origin: left center;
   /* 음수 회전이라야 자유단(오른쪽 모서리)이 보는 사람 쪽으로 옵니다 */
-  animation: gate-open-l 1.55s var(--ease-in-out-soft) 0.85s both;
+  animation: gate-open-l 1.7s var(--fold) 0.85s both;
+}
+.op-gate-door.l::after {
+  right: 0;
+  transform-origin: 100% 50%;
+  transform: rotateY(-90deg);
 }
 .op-gate-door.r {
   right: 0;
   transform-origin: right center;
-  animation: gate-open-r 1.55s var(--ease-in-out-soft) 0.85s both;
+  animation: gate-open-r 1.7s var(--fold) 0.85s both;
+}
+.op-gate-door.r::after {
+  left: 0;
+  transform-origin: 0% 50%;
+  transform: rotateY(90deg);
+}
+/* 앞면 — 뒷면이 보이지 않게 감추는 것은 이 층에만 겁니다.
+   문짝 자체에 걸면 단면까지 같이 사라집니다. */
+.op-gate-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
 }
 
 /* 안쪽에 얇게 두른 금박 테두리 — 닫혀 있을 때 카드로 읽히게 합니다 */
@@ -650,26 +757,27 @@
 }
 
 /* 열릴수록 짙어지는 그늘 */
+/* 경첩 쪽부터 그늘이 집니다.
+   예전 값(검정 0.92)은 종이를 은색 금속처럼 만들었습니다. 종이는
+   그늘이 져도 종이색을 유지해야 해서, 따뜻한 갈색으로 옅게 덮습니다. */
 .op-gate-shade {
   position: absolute;
   inset: 0;
-  /* 경첩 쪽이 밝고 자유단으로 갈수록 어둡습니다 —
-     문짝이 광원에서 돌아앉는 방향과 같습니다. */
   background: linear-gradient(
     to left,
-    rgb(28 22 19 / 0.92) 0%,
-    rgb(28 22 19 / 0.55) 45%,
-    rgb(28 22 19 / 0.12) 100%
+    rgb(74 52 40 / 0.5) 0%,
+    rgb(74 52 40 / 0.26) 48%,
+    rgb(74 52 40 / 0.04) 100%
   );
   opacity: 0;
-  animation: gate-shade 1.55s var(--ease-in-out-soft) 0.85s both;
+  animation: gate-shade 1.7s var(--fold) 0.85s both;
 }
 .op-gate-door.l .op-gate-shade {
   background: linear-gradient(
     to right,
-    rgb(28 22 19 / 0.92) 0%,
-    rgb(28 22 19 / 0.55) 45%,
-    rgb(28 22 19 / 0.12) 100%
+    rgb(74 52 40 / 0.5) 0%,
+    rgb(74 52 40 / 0.26) 48%,
+    rgb(74 52 40 / 0.04) 100%
   );
 }
 
@@ -692,30 +800,60 @@
   );
   animation: veil-out 0.5s var(--ease-soft) 0.9s both;
 }
+/* 접합선 위에 얹히는 이니셜.
+   예전에는 불투명한 흰 사각형을 깔아 종이 위에 스티커를 붙인 것처럼
+   보였습니다. 위아래로만 종이색을 옅게 번지게 해 선을 가립니다. */
 .op-gate-mark {
   font-family: var(--iv-heading, Georgia, serif);
   font-size: clamp(1rem, 4.5vw, 1.5rem);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
   white-space: nowrap;
   color: var(--iv-ink, #2e2a27);
-  background: var(--iv-bg, #fff);
-  padding: 0.6em 0.7em;
+  padding: 0.85em 0.9em;
+  background: radial-gradient(
+    62% 50% at 50% 50%,
+    var(--paper-base) 60%,
+    color-mix(in srgb, var(--paper-base) 0%, transparent) 100%
+  );
 }
 
+/* 경첩이 뻑뻑하게 풀렸다가 활짝 열리고, 끝에서 아주 살짝 되돌아
+   멎습니다. 되돌아오는 두 도가 "무게"를 만듭니다. */
 @keyframes gate-open-l {
-  from {
+  0% {
     transform: rotateY(0deg);
   }
-  to {
+  18% {
+    transform: rotateY(-6deg);
+  }
+  88% {
+    transform: rotateY(-116deg);
+  }
+  100% {
     transform: rotateY(-112deg);
   }
 }
 @keyframes gate-open-r {
-  from {
+  0% {
     transform: rotateY(0deg);
   }
-  to {
+  18% {
+    transform: rotateY(6deg);
+  }
+  88% {
+    transform: rotateY(116deg);
+  }
+  100% {
     transform: rotateY(112deg);
+  }
+}
+@keyframes gate-void {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 /* 90도에 닿기 전(약 75% 지점)에 그늘이 거의 다 들어와야 두께가 읽힙니다.
@@ -725,10 +863,10 @@
     opacity: 0;
   }
   55% {
-    opacity: 0.72;
+    opacity: 0.8;
   }
   to {
-    opacity: 0.95;
+    opacity: 1;
   }
 }
 
@@ -739,32 +877,51 @@
   left: 0;
   right: 0;
   height: 50.2%;
-  background:
-    linear-gradient(
-      to bottom,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 9%, var(--iv-bg, #fff)),
-      var(--iv-bg, #fff)
-    );
-  /* 문짝과 같은 이유로 뒷면을 감춥니다 — 없으면 접혀 넘어간 뒤
-     이니셜이 거울처럼 뒤집혀 보입니다. */
-  backface-visibility: hidden;
+  transform-style: preserve-3d;
   will-change: transform;
 }
 .op-unfold-top {
   top: 0;
   /* 접힌 선(아래 모서리)이 경첩 — 윗장이 뒤로 젖혀집니다 */
   transform-origin: center bottom;
-  animation: unfold-lid 1.6s var(--ease-in-out-soft) 0.8s both;
+  animation: unfold-lid 1.75s var(--fold) 0.8s both;
+}
+/* 윗장의 종이 단면 — 젖혀질 때 위쪽 모서리에 두께가 보입니다 */
+.op-unfold-top::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 5px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--iv-accent, #b08d80) 46%, #fff),
+    var(--paper-edge)
+  );
+  transform-origin: 50% 0%;
+  transform: rotateX(90deg);
+}
+/* 앞면에만 뒷면 감추기를 걸어야 단면이 남습니다 */
+.op-unfold-face {
+  backface-visibility: hidden;
 }
 .op-unfold-bottom {
   bottom: 0;
-  box-shadow: inset 0 14px 20px -18px rgb(0 0 0 / 0.4);
-  animation: unfold-base 1s var(--ease-in-out-soft) 1.5s both;
+  /* 접힌 선 안쪽의 그림자 — 두 장이 한 장에서 접힌 것으로 읽히게 합니다 */
+  box-shadow: inset 0 16px 22px -16px rgb(24 18 15 / 0.55);
+  animation: unfold-base 1.05s var(--fold) 1.55s both;
 }
 .op-unfold-face {
   position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.op-unfold-frame {
+  position: absolute;
   inset: 10% 8%;
-  border: 1px solid color-mix(in srgb, var(--iv-accent, #b08d80) 40%, transparent);
+  border: 1px solid var(--paper-line);
   display: grid;
   place-items: center;
 }
@@ -780,12 +937,12 @@
   inset: 0;
   background: linear-gradient(
     to top,
-    rgb(28 22 19 / 0.92) 0%,
-    rgb(28 22 19 / 0.5) 50%,
-    rgb(28 22 19 / 0.1) 100%
+    rgb(74 52 40 / 0.52) 0%,
+    rgb(74 52 40 / 0.24) 52%,
+    rgb(74 52 40 / 0.03) 100%
   );
   opacity: 0;
-  animation: gate-shade 1.6s var(--ease-in-out-soft) 0.8s both;
+  animation: gate-shade 1.75s var(--fold) 0.8s both;
 }
 
 @keyframes unfold-lid {
@@ -820,18 +977,22 @@
 .op-mono-paper {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(
-      120% 80% at 50% 0%,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 7%, var(--iv-bg, #fff)) 0%,
-      var(--iv-bg, #fff) 60%
-    );
   display: grid;
   place-items: center;
   overflow: hidden;
   transform-origin: 50% 100%;
   /* 마지막에 종이가 들려 올라가며 사라집니다 */
-  animation: mono-paper-lift 1s var(--ease-in-out-soft) 2.65s both;
+  animation: mono-paper-lift 1.05s var(--fold) 2.65s both;
+}
+/* 들려 올라갈 때 아래쪽에 생기는 그늘 — 종이가 떠오르는 두께감 */
+.op-mono-paper::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 22%;
+  background: linear-gradient(to top, rgb(24 18 15 / 0.16), transparent);
+  opacity: 0;
+  animation: mono-liftshade 1.05s var(--fold) 2.65s both;
 }
 
 /* 겹테두리 — 위아래에서 그려 들어옵니다 */
@@ -870,8 +1031,10 @@
 
 .op-mono-initials {
   font-family: var(--iv-heading, Georgia, serif);
-  font-size: clamp(2.25rem, 12vw, 3.75rem);
+  font-size: clamp(2rem, 10vw, 3.5rem);
   line-height: 1.1;
+  /* 좁은 폭에서 "D & S" 가 두 줄로 접히면 모노그램으로 안 보입니다 */
+  white-space: nowrap;
   color: var(--iv-ink, #2e2a27);
   /* 자간이 넓게 벌어져 있다가 제자리로 모입니다 */
   animation: mono-initials-in 1.5s var(--ease-in-out-soft) 0.5s both;
@@ -954,12 +1117,26 @@
   }
 }
 @keyframes mono-paper-lift {
-  from {
+  0% {
     transform: none;
+  }
+  14% {
+    /* 들리기 직전에 아주 살짝 내려앉습니다 */
+    transform: translateY(1.2%) scale(0.995);
+  }
+  100% {
+    transform: translateY(-102%) scale(1.03);
+  }
+}
+@keyframes mono-liftshade {
+  0%,
+  14% {
+    opacity: 0;
+  }
+  45% {
     opacity: 1;
   }
-  to {
-    transform: translateY(-101%) scale(1.02);
+  100% {
     opacity: 0;
   }
 }
@@ -992,7 +1169,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(28%, 7rem);
+  /* 28% 는 너무 작아 봉인이 아니라 얼룩처럼 보였습니다 */
+  width: min(42%, 10rem);
   aspect-ratio: 1;
   translate: -50% -50%;
   display: grid;
@@ -1000,18 +1178,31 @@
   /* 봉인이 "찍히는" 한 박자 */
   animation: seal-press 0.75s var(--spring) 0.15s both;
 }
+/* 밀랍은 가장자리가 눌려 삐져나오고, 가운데는 도장에 눌려 옴폭합니다.
+   완전한 원 + 매끈한 그라디언트로는 플라스틱 단추처럼 보입니다.
+   가장자리를 물결지게 자르고, 눌린 자국(안쪽 그림자)과
+   기름진 하이라이트를 얹었습니다. */
 .op-seal-wax-half {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
+  border-radius: 47% 53% 51% 49% / 52% 48% 53% 47%;
   background:
     radial-gradient(
-      circle at 34% 30%,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 62%, #fff) 0%,
-      var(--iv-accent, #b08d80) 46%,
-      color-mix(in srgb, var(--iv-accent, #b08d80) 72%, #000) 100%
+      circle at 36% 28%,
+      rgb(255 255 255 / 0.42) 0%,
+      rgb(255 255 255 / 0) 34%
+    ),
+    radial-gradient(
+      circle at 50% 52%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 55%, #4a1f22) 0%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 72%, #6d2a2c) 40%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 88%, #000) 78%,
+      color-mix(in srgb, var(--iv-accent, #b08d80) 55%, #000) 100%
     );
-  box-shadow: 0 6px 18px rgb(0 0 0 / 0.28);
+  box-shadow:
+    inset 0 3px 7px rgb(255 255 255 / 0.3),
+    inset 0 -5px 11px rgb(0 0 0 / 0.4),
+    0 7px 20px rgb(24 18 15 / 0.42);
 }
 /* 왁스가 한가운데서 갈라져 좌우로 떨어져 나갑니다.
    갈라진 선은 일부러 들쭉날쭉하게 잡았습니다 — 자로 자른 듯 곧으면
@@ -1046,14 +1237,18 @@
   );
   animation: seal-crack-r 0.9s var(--ease-in-out-soft) 1.75s both;
 }
+/* 도장에 눌려 파인 글자 — 위쪽은 어둡고 아래쪽에 빛이 걸립니다 */
 .op-seal-mark {
   position: relative;
   z-index: 1;
   font-family: var(--iv-heading, Georgia, serif);
   font-size: clamp(1.1rem, 5vw, 1.6rem);
-  letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--iv-accent, #b08d80) 30%, #fff);
-  text-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+  letter-spacing: 0.1em;
+  text-indent: 0.1em;
+  color: color-mix(in srgb, var(--iv-accent, #b08d80) 42%, #2b1113);
+  text-shadow:
+    0 -1px 1px rgb(0 0 0 / 0.5),
+    0 1px 0 rgb(255 255 255 / 0.22);
   animation: seal-mark 0.8s var(--ease-soft) 1.7s both;
 }
 

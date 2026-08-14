@@ -1880,18 +1880,20 @@ function OpeningLayer({
   if (kind === "gatefold") {
     return (
       <div className="opening op-gate" aria-hidden onAnimationEnd={finish}>
-        <span className="op-gate-door l">
-          <span className="op-gate-inner" />
-          <span className="op-gate-shade" />
-        </span>
-        <span className="op-gate-door r">
-          <span className="op-gate-inner" />
-          <span className="op-gate-shade" />
-        </span>
+        {/* 문 안쪽의 그늘 — 열리면서 걷힙니다 */}
+        <span className="op-gate-void" />
+        {(["l", "r"] as const).map((side) => (
+          <span key={side} className={`op-gate-door ${side}`}>
+            {/* 앞면만 따로 둡니다. 뒷면 감추기를 문짝에 걸면
+                종이 단면(::after)까지 같이 사라집니다. */}
+            <span className="op-gate-face op-paper">
+              <span className="op-gate-inner" />
+              <span className="op-gate-shade" />
+            </span>
+          </span>
+        ))}
         <span className="op-gate-seam">
-          {monogram ? (
-            <span className="op-gate-mark">{monogram}</span>
-          ) : null}
+          {monogram ? <span className="op-gate-mark">{monogram}</span> : null}
         </span>
       </div>
     );
@@ -1904,14 +1906,16 @@ function OpeningLayer({
     return (
       <div className="opening op-unfold" aria-hidden onAnimationEnd={finish}>
         <span className="op-unfold-top">
-          <span className="op-unfold-face">
-            {monogram ? (
-              <span className="op-unfold-mark">{monogram}</span>
-            ) : null}
+          <span className="op-unfold-face op-paper">
+            <span className="op-unfold-frame">
+              {monogram ? (
+                <span className="op-unfold-mark">{monogram}</span>
+              ) : null}
+            </span>
+            <span className="op-unfold-shade" />
           </span>
-          <span className="op-unfold-shade" />
         </span>
-        <span className="op-unfold-bottom" />
+        <span className="op-unfold-bottom op-paper" />
       </div>
     );
   }
@@ -1923,7 +1927,7 @@ function OpeningLayer({
   if (kind === "monogram") {
     return (
       <div className="opening op-mono" aria-hidden onAnimationEnd={finish}>
-        <span className="op-mono-paper">
+        <span className="op-mono-paper op-paper">
           <span className="op-mono-frame" />
           <span className="op-mono-frame op-mono-frame-in" />
           <span className="op-mono-center">
@@ -1948,8 +1952,8 @@ function OpeningLayer({
   if (kind === "seal") {
     return (
       <div className="opening op-seal" aria-hidden onAnimationEnd={finish}>
-        <span className="op-seal-paper l" />
-        <span className="op-seal-paper r" />
+        <span className="op-seal-paper op-paper l" />
+        <span className="op-seal-paper op-paper r" />
         <span className="op-seal-wax">
           <span className="op-seal-wax-half l" />
           <span className="op-seal-wax-half r" />
@@ -1964,8 +1968,8 @@ function OpeningLayer({
   if (kind === "curtain") {
     return (
       <div className="opening op-curtain" aria-hidden onAnimationEnd={finish}>
-        <span className="opening-half l" />
-        <span className="opening-half r" />
+        <span className="opening-half op-paper l" />
+        <span className="opening-half op-paper r" />
         <span className="op-curtain-seam" />
       </div>
     );
@@ -1993,7 +1997,17 @@ function OpeningLayer({
         <span className="op-wrap-half l" />
         <span className="op-wrap-half r" />
         <span className="op-wrap-ribbon" />
-        <span className="op-wrap-bow" />
+        {/* 리본은 둥근 사각형이나 타원으로는 리본처럼 보이지 않습니다.
+            고리·매듭·꼬리를 가진 실제 형태라서 경로로 그립니다. */}
+        <svg className="op-wrap-bow" viewBox="0 0 120 78" aria-hidden>
+          <g fill="var(--iv-accent, #b08d80)">
+            <path d="M56 34C40 8 8 11 11 31c3 19 32 15 45 5Z" opacity="0.95" />
+            <path d="M64 34c16-26 48-23 45-3-3 19-32 15-45 5Z" opacity="0.95" />
+            <path d="M56 41c-4 13-9 21-18 32l14-4c6-10 8-19 9-25Z" opacity="0.8" />
+            <path d="M64 41c4 13 9 21 18 32l-14-4c-6-10-8-19-9-25Z" opacity="0.8" />
+            <ellipse cx="60" cy="37" rx="8" ry="6.5" />
+          </g>
+        </svg>
       </div>
     );
   }
@@ -2001,7 +2015,7 @@ function OpeningLayer({
   if (kind === "lace") {
     return (
       <div className="opening op-lace" aria-hidden onAnimationEnd={finish}>
-        <span className="op-lace-veil">
+        <span className="op-lace-veil op-paper">
           <svg viewBox="0 0 120 120" className="op-lace-doily">
             {Array.from({ length: 16 }).map((_, i) => (
               <ellipse
@@ -2027,7 +2041,7 @@ function OpeningLayer({
   // emoji — 링과 하트가 차례로 튀어오른 뒤 베일이 걷힙니다
   return (
     <div className="opening op-emoji" aria-hidden onAnimationEnd={finish}>
-      <span className="op-emoji-veil">
+      <span className="op-emoji-veil op-paper">
         {["💍", "🤍", "💐", "🕊", "✨"].map((e, i) => (
           <span key={e} className="op-emoji-bit" style={{ ["--i" as string]: i }}>
             {e}
