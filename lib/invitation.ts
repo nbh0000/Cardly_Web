@@ -452,6 +452,16 @@ export interface InvitationData {
   /** 입자 크기 배율 (1 = 기본) */
   effectScale?: number;
 
+  /* ---------- 초대장(결혼식이 아닌 행사) ----------
+     occasion 이 있으면 커버가 "신랑/신부" 대신 "행사명/주최자" 를 씁니다.
+     없으면 지금까지처럼 청첩장입니다. */
+  /** 행사 종류 — lib/occasion.ts 의 OccasionKind */
+  occasion?: string;
+  /** 행사 이름 (커버 첫 줄) */
+  eventTitle?: string;
+  /** 주최자 표기 (커버 둘째 줄) */
+  hostName?: string;
+
   /* 커버 */
   coverEyebrow: string;
   coverPhoto?: string;

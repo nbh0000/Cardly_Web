@@ -29,6 +29,7 @@ const COLUMNS = [
       { label: "이력서 만들기", href: "/resume" },
       { label: "명함 만들기", href: "/business-card" },
       { label: "모바일 청첩장", href: "/templates" },
+      { label: "모바일 초대장", href: "/invitation-card" },
       { label: "청첩장 요금 안내", href: "/pricing" },
     ],
   },

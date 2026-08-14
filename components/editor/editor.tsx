@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { SectionPanel } from "@/components/editor/panels";
 import { Rail, type SectionId } from "@/components/editor/rail";
 import { InvitationView } from "@/components/invitation/invitation-view";
+import {
+  createOccasionData,
+  getOccasion,
+  type OccasionKind,
+} from "@/lib/occasion";
 import {
   buildExport,
   downloadExport,
@@ -72,6 +82,27 @@ export function Editor({ templateId }: { templateId: string }) {
   const [data, setData] = useState<InvitationData>(() =>
     createDefaultData(templateId),
   );
+  /*
+   * 초대장(행사)으로 열렸는지는 주소의 ?occasion= 으로 정합니다.
+   * 정적 배포라 행사×템플릿 조합마다 페이지를 만들 수 없고, 만들 이유도
+   * 없습니다 — 편집기는 같고 기본값만 다릅니다.
+   *
+   * 주소는 클라이언트에서만 읽을 수 있습니다. useState 초기화에서 읽으면
+   * 서버가 미리 그려 둔 HTML(청첩장 기본값)과 어긋나 하이드레이션이 깨지고,
+   * effect 에서 setState 하면 렌더가 한 번 더 도는 낭비가 생깁니다.
+   * 그래서 초안을 읽을 때와 같은 방식으로 스냅샷을 받아, 값이 바뀐 렌더에서
+   * 곧바로 반영합니다.
+   */
+  const occasionParam = useSyncExternalStore(
+    subscribeNever,
+    () => new URLSearchParams(window.location.search).get("occasion"),
+    () => null,
+  );
+  const [occasion, setOccasion] = useState<OccasionKind | null>(null);
+  if (occasionParam !== occasion && occasionParam && getOccasion(occasionParam)) {
+    setOccasion(occasionParam as OccasionKind);
+    setData(createOccasionData(templateId, occasionParam as OccasionKind));
+  }
   const [section, setSection] = useState<SectionId>("decor");
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [panelOpen, setPanelOpen] = useState(true);
@@ -81,7 +112,8 @@ export function Editor({ templateId }: { templateId: string }) {
   /** 값이 바뀌면 오프닝 애니메이션이 다시 재생됩니다. */
   const [replay, setReplay] = useState(0);
 
-  const storageKey = `daon:draft:${templateId}`;
+  // 행사별 초안이 청첩장 초안을 덮어쓰지 않도록 키를 나눕니다.
+  const storageKey = `daon:draft:${occasion ?? "wedding"}:${templateId}`;
   const [dismissed, setDismissed] = useState(false);
 
   // 서버에서는 항상 null, 클라이언트에서만 저장된 초안을 읽습니다.

@@ -256,7 +256,12 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   const second = data.nameOrder === "groom-first" ? data.bride : data.groom;
   const layout = data.coverLayout;
 
-  const names = { first: fullName(first), second: fullName(second) };
+  /* 초대장은 커버에 행사명과 주최자를 씁니다.
+     names 가 모든 커버 레이아웃에 그대로 전달되므로, 여기 한 곳만
+     갈라 주면 커버 11종이 전부 행사용으로 동작합니다. */
+  const names = data.occasion
+    ? { first: data.eventTitle ?? "", second: data.hostName ?? "" }
+    : { first: fullName(first), second: fullName(second) };
 
   if (layout === "photo") return <CoverPhoto data={data} names={names} />;
   if (layout === "arch") return <CoverArch data={data} names={names} />;
@@ -274,6 +279,21 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
 
 type Names = { first: string; second: string };
 
+/**
+ * 커버 두 줄 사이의 이음표.
+ *
+ * 청첩장은 "신랑 & 신부" 라서 앰퍼샌드가 맞지만, 초대장은
+ * "행사명 & 주최자" 가 되어 버려 말이 되지 않습니다.
+ * 초대장에서는 이음표 없이 두 줄로만 둡니다.
+ */
+function Amp({ data, wide = false }: { data: InvitationData; wide?: boolean }) {
+  // 초대장은 행사명과 주최자를 줄로 나눕니다. 그냥 지우면 두 값이
+  // 붙어 버리고("여름밤 홈파티김도윤"), 가운뎃점을 넣으면 주최자 안의
+  // 가운뎃점과 겹쳐 읽기 어려워집니다.
+  if (data.occasion) return <br />;
+  return <span className="iv-amp">{wide ? " & " : "&"}</span>;
+}
+
 /** 커버 위에 얹는 영문 캘리그래피 한 줄 */
 function ScriptLine({
   data,
@@ -288,6 +308,8 @@ function ScriptLine({
 
 /** 신랑·신부의 영문 이름. 비어 있으면 한글 이름으로 대신합니다. */
 function englishNames(data: InvitationData, names: Names) {
+  // 초대장에는 영문 이름 칸이 따로 없으므로 행사명·주최자를 그대로 씁니다.
+  if (data.occasion) return names;
   const groomFirst = data.nameOrder === "groom-first";
   return {
     first: (groomFirst ? data.groomEnglish : data.brideEnglish) || names.first,
@@ -355,7 +377,7 @@ function CoverCenter({
       <ScriptLine data={data} />
       <h1 className="iv-cover-names">
         {names.first}
-        <span className="iv-amp">&amp;</span>
+        <Amp data={data} />
         {names.second}
       </h1>
       <span className="iv-hairline" />
@@ -459,7 +481,7 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
       <ScriptLine data={data} className="iv-script-lg" />
       <h1 className="iv-cover-names iv-cover-names-italic">
         {names.first}
-        <span className="iv-amp"> &amp; </span>
+        <Amp data={data} wide />
         {names.second}
       </h1>
       <span className="iv-pill">{formatDateDots(data.date)}</span>
@@ -587,7 +609,7 @@ function CoverPoster({ data, names }: { data: InvitationData; names: Names }) {
       <div className="iv-poster-top">
         <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
         <p className="iv-poster-en">
-          {en.first} <span className="iv-amp">&amp;</span> {en.second}
+          {en.first} <Amp data={data} /> {en.second}
         </p>
       </div>
 
@@ -635,7 +657,7 @@ function CoverPolaroid({ data, names }: { data: InvitationData; names: Names }) 
 
       <h1 className="iv-cover-names iv-polaroid-names">
         {names.first}
-        <span className="iv-amp">&amp;</span>
+        <Amp data={data} />
         {names.second}
       </h1>
       <p className="iv-cover-meta">
@@ -661,7 +683,7 @@ function CoverBand({ data, names }: { data: InvitationData; names: Names }) {
 
       <div className="iv-band-foot">
         <p className="iv-band-en">
-          {en.first} <span className="iv-amp">&amp;</span> {en.second}
+          {en.first} <Amp data={data} /> {en.second}
         </p>
         <h1 className="iv-cover-names iv-band-names">
           {names.first} <span className="iv-dot">&middot;</span> {names.second}
@@ -1828,6 +1850,11 @@ function Gift({ data }: { data: InvitationData }) {
  * 첫 글자를 씁니다. 둘 다 비어 있으면 모노그램 글자는 생략됩니다.
  */
 function monogramOf(data: InvitationData) {
+  // 초대장은 두 사람이 아니므로 행사명의 첫 글자를 씁니다.
+  if (data.occasion) {
+    const t = (data.eventTitle ?? "").trim();
+    return t ? t[0]! : "";
+  }
   const initial = (en: string, ko: string) => {
     const e = (en ?? "").trim();
     if (e) return e[0]!.toUpperCase();
