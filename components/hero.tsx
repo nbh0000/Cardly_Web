@@ -2,6 +2,7 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
+import { createOccasionData, OCCASIONS } from "@/lib/occasion";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -122,6 +123,31 @@ function InvitationPreview() {
   );
 }
 
+function OccasionPreview() {
+  const template = getTemplate("blanc") ?? TEMPLATES[0]!;
+  const data = {
+    ...createOccasionData(template.id, "party"),
+    fontScale: "sm" as const,
+  };
+  return (
+    <div className="relative aspect-[3/4] h-[10.5rem]">
+      <Behind
+        offset={[
+          { x: 13, y: 9, r: 3 },
+          { x: 6.5, y: 4.5, r: 1.5 },
+        ]}
+      />
+      <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-white p-1 shadow-card ring-1 ring-line">
+        <div className="relative h-full overflow-hidden rounded-[2px]">
+          <div className="absolute inset-0 origin-top-left scale-[0.62] [height:161%] [width:161%]">
+            <InvitationView template={template} data={data} coverOnly />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const TOOLS = [
   {
     href: "/resume",
@@ -152,6 +178,15 @@ const TOOLS = [
     badge: "미리 만들기",
     preview: <InvitationPreview />,
   },
+  {
+    href: "/invitation-card",
+    eyebrow: "Invitation",
+    title: "모바일 초대장",
+    body: "생일·파티·집들이·돌잔치·개업·페스티벌. 행사를 고르면 문구가 채워진 채로 열립니다.",
+    meta: `행사 ${OCCASIONS.length}종 · 링크 공유는 준비 중`,
+    badge: "미리 만들기",
+    preview: <OccasionPreview />,
+  },
 ];
 
 export function Hero() {
@@ -175,12 +210,14 @@ export function Hero() {
             <em className="not-italic text-rose-deep">브라우저에서 바로</em>
           </h1>
           <p className="mx-auto mt-5 max-w-narrow text-body-lg text-ink-soft">
-            이력서와 명함은 회원가입도 결제도 없이 무료입니다. 입력한 내용은
-            서버로 보내지 않고 이 브라우저 안에서만 처리됩니다.
+            가입도 설치도 없이 네 가지를 만듭니다. 이력서와 명함은 계속
+            무료이고, 입력한 내용은 이 브라우저를 벗어나지 않습니다.
           </p>
         </div>
 
-        <div className="rise mt-block grid gap-5 md:grid-cols-3">
+        {/* 도구가 먼저 보여야 합니다 — 무엇을 하는 곳인지 스크롤 없이
+            읽히도록 네 가지를 한 줄에 나란히 둡니다. */}
+        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {TOOLS.map((tool) => (
             <Link
               key={tool.href}

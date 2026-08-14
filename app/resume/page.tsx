@@ -19,6 +19,11 @@ export const metadata: Metadata = {
     "이력서 PDF",
     "경력기술서",
     "신입 이력서",
+    "이력서 양식 다운로드",
+    "무료 이력서 양식",
+    "경력기술서 양식",
+    "이력서 사진 규격",
+    "이력서 쓰는 법",
   ],
   alternates: { canonical: "/resume/" },
   openGraph: {

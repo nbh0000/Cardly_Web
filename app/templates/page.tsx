@@ -4,9 +4,30 @@ import { SiteHeader } from "@/components/site-header";
 import { TemplateGrid } from "@/components/template-grid";
 import { TEMPLATES } from "@/lib/invitation";
 
+const DESCRIPTION = `모바일 청첩장 템플릿 ${TEMPLATES.length}종을 가입 없이 무료로 만들어 보세요. 미니멀·플라워·모던·클래식·포토 스타일에 3D 오프닝과 화면 효과까지 그대로 씁니다.`;
+
 export const metadata: Metadata = {
-  title: "청첩장 템플릿",
-  description: `${TEMPLATES.length}종의 모바일 청첩장 디자인. 마음에 드는 템플릿을 고르면 바로 편집할 수 있습니다.`,
+  title: "모바일 청첩장 무료 제작 — 템플릿 " + TEMPLATES.length + "종",
+  description: DESCRIPTION,
+  keywords: [
+    "모바일청첩장",
+    "모바일 청첩장 무료",
+    "청첩장 제작",
+    "청첩장 만들기",
+    "무료 청첩장",
+    "셀프 청첩장",
+    "모바일청첩장 셀프제작",
+    "청첩장 템플릿",
+    "청첩장 문구",
+    "카카오톡 청첩장",
+  ],
+  alternates: { canonical: "/templates/" },
+  openGraph: {
+    type: "website",
+    url: "/templates/",
+    title: "모바일 청첩장 무료 제작 | Cardly",
+    description: DESCRIPTION,
+  },
 };
 
 export default function TemplatesPage() {
