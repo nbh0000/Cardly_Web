@@ -66,3 +66,58 @@ npx serve out
 - 업로드한 사진 — `blob:` URL 이라 새로고침하면 사라짐 (임시저장은 텍스트만 보관)
 - 지도 — 네이버·카카오 지도 SDK 와 API 키 필요
 - 하객스냅 구글 드라이브 연동
+
+---
+
+## 웹 초대장 템플릿
+
+결혼식·돌잔치·생일·기업 행사를 하나의 템플릿으로 만드는 모바일 중심 초대장입니다.
+개발을 몰라도 **설정 파일 하나만 고치면** 내 초대장이 됩니다.
+
+| 경로 | 설명 |
+| --- | --- |
+| `/invitation-card` | 템플릿 설명 — 행사 프리셋 6종, 테마 6종, 쓰는 법 |
+| `/invitation-card/[preset]` | 행사별 예시 초대장 (wedding · firstbirthday · birthday · corporate · opening · gathering) |
+| `/invitation-card/my` | `lib/invite/config.ts` 를 그대로 그린 «내 초대장» |
+
+### 내 초대장으로 바꾸기
+
+`lib/invite/config.ts` 한 파일만 고칩니다. 큰따옴표 안의 글자만 바꾸고 쉼표·괄호는 그대로 둡니다.
+
+1. **색** — 맨 위 `theme` 을 `ivory` `sage` `blush` `sky` `ink` `mocha` 중 하나로.
+2. **행사 정보** — 이름, 날짜(`2026-10-17`), 시간(`13:00`, 24시간), 장소, 주소, 인사말, 연락처.
+3. **사진** — `public/` 에 넣고 경로를 적습니다. `public/photos/main.jpg` → `"/photos/main.jpg"`.
+4. **칸 켜고 끄기** — 맨 아래 `sections` 에서 줄을 지우면 사라지고, 순서를 바꾸면 그 순서로 나옵니다.
+5. **줄바꿈** — 글 안에서 `\n` 은 한 줄, `\n\n` 은 한 칸.
+
+### 구조
+
+```
+lib/invite/
+  types.ts     자료 구조 — InviteConfig 가 초대장 전체를 정의합니다
+  themes.ts    테마 6종 (색 + 글꼴). CSS 변수로만 나갑니다
+  presets.ts   행사별 기본 설정 6종
+  config.ts    ★ 사용자가 고치는 파일
+  format.ts    날짜·시간·지도·전화 링크
+components/invite/
+  invitation.tsx  설정을 받아 칸을 순서대로 쌓는 렌더러
+  sections.tsx    표지·초대글·일시·달력·갤러리·오시는길·연락처·회신·계좌·안내
+  reveal.tsx      스크롤 등장 (IntersectionObserver, 외부 라이브러리 없음)
+  stage.tsx       넓은 화면에서 가운데 한 칸으로 세우는 무대
+app/invite.css    전용 스타일. 색은 전부 --wi-* 변수
+```
+
+### 설계 원칙
+
+- **모바일 우선** — 폭 360px 기준으로 짜고, 48rem 이상에서만 가운데 한 칸으로 세웁니다.
+- **본문 17px / 행간 1.9** — 한글이 편히 읽히는 최소선.
+- **누르는 것은 44×44px 이상** — 어르신이 누를 수 있어야 합니다.
+- **색 대비 AA** — 본문과 버튼 색은 배경 대비 4.5:1 을 넘깁니다.
+- **과하지 않은 움직임** — 스크롤 등장(투명도 + 20px 상승)뿐이고,
+  `prefers-reduced-motion` 이 켜져 있으면 전부 끕니다.
+- **의존성 없음** — 등장 효과·갤러리·라이트박스·카운트다운 모두 브라우저 기본 기능으로 구현했습니다.
+
+### 이미지 라이선스
+
+- `public/samples/` — Pexels 라이선스 (상업적 이용·수정 가능, 출처 표기 불필요)
+- `public/invite/` — 메트로폴리탄 미술관 오픈액세스 CC0 (퍼블릭 도메인)
