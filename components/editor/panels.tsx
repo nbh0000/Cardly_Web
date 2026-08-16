@@ -17,6 +17,7 @@ import {
 import { samplePhoto } from "@/components/invitation/sample-photo";
 import type { SectionId } from "@/components/editor/rail";
 import { fontGroupsFor } from "@/lib/fonts";
+import { OCCASION_COVER_LAYOUTS } from "@/lib/occasion-templates";
 import {
   BGM_TRACKS,
   COVER_LAYOUTS,
@@ -130,6 +131,15 @@ function Group({ children }: { children: ReactNode }) {
 }
 
 /**
+ * 편집기의 안내 문구는 같은 자리에서 물건 이름만 달라집니다.
+ * 초대장을 만들고 있는데 "청첩장을 열 때 재생될 음악"이라고 적혀 있으면
+ * 남의 도구를 빌려 쓰는 기분이 듭니다.
+ */
+function NOUN(data: InvitationData) {
+  return data.occasion ? "초대장" : "청첩장";
+}
+
+/**
  * 이 섹션이 청첩장에서 몇 번째에 놓이는지 보여줍니다.
  * 토글을 켜는 순간 활성 목록에 들어가므로 위치가 바로 나타납니다.
  */
@@ -148,7 +158,7 @@ function SectionPosition({
   if (idx < 0) {
     return (
       <p className="rounded-lg bg-sand/60 px-4 py-3 text-[0.6875rem] text-muted">
-        켜면 청첩장에 <strong className="font-medium text-ink-soft">{SECTION_LABELS[section]}</strong> 섹션이 추가되고, 순서 목록에도 나타납니다.
+        켜면 {NOUN(data)}에 <strong className="font-medium text-ink-soft">{SECTION_LABELS[section]}</strong> 섹션이 추가되고, 순서 목록에도 나타납니다.
       </p>
     );
   }
@@ -156,7 +166,7 @@ function SectionPosition({
   return (
     <p className="flex items-center justify-between gap-3 rounded-lg bg-rose-veil px-4 py-3 text-[0.6875rem] text-ink-soft">
       <span>
-        청첩장에서{" "}
+        {NOUN(data)}에서{" "}
         <strong className="font-medium text-rose-deep">{idx + 1}번째</strong>
         <span className="text-muted"> / 전체 {active.length}개 섹션</span>
       </span>
@@ -212,10 +222,10 @@ export function SectionPanel({
 function Decor({ data, set }: Props) {
   return (
     <>
-      <PanelHead title="메인 꾸미기" desc="청첩장의 메인 이미지와 공유 시 보여질 이미지를 설정합니다." />
+      <PanelHead title="메인 꾸미기" desc={`${NOUN(data)}의 메인 이미지와 공유 시 보여질 이미지를 설정합니다.`} />
       <Group>
-        <Field label="청첩장 제목" hint="제목은 카카오·링크 공유 시 제목으로 노출됩니다.">
-          <TextInput value={data.cardTitle} onChange={(v) => set("cardTitle", v)} placeholder="청첩장 제목을 입력하세요" />
+        <Field label={`${NOUN(data)} 제목`} hint="제목은 카카오·링크 공유 시 제목으로 노출됩니다.">
+          <TextInput value={data.cardTitle} onChange={(v) => set("cardTitle", v)} placeholder={`${NOUN(data)} 제목을 입력하세요`} />
         </Field>
         <Card title="대표 이미지 등록" desc="1024×1024픽셀 이상, 4MB 이하의 사진이 권장됩니다.">
           <ImageUpload label="대표 이미지" value={data.coverPhoto} onChange={(v) => set("coverPhoto", v)} />
@@ -245,7 +255,16 @@ function Decor({ data, set }: Props) {
             placeholder="Save the date!"
           />
         </Field>
-        <ChipGroup label="커버 레이아웃" options={COVER_LAYOUTS} value={data.coverLayout} onChange={(v) => set("coverLayout", v)} />
+        {/* 초대장과 청첩장은 커버가 아예 다른 물건입니다. 청첩장 커버는
+            사진 슬롯을 전제로 짜여 있어서 초대장에 내주면 빈 사진 자리만
+            남고, 반대로 입장권·우표 같은 초대장 커버는 청첩장에 쓸 자리가
+            없습니다. 그래서 목록 자체를 갈라 놓습니다. */}
+        <ChipGroup
+          label="커버 레이아웃"
+          options={data.occasion ? OCCASION_COVER_LAYOUTS : COVER_LAYOUTS}
+          value={data.coverLayout}
+          onChange={(v) => set("coverLayout", v)}
+        />
         <Toggle
           label="장식 스티커"
           desc="하트·테이프·이름표 같은 꾸밈 요소를 표시합니다."
@@ -263,7 +282,7 @@ function Design({ data, set, setData }: Props) {
   const base = getTemplate(data.templateId)?.theme.accent ?? "#B08D80";
   return (
     <>
-      <PanelHead title="디자인 선택" desc="청첩장의 전체적인 디자인과 분위기를 설정합니다." />
+      <PanelHead title="디자인 선택" desc={`${NOUN(data)}의 전체적인 디자인과 분위기를 설정합니다.`} />
       <Group>
         <Card title="테마 컬러" desc="템플릿의 포인트 컬러와 투명도를 조정합니다.">
           <ColorPicker value={data.accentOverride ?? base} onChange={(v) => set("accentOverride", v)} onReset={() => set("accentOverride", undefined)} />
@@ -356,7 +375,7 @@ function Effect({ data, set }: Props) {
     <>
       <PanelHead
         title="화면 효과"
-        desc="청첩장 전체에 깔리는 효과입니다. 스크롤해도 계속 따라옵니다."
+        desc={`${NOUN(data)} 전체에 깔리는 효과입니다. 스크롤해도 계속 따라옵니다.`}
       />
       <Group>
         <span className="text-[0.75rem] text-ink-soft">효과 선택</span>
@@ -474,7 +493,7 @@ function Effect({ data, set }: Props) {
 function Bgm({ data, set }: Props) {
   return (
     <>
-      <PanelHead title="배경음악" desc="청첩장을 열 때 재생될 음악을 선택하세요." />
+      <PanelHead title="배경음악" desc={`${NOUN(data)}을 열 때 재생될 음악을 선택하세요.`} />
       <Group>
         <div className="grid gap-1.5">
           {BGM_TRACKS.map((t) => (
@@ -501,7 +520,7 @@ function Bgm({ data, set }: Props) {
 function Opening({ data, set, onReplayOpening }: Props) {
   return (
     <>
-      <PanelHead title="오프닝 애니메이션" desc="청첩장을 열 때 재생되는 시작 애니메이션을 선택하세요" />
+      <PanelHead title="오프닝 애니메이션" desc={`${NOUN(data)}을 열 때 재생되는 시작 애니메이션을 선택하세요`} />
       <Group>
         <span className="text-[0.75rem] text-ink-soft">스타일 선택</span>
         <div className="grid grid-cols-3 gap-2">
@@ -515,6 +534,7 @@ function Opening({ data, set, onReplayOpening }: Props) {
                 {
                   {
                     none: "✕",
+                    cardopen: "🗂",
                     gatefold: "◫",
                     unfold: "⬓",
                     monogram: "❦",
@@ -1287,7 +1307,7 @@ function Rsvp({ data, set, onGoOrder, onReveal }: Props) {
 function ImagesPanel({ data, set }: Props) {
   return (
     <>
-      <PanelHead title="이미지" desc="청첩장에 등록된 모든 이미지를 한곳에서 관리합니다." />
+      <PanelHead title="이미지" desc={`${NOUN(data)}에 등록된 모든 이미지를 한곳에서 관리합니다.`} />
       <Group>
         <ImageUpload label="대표 이미지" value={data.coverPhoto} onChange={(v) => set("coverPhoto", v)} />
         <ImageUpload label="공유 이미지" value={data.shareImage} onChange={(v) => set("shareImage", v)} />

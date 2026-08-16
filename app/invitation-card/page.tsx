@@ -3,9 +3,10 @@ import { OccasionGallery } from "@/components/occasion-gallery";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { OCCASIONS } from "@/lib/occasion";
+import { OCCASION_TEMPLATES } from "@/lib/occasion-templates";
 import { formatPrice, PREMIUM_PRICE } from "@/lib/plan";
 
-const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사 초대장을 가입 없이 만들어 보세요. 접힌 카드가 3D로 펼쳐지는 화면 그대로, 오프닝 연출까지 값 없이 씁니다.`;
+const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사에 맞춰 따로 만든 초대장 ${OCCASION_TEMPLATES.length}종. 가입 없이 만들고, 링크를 열면 접힌 카드가 3D로 펴지면서 시작합니다.`;
 
 export const metadata: Metadata = {
   title: "모바일 초대장 만들기 — 생일·파티·집들이",
@@ -38,10 +39,15 @@ export default function InvitationCardPage() {
             <span className="eyebrow eyebrow-center">Invitation</span>
             <h1 className="mt-5 font-serif text-h1 text-ink">모바일 초대장</h1>
             <p className="mt-5 text-body text-ink-soft">
-              생일, 파티, 집들이, 돌잔치, 개업, 페스티벌까지. 여기서는
-              초대장을 납작한 그림이 아니라 접힌 카드로 세워 보여 드립니다.
-              손을 얹으면 열리고, 누르면 문구가 채워진 채로 편집기가
-              열립니다.
+              청첩장 템플릿을 문구만 바꿔 돌려 쓰지 않습니다. 행사마다
+              그 자리에 맞는 초대장을 따로 만들었습니다 — 파티는 네온과
+              입장권, 집들이는 창가와 문패, 돌잔치는 파스텔, 퇴임식은
+              담백한 게시문입니다. 모두 {OCCASION_TEMPLATES.length}종.
+            </p>
+            <p className="mt-4 text-body text-ink-soft">
+              그리고 초대장은 어디서 보든 카드입니다. 목록에서도 접힌
+              카드로 서 있고, 받는 분이 링크를 누르면 그 카드가 3D 로
+              펴지면서 초대장이 열립니다.
             </p>
           </header>
 

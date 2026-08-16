@@ -12,6 +12,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
+import {
+  isOccasionCover,
+  OccasionCover,
+} from "@/components/invitation/occasion-cover";
 import { SamplePhoto } from "@/components/invitation/sample-photo";
 import { asset } from "@/lib/asset";
 import { fontStack } from "@/lib/fonts";
@@ -137,6 +141,11 @@ export function InvitationView({
             key={openingKey}
             kind={data.opening as Exclude<InvitationData["opening"], "none">}
             monogram={monogramOf(data)}
+            card={{
+              script: data.coverScript,
+              title: data.eventTitle || fullName(data.groom),
+              meta: `${formatDateDots(data.date)} · ${data.venueName}`,
+            }}
             onDone={() => setOpeningDone(true)}
           />
         )}
@@ -262,6 +271,11 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   const names = data.occasion
     ? { first: data.eventTitle ?? "", second: data.hostName ?? "" }
     : { first: fullName(first), second: fullName(second) };
+
+  /* 초대장 전용 커버 열두 종. 사진 슬롯이 없어 names 를 받지 않고
+     data 만으로 그립니다. */
+  if (isOccasionCover(layout))
+    return <OccasionCover layout={layout} data={data} />;
 
   if (layout === "photo") return <CoverPhoto data={data} names={names} />;
   if (layout === "arch") return <CoverArch data={data} names={names} />;
@@ -1870,10 +1884,13 @@ function monogramOf(data: InvitationData) {
 function OpeningLayer({
   kind,
   monogram,
+  card,
   onDone,
 }: {
   kind: Exclude<InvitationData["opening"], "none">;
   monogram?: string;
+  /** 접힌 카드 열기에서 카드 겉면에 인쇄되는 것들 */
+  card?: { script: string; title: string; meta: string };
   onDone: () => void;
 }) {
   /**
@@ -1899,6 +1916,45 @@ function OpeningLayer({
     const t = setTimeout(onDone, 6000);
     return () => clearTimeout(t);
   }, [onDone]);
+
+  /* ── 접힌 카드 열기 (3D) ── 초대장의 기본 오프닝.
+     받는 사람 입장에서 링크를 누른 첫 장면이 "카드 한 장을 손에
+     받아 드는" 것이 되도록 짰습니다. 세 박자입니다.
+       ① 접힌 카드가 어두운 바닥 위에 비스듬히 놓여 있고
+       ② 앞장이 왼쪽 접힌 선을 축으로 열리며 안쪽이 드러나고
+       ③ 카드가 보는 사람 쪽으로 다가오며 화면을 채워 초대장이 됩니다
+     앞장·뒷장·단면·바닥그림자가 전부 같은 3D 공간에 있어서, 열리는
+     동안 종이 두께와 접힌 선의 그늘이 실제로 보입니다. */
+  if (kind === "cardopen") {
+    return (
+      <div className="opening op-co" aria-hidden onAnimationEnd={finish}>
+        <span className="op-co-void" />
+        <span className="op-co-stage">
+          <span className="op-co-cast" />
+
+          <span className="op-co-leaf op-paper">
+            <span className="op-co-inside">
+              <span className="op-co-inside-script">{card?.script}</span>
+              <span className="op-co-inside-rule" />
+              <span className="op-co-inside-meta">{card?.meta}</span>
+            </span>
+          </span>
+
+          <span className="op-co-front">
+            <span className="op-co-face op-paper">
+              <span className="op-co-frame" />
+              <span className="op-co-print">
+                <span className="op-co-mark">{monogram}</span>
+                <span className="op-co-title">{card?.title}</span>
+              </span>
+              <span className="op-co-shade" />
+            </span>
+            <span className="op-co-edge" />
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   /* ── 양문 열기 (3D) ──
      닫힌 카드가 가운데서 갈라져, 두 짝이 경첩을 축으로 앞으로 열립니다.

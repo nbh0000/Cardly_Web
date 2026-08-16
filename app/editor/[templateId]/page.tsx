@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Editor } from "@/components/editor/editor";
 import { getTemplate, TEMPLATES } from "@/lib/invitation";
+import { OCCASION_TEMPLATES } from "@/lib/occasion-templates";
 
 export function generateStaticParams() {
-  return TEMPLATES.map((t) => ({ templateId: t.id }));
+  return [...TEMPLATES, ...OCCASION_TEMPLATES].map((t) => ({
+    templateId: t.id,
+  }));
 }
 
 export async function generateMetadata({
@@ -13,7 +16,7 @@ export async function generateMetadata({
   const { templateId } = await params;
   const t = getTemplate(templateId);
   return {
-    title: t ? `${t.name} 편집` : "청첩장 편집",
+    title: t ? `${t.name} 편집` : "청첩장·초대장 편집",
     robots: { index: false, follow: false },
   };
 }

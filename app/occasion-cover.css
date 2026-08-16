@@ -1,0 +1,722 @@
+/* ============================================================
+   초대장 커버 열두 종
+
+   전부 사진 없이 성립합니다. 색은 --iv-* 테마 변수만 쓰므로
+   같은 레이아웃이라도 템플릿마다 전혀 다른 물건이 됩니다.
+   치수는 청첩장과 같이 em 기준이라 --iv-scale 하나로 같이 커집니다.
+   ============================================================ */
+
+.oc {
+  position: relative;
+  overflow: hidden;
+  min-height: 30em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.9em;
+}
+
+/* 커버 전용 조판 */
+.oc .iv-cover-names {
+  font-size: 1.95em;
+  line-height: 1.32;
+}
+.oc-title-xl .iv-cover-names,
+.oc .iv-cover-names.oc-title-xl {
+  font-size: 2.35em;
+}
+.oc .oc-title-tight {
+  font-size: 1.72em;
+  letter-spacing: -0.015em;
+}
+.oc .oc-title-serif {
+  font-family: var(--iv-heading);
+  font-size: 1.78em;
+}
+.oc-host {
+  display: inline-block;
+  margin-top: 0.34em;
+  font-size: 0.48em;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--iv-ink) 62%, transparent);
+}
+
+.oc-script {
+  font-family: var(--font-script);
+  font-size: 1.25em;
+  line-height: 1.3;
+  color: var(--iv-accent);
+}
+.oc-script-lg {
+  font-size: 1.65em;
+}
+.oc-script-sm {
+  font-size: 1em;
+}
+
+.oc-rule {
+  display: block;
+  width: 3.2em;
+  height: 1px;
+  margin: 0.2em auto;
+  background: var(--iv-accent);
+  opacity: 0.55;
+}
+.oc-meta-spaced {
+  margin-top: 0.5em;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- 1. 컨페티 ---------- */
+
+.oc-confetti {
+  background:
+    radial-gradient(
+      120% 80% at 50% 0%,
+      color-mix(in srgb, var(--iv-accent) 10%, transparent),
+      transparent 60%
+    ),
+    var(--iv-bg);
+}
+.oc-confetti-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.oc-confetti-layer i {
+  position: absolute;
+  width: 0.62em;
+  height: 1.25em;
+  border-radius: 1px;
+  background: var(--iv-accent);
+  opacity: 0.85;
+}
+/* 세 가지 변주 — 한 색으로만 뿌리면 얼룩처럼 보입니다 */
+.oc-confetti-layer i[data-v="1"] {
+  background: color-mix(in srgb, var(--iv-ink) 55%, var(--iv-bg));
+  height: 0.6em;
+  width: 0.6em;
+  border-radius: 50%;
+}
+.oc-confetti-layer i[data-v="2"] {
+  background: color-mix(in srgb, var(--iv-ink) 32%, var(--iv-sub));
+  height: 0.2em;
+  width: 1.7em;
+  border-radius: 99px;
+}
+
+/* ---------- 2. 풍선 ---------- */
+
+.oc-balloon {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--iv-accent) 12%, var(--iv-bg)),
+    var(--iv-bg) 55%
+  );
+  padding-top: 9.5em;
+}
+.oc-balloon-sky {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 11em;
+  pointer-events: none;
+}
+.oc-balloon-sky i {
+  position: absolute;
+  top: 1.1em;
+  width: 2.5em;
+  height: 3.1em;
+  border-radius: 50% 50% 46% 46%;
+  background: var(--iv-accent);
+  transform-origin: 50% -2em;
+  animation: oc-float 5.5s ease-in-out infinite alternate;
+}
+.oc-balloon-sky i[data-v="1"] {
+  background: color-mix(in srgb, var(--iv-accent) 45%, var(--iv-bg));
+  animation-duration: 7s;
+}
+.oc-balloon-sky i[data-v="2"] {
+  background: color-mix(in srgb, var(--iv-ink) 30%, var(--iv-bg));
+  animation-duration: 6.2s;
+}
+/* 풍선 끈 */
+.oc-balloon-sky i b {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 1px;
+  height: 3.4em;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--iv-ink) 48%, transparent),
+    transparent
+  );
+}
+/* 풍선 아래쪽 매듭 — 이것 하나가 없으면 그냥 타원입니다 */
+.oc-balloon-sky i::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 0.34em;
+  height: 0.26em;
+  translate: -50% -0.02em;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: inherit;
+}
+@keyframes oc-float {
+  from {
+    transform: translateY(0) rotate(-3deg);
+  }
+  to {
+    transform: translateY(0.7em) rotate(3deg);
+  }
+}
+
+/* ---------- 3. 빅데이트 ---------- */
+
+.oc-bigdate {
+  background: var(--iv-bg);
+}
+.oc-bigdate-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  font-family: var(--iv-heading);
+  font-size: 5.4em;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: var(--iv-accent);
+}
+.oc-bigdate-slash {
+  width: 1px;
+  height: 0.72em;
+  rotate: 18deg;
+  background: currentColor;
+  opacity: 0.5;
+  margin-inline: 0.16em;
+}
+.oc-bigdate-sub {
+  font-size: 0.72em;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--iv-ink) 55%, transparent);
+}
+
+/* ---------- 4. 입장권 ---------- */
+
+.oc-ticket {
+  background: var(--iv-bg);
+  padding: 2.6em 1.4em;
+}
+.oc-ticket-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.7em;
+  background: color-mix(in srgb, var(--iv-ink) 6%, var(--iv-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--iv-accent) 40%, transparent);
+}
+.oc-ticket-main {
+  display: grid;
+  gap: 0.7em;
+  padding: 2.2em 1.5em 1.8em;
+}
+/* 절취선 — 양 끝의 반원과 가운데 점선 */
+.oc-ticket-perf {
+  position: relative;
+  display: block;
+  height: 1px;
+  margin-inline: 1.1em;
+  background: repeating-linear-gradient(
+    to right,
+    color-mix(in srgb, var(--iv-accent) 55%, transparent) 0 5px,
+    transparent 5px 11px
+  );
+}
+.oc-ticket-perf::before,
+.oc-ticket-perf::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 1.1em;
+  height: 1.1em;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: var(--iv-bg);
+}
+.oc-ticket-perf::before {
+  left: -1.65em;
+}
+.oc-ticket-perf::after {
+  right: -1.65em;
+}
+.oc-ticket-stub {
+  padding: 1.1em;
+}
+.oc-ticket-stub-text {
+  font-size: 0.66em;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.oc-ticket-rows {
+  display: grid;
+  gap: 0.55em;
+  margin-top: 0.6em;
+  text-align: left;
+}
+.oc-ticket-rows > div {
+  display: grid;
+  grid-template-columns: 4.2em 1fr;
+  align-items: baseline;
+  gap: 0.6em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid color-mix(in srgb, var(--iv-ink) 12%, transparent);
+}
+.oc-ticket-rows dt {
+  font-size: 0.6em;
+  letter-spacing: 0.22em;
+  color: var(--iv-accent);
+}
+.oc-ticket-rows dd {
+  font-size: 0.82em;
+  color: color-mix(in srgb, var(--iv-ink) 82%, transparent);
+}
+
+/* ---------- 5. 네온 간판 ---------- */
+
+.oc-marquee {
+  background: var(--iv-bg);
+  padding: 2.8em 1.4em;
+}
+.oc-marquee-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    62% 42% at 50% 40%,
+    color-mix(in srgb, var(--iv-accent) 26%, transparent),
+    transparent 72%
+  );
+}
+.oc-marquee-board {
+  position: relative;
+  display: grid;
+  gap: 0.75em;
+  padding: 2.4em 1.3em 2em;
+  border-radius: 0.5em;
+  border: 1px solid color-mix(in srgb, var(--iv-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--iv-accent) 6%, transparent);
+}
+/* 간판 위아래 전구 */
+.oc-marquee-bulbs {
+  position: absolute;
+  inset: 0.55em 0.9em auto;
+  display: flex;
+  justify-content: space-between;
+}
+.oc-marquee-bulbs i {
+  width: 0.28em;
+  height: 0.28em;
+  border-radius: 50%;
+  background: var(--iv-accent);
+  animation: oc-bulb 1.6s ease-in-out infinite;
+}
+@keyframes oc-bulb {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.oc-neon {
+  font-family: var(--font-script);
+  font-size: 2.1em;
+  line-height: 1.2;
+  color: var(--iv-accent);
+  text-shadow:
+    0 0 0.28em color-mix(in srgb, var(--iv-accent) 75%, transparent),
+    0 0 0.9em color-mix(in srgb, var(--iv-accent) 45%, transparent);
+}
+
+/* ---------- 6. 라인업 ---------- */
+
+.oc-lineup {
+  background: var(--iv-bg);
+  justify-content: flex-start;
+  padding: 3.2em 1.5em 3em;
+  text-align: left;
+  align-items: stretch;
+}
+.oc-lineup .iv-eyebrow {
+  align-self: flex-start;
+}
+.oc-lineup-title {
+  display: grid;
+  font-family: var(--iv-heading);
+  font-size: 2.5em;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  margin-top: 0.3em;
+}
+.oc-lineup-title span:nth-child(even) {
+  color: var(--iv-accent);
+}
+.oc-lineup-bar {
+  display: block;
+  height: 0.28em;
+  margin: 0.9em 0 0.7em;
+  background: var(--iv-accent);
+}
+.oc-lineup-row {
+  font-size: 0.84em;
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--iv-ink) 78%, transparent);
+}
+.oc-lineup-row i {
+  font-style: normal;
+  color: var(--iv-accent);
+  margin-inline: 0.4em;
+}
+.oc-lineup-host {
+  margin-top: 0.7em;
+  font-size: 0.72em;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+
+/* ---------- 7. 스티커 ---------- */
+
+.oc-sticker {
+  background: var(--iv-bg);
+  padding: 2.4em 1.4em;
+}
+.oc-sticker-card {
+  position: relative;
+  display: grid;
+  gap: 0.7em;
+  padding: 2.4em 1.4em 2.2em;
+  border-radius: 1.1em;
+  background: color-mix(in srgb, #fff 68%, var(--iv-bg));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--iv-ink) 8%, transparent),
+    0 1.2em 2.2em -1.4em rgb(0 0 0 / 0.35);
+}
+.oc-sticker-scatter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.oc-sticker-scatter i {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  font-size: 0.9em;
+  font-style: normal;
+  color: #fff;
+  background: var(--iv-accent);
+  box-shadow: 0 0.3em 0.6em -0.3em rgb(0 0 0 / 0.4);
+}
+.oc-sticker-scatter i[data-v="1"] {
+  background: color-mix(in srgb, var(--iv-ink) 70%, var(--iv-bg));
+}
+.oc-sticker-scatter i[data-v="2"] {
+  background: color-mix(in srgb, var(--iv-accent) 45%, #fff);
+  color: var(--iv-ink);
+}
+/* 자리는 카드 안쪽으로 넉넉히 들여 둡니다. 가장자리에 붙이면
+   썸네일에서 반쪽이 잘려 얼룩처럼 보입니다. */
+.oc-sticker-scatter i:nth-child(1) {
+  top: 2.2em;
+  left: 2em;
+  rotate: -14deg;
+}
+.oc-sticker-scatter i:nth-child(2) {
+  top: 3.6em;
+  right: 1.9em;
+  rotate: 12deg;
+}
+.oc-sticker-scatter i:nth-child(3) {
+  bottom: 4em;
+  left: 1.7em;
+  rotate: 8deg;
+}
+.oc-sticker-scatter i:nth-child(4) {
+  bottom: 2.4em;
+  right: 3em;
+  rotate: -10deg;
+}
+.oc-sticker-scatter i:nth-child(5) {
+  top: 46%;
+  right: 1.4em;
+  rotate: 18deg;
+}
+
+/* ---------- 8. 창가 ---------- */
+
+.oc-house {
+  background: var(--iv-bg);
+  padding-top: 2.6em;
+}
+.oc-house-window {
+  position: relative;
+  width: 9.5em;
+  height: 11em;
+  margin: 0 auto 1.4em;
+  border-radius: 4.75em 4.75em 0.3em 0.3em;
+  overflow: hidden;
+  background: linear-gradient(
+    170deg,
+    color-mix(in srgb, var(--iv-accent) 30%, #fff),
+    color-mix(in srgb, var(--iv-accent) 12%, var(--iv-bg))
+  );
+  box-shadow: 0 0 0 0.28em color-mix(in srgb, var(--iv-ink) 82%, transparent);
+}
+/* 창으로 들어오는 빛 */
+.oc-house-light {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    122deg,
+    rgb(255 255 255 / 0.6) 0%,
+    rgb(255 255 255 / 0) 44%
+  );
+}
+.oc-house-mullion {
+  position: absolute;
+  background: color-mix(in srgb, var(--iv-ink) 82%, transparent);
+}
+.oc-house-mullion-v {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 0.2em;
+  translate: -50% 0;
+}
+.oc-house-mullion-h {
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 0.2em;
+}
+.oc-house-sill {
+  position: absolute;
+  right: -0.6em;
+  bottom: 0;
+  left: -0.6em;
+  height: 0.42em;
+  background: color-mix(in srgb, var(--iv-ink) 82%, transparent);
+}
+
+/* ---------- 9. 꼬리표 ---------- */
+
+/* 꼬리표는 폭이 좁아야 꼬리표로 보입니다. 커버 폭을 다 쓰면
+   모서리를 아무리 잘라도 그냥 사각형입니다. */
+.oc-tag {
+  background: var(--iv-bg);
+  align-items: center;
+  padding: 2.4em 1.4em;
+  gap: 0;
+}
+.oc-tag-string {
+  display: block;
+  width: 1px;
+  height: 2.4em;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--iv-ink) 45%, transparent)
+  );
+}
+.oc-tag-card {
+  position: relative;
+  width: min(100%, 15em);
+  display: grid;
+  gap: 0.65em;
+  padding: 3.6em 1.6em 2.6em;
+  /* 위쪽 두 모서리를 크게 잘라 낸 꼬리표 모양 */
+  clip-path: polygon(50% 0, 100% 3em, 100% 100%, 0 100%, 0 3em);
+  background: color-mix(in srgb, #fff 60%, var(--iv-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--iv-ink) 14%, transparent);
+}
+.oc-tag-hole {
+  position: absolute;
+  top: 1.5em;
+  left: 50%;
+  width: 0.72em;
+  height: 0.72em;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: var(--iv-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--iv-ink) 34%, transparent);
+}
+
+/* ---------- 10. 게시문 ---------- */
+
+.oc-notice {
+  background: var(--iv-bg);
+  padding: 2.4em 1.4em;
+}
+.oc-notice-frame {
+  display: grid;
+  gap: 0.75em;
+  padding: 2.6em 1.5em 2.2em;
+  border: 1px solid color-mix(in srgb, var(--iv-accent) 60%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--iv-accent) 30%, transparent);
+  outline-offset: 0.32em;
+}
+.oc-notice-rule {
+  justify-self: center;
+  width: 100%;
+  height: 1px;
+  background: color-mix(in srgb, var(--iv-accent) 45%, transparent);
+}
+.oc-notice-rows {
+  display: grid;
+  gap: 0.6em;
+  margin-top: 0.6em;
+  text-align: left;
+}
+.oc-notice-rows > div {
+  display: grid;
+  grid-template-columns: 3.2em 1fr;
+  gap: 0.7em;
+  align-items: baseline;
+}
+.oc-notice-rows dt {
+  font-size: 0.7em;
+  letter-spacing: 0.2em;
+  color: var(--iv-accent);
+}
+.oc-notice-rows dd {
+  font-size: 0.82em;
+  line-height: 1.75;
+  color: color-mix(in srgb, var(--iv-ink) 80%, transparent);
+}
+
+/* ---------- 11. 우표 ---------- */
+
+.oc-stamp {
+  background: var(--iv-bg);
+  padding-top: 2.8em;
+}
+.oc-stamp-head {
+  position: relative;
+  height: 6.6em;
+  margin-bottom: 0.9em;
+}
+.oc-stamp-piece {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4.6em;
+  height: 5.6em;
+  translate: -62% 0;
+  rotate: -4deg;
+  padding: 0.34em;
+  /* 우표의 톱니 — 배경을 원으로 갉아 냅니다 */
+  background:
+    radial-gradient(circle at 0 0, transparent 0.3em, var(--iv-accent) 0.31em)
+      0 0 / 0.62em 0.62em;
+  filter: drop-shadow(0 0.3em 0.5em rgb(0 0 0 / 0.18));
+}
+.oc-stamp-inner {
+  display: grid;
+  place-content: center;
+  gap: 0.05em;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, #fff 82%, var(--iv-bg));
+  font-family: var(--iv-heading);
+  color: var(--iv-accent);
+}
+.oc-stamp-inner b {
+  font-size: 1.5em;
+  font-weight: 400;
+  line-height: 1;
+}
+.oc-stamp-inner i {
+  font-size: 1.5em;
+  font-style: normal;
+  line-height: 1;
+}
+/* 소인 — 우표에 반쯤 걸치는 원 */
+.oc-postmark {
+  position: absolute;
+  top: 1em;
+  left: 50%;
+  display: grid;
+  place-content: center;
+  gap: 0.1em;
+  width: 4.4em;
+  height: 4.4em;
+  translate: 6% 0;
+  rotate: 9deg;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--iv-ink) 45%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--iv-ink) 22%, transparent);
+  outline-offset: 0.22em;
+  font-size: 0.58em;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--iv-ink) 58%, transparent);
+  opacity: 0.85;
+}
+
+/* ---------- 12. 리본 ---------- */
+
+.oc-ribbon {
+  background: var(--iv-bg);
+  padding-top: 4.6em;
+}
+/* 가로로 지나가는 띠와 가운데 매듭 */
+.oc-ribbon-band {
+  position: absolute;
+  top: 2.2em;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5em;
+}
+.oc-ribbon-band i {
+  flex: 1;
+  height: 0.55em;
+  background: var(--iv-accent);
+}
+.oc-ribbon-band b {
+  position: relative;
+  width: 2.2em;
+  height: 1.5em;
+  rotate: 45deg;
+  background: color-mix(in srgb, var(--iv-accent) 78%, #000);
+}
+
+/* ---------- 갤러리 썸네일 보정 ----------
+   커버만 그리는 모드에서는 카드 높이에 맞춰 늘어나야 합니다. */
+.iv-coveronly .oc {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-balloon-sky i,
+  .oc-marquee-bulbs i {
+    animation: none;
+  }
+}

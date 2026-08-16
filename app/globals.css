@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./invitation.css";
 @import "./cover.css";
+@import "./occasion-cover.css";
 @import "./effects.css";
 @import "./motion.css";
 @import "./card3d.css";

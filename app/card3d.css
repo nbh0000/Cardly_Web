@@ -417,7 +417,118 @@
   }
 }
 
+/* ============================================================
+   카드 무대 — 초대장을 읽는 화면 자체를 카드로 만듭니다
+   ------------------------------------------------------------
+   미리보기와 발행본에서 초대장을 감싸는 틀입니다. 안에서 실제로
+   스크롤되는 물건이라 각도는 얕습니다(기본 6도). 마우스를 움직이면
+   그 방향으로 조금 더 기울고, 손가락으로 쓰는 화면에서는 고정입니다.
+   ============================================================ */
+
+.deck {
+  position: relative;
+  perspective: 1600px;
+  perspective-origin: 50% 32%;
+  --deck-yaw: -6deg;
+  --deck-pitch: 1.5deg;
+}
+
+.deck-card {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(var(--deck-yaw)) rotateX(var(--deck-pitch));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 1.4rem;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(120 100 90 / 0.14),
+    0 2rem 3.5rem -1.6rem rgb(74 52 40 / 0.42);
+}
+
+/* 카드 안쪽 — 여기서 초대장이 스크롤됩니다 */
+.deck-face {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+  /* 3D 로 회전한 조상 안에서 스크롤 컨테이너를 만들면 브라우저가
+     레이어를 따로 떼어 글자가 뭉개집니다. translateZ 로 자기 레이어를
+     명시해 두면 또렷하게 남습니다. */
+  transform: translateZ(0);
+}
+/* 카드 안에 스크롤막대가 보이면 종이가 아니라 창이 됩니다 */
+.deck-face > * {
+  scrollbar-width: none;
+}
+.deck-face > *::-webkit-scrollbar {
+  display: none;
+}
+
+/* 종이 단면 — 오른쪽과 아래에 세워 둡니다 */
+.deck-edge {
+  position: absolute;
+  background: linear-gradient(to bottom, #fffdf8, #e6dccf);
+  pointer-events: none;
+}
+.deck-edge-r {
+  top: 0.6rem;
+  right: 0;
+  bottom: 0.6rem;
+  width: 10px;
+  transform-origin: 100% 50%;
+  transform: rotateY(-90deg);
+}
+.deck-edge-b {
+  right: 0.6rem;
+  bottom: 0;
+  left: 0.6rem;
+  height: 10px;
+  transform-origin: 50% 100%;
+  transform: rotateX(90deg);
+  background: linear-gradient(to right, #f2ebe1, #e0d5c6);
+}
+
+.deck-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    112deg,
+    rgb(255 255 255 / 0.24) 0%,
+    rgb(255 255 255 / 0) 26%,
+    rgb(255 255 255 / 0) 74%,
+    rgb(120 100 90 / 0.08) 100%
+  );
+}
+
+.deck-cast {
+  position: absolute;
+  right: 6%;
+  bottom: -2.2rem;
+  left: 8%;
+  height: 3rem;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgb(74 52 40 / 0.26) 0%,
+    rgb(74 52 40 / 0) 100%
+  );
+}
+
+/* 손가락으로 쓰는 화면에서는 각도를 더 얕게 둡니다 — 읽는 것이
+   먼저입니다. */
+@media (hover: none) {
+  .deck {
+    --deck-yaw: -3deg;
+    --deck-pitch: 0.8deg;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .deck-card {
+    transition: none;
+  }
   .fold-stage,
   .fold-leaf,
   .fold-front,

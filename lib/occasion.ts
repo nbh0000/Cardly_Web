@@ -12,7 +12,13 @@
  * occasion 이 없으면 지금까지처럼 청첩장으로 동작합니다.
  */
 
-import { createDefaultData, type InvitationData } from "@/lib/invitation";
+import {
+  createDefaultData,
+  formatDateKo,
+  formatTimeKo,
+  type InvitationData,
+} from "@/lib/invitation";
+import { getOccasionTemplate } from "@/lib/occasion-templates";
 
 export type OccasionKind =
   | "birthday"
@@ -186,16 +192,30 @@ export function createOccasionData(
 ): InvitationData {
   const spec = getOccasion(kind) ?? OCCASIONS[0]!;
   const base = createDefaultData(templateId);
+  /* 초대장 전용 템플릿은 자기 문구를 갖고 있습니다 — "네온사인"은
+     Let's Celebrate 이고 "라운지"는 Come Over 입니다. 행사 기본값으로
+     덮어쓰면 스무 종이 전부 같은 한 줄을 달게 됩니다. */
+  const t = getOccasionTemplate(templateId);
   return {
     ...base,
     occasion: spec.id,
     eventTitle: spec.title,
     hostName: spec.host,
 
-    coverEyebrow: spec.eyebrow,
-    coverScript: spec.script,
+    coverEyebrow: t?.eyebrow ?? spec.eyebrow,
+    coverScript: t?.script ?? spec.script,
     greeting: spec.greeting,
     venueName: spec.venue,
+
+    /* 카카오톡에 붙였을 때 뜨는 제목·설명. 여기까지 갈아 두지 않으면
+       생일 초대장을 보냈는데 "김도윤 ♥ 이서연 결혼합니다"가 뜹니다. */
+    shareTitle: `${spec.title} · ${spec.host}`,
+    shareDescription: `${formatDateKo(base.date)} ${formatTimeKo(base.time)}\n${spec.venue}`,
+
+    /* 초대장은 링크를 열자마자 카드가 3D 로 펴지면서 시작합니다.
+       청첩장은 오프닝을 고르는 것이지만, 초대장에서는 그것이
+       물건의 정체 자체라 기본으로 켜 둡니다. */
+    opening: "cardopen",
 
     // 결혼식에만 있는 것들은 꺼 둡니다
     showAccounts: false,
@@ -211,6 +231,23 @@ export function createOccasionData(
     showGallery: true,
     showVenueInfo: true,
   };
+}
+
+/**
+ * 템플릿 하나만 보고 어떤 행사인지 알아냅니다.
+ *
+ * 갤러리에서는 주소에 ?occasion= 이 붙지만, /preview/<id> 처럼 곧바로
+ * 템플릿을 여는 길도 있습니다. 초대장 템플릿은 자기가 어느 행사의
+ * 것인지 알고 있으므로 물어보면 됩니다.
+ */
+export function occasionOf(templateId: string): OccasionKind | null {
+  return getOccasionTemplate(templateId)?.occasion ?? null;
+}
+
+/** 초대장 템플릿이면 행사 기본값을, 아니면 청첩장 기본값을 만듭니다 */
+export function createDataForTemplate(templateId: string): InvitationData {
+  const kind = occasionOf(templateId);
+  return kind ? createOccasionData(templateId, kind) : createDefaultData(templateId);
 }
 
 /** 목록 필터용 — "전체" 를 앞에 둡니다 */

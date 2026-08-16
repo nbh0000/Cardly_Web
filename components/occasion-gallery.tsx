@@ -7,11 +7,11 @@ import { InvitationView } from "@/components/invitation/invitation-view";
 import {
   formatDateKo,
   formatTimeKo,
-  TEMPLATES,
   type InvitationData,
   type Template,
 } from "@/lib/invitation";
 import { createOccasionData, OCCASIONS, type OccasionKind } from "@/lib/occasion";
+import { templatesFor } from "@/lib/occasion-templates";
 
 /**
  * 초대장 고르기.
@@ -28,8 +28,13 @@ export function OccasionGallery() {
   const [kind, setKind] = useState<OccasionKind>("party");
   const spec = OCCASIONS.find((o) => o.id === kind)!;
 
-  // 맨 위 견본은 목록 첫 템플릿을 씁니다 — 아래 격자와 같은 데이터입니다.
-  const heroTemplate = TEMPLATES[0]!;
+  /* 행사마다 그 행사를 위해 만든 템플릿만 보여 줍니다. 예전에는 청첩장
+     템플릿 열두 종을 문구만 바꿔 돌려 썼는데, 그러면 생일 초대장 커버에
+     남의 결혼사진이 깔립니다. */
+  const list = templatesFor(kind);
+
+  // 맨 위 견본은 그 행사의 첫 템플릿입니다.
+  const heroTemplate = list[0]!;
   const heroData = createOccasionData(heroTemplate.id, kind);
 
   return (
@@ -61,7 +66,7 @@ export function OccasionGallery() {
       </p>
 
       <div className="mt-block grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-8">
-        {TEMPLATES.slice(0, 12).map((template) => {
+        {list.map((template) => {
           const data = {
             ...createOccasionData(template.id, kind),
             fontScale: "sm" as const,
@@ -158,9 +163,9 @@ function StandingCard({
         </div>
 
         <div className="stand-leaf r">
-          {/* 커버는 3:4 로 그려지므로, 반쪽 면(4:5)에 맞추려면 폭을 넘겨
-              가운데를 보여 줍니다. */}
-          <div className="absolute inset-0 origin-top-left scale-[0.5] [height:200%] [width:200%]">
+          {/* 커버를 너무 많이 줄이면 조판이 면 한가운데 작게 뭉쳐서
+              양옆이 텅 빕니다. 1.4배 정도만 키워 놓고 줄입니다. */}
+          <div className="absolute inset-0 origin-top-left scale-[0.72] [height:139%] [width:139%]">
             <InvitationView
               template={template}
               data={{ ...data, fontScale: "sm" }}

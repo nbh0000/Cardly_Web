@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { CardStage } from "@/components/invitation/card-stage";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { ShareBar } from "@/components/invitation/share-bar";
 import {
@@ -25,12 +26,16 @@ export async function generateMetadata({
 }: PageProps<"/i/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const rec = getInvitationRecord(slug);
-  if (!rec) return { title: "청첩장" };
+  if (!rec) return { title: "청첩장 · 초대장" };
 
   const data = getInvitationData(rec);
   const groom = fullName(data.groom);
   const bride = fullName(data.bride);
-  const title = data.shareTitle || `${groom} ♥ ${bride} 결혼합니다`;
+  /* 초대장은 두 사람의 결혼이 아닙니다 — 행사 이름과 주최자로 뜹니다. */
+  const fallback = data.occasion
+    ? [data.eventTitle, data.hostName].filter(Boolean).join(" · ")
+    : `${groom} ♥ ${bride} 결혼합니다`;
+  const title = data.shareTitle || fallback;
   // 미리보기 설명은 한 줄이어야 합니다. 줄바꿈이 들어가면 메타 태그가
   // 통째로 빠져 카카오톡에서 설명이 사라집니다.
   const description = (
@@ -66,15 +71,28 @@ export default async function InvitationPage({ params }: PageProps<"/i/[slug]">)
 
   const data = getInvitationData(rec);
 
+  const body = (
+    <div className="md:h-[calc(100dvh-11rem)] md:overflow-y-auto md:overscroll-contain md:rounded-[1.5rem]">
+      <InvitationView template={template} data={data} />
+    </div>
+  );
+
   return (
-    <div className="min-h-dvh bg-cream">
+    <div className={`min-h-dvh ${data.occasion ? "bg-sand" : "bg-cream"}`}>
       {/* 모바일에서는 전체 화면, 데스크톱에서는 폰 프레임 안에 */}
       <div className="mx-auto max-w-[26rem] md:py-10">
-        <div className="iv-stage-md md:overflow-hidden md:rounded-phone md:bg-white md:p-2 md:shadow-lift md:ring-1 md:ring-line">
-          <div className="md:h-[calc(100dvh-11rem)] md:overflow-y-auto md:overscroll-contain md:rounded-[1.5rem]">
-            <InvitationView template={template} data={data} />
+        {data.occasion ? (
+          /* 초대장은 받는 사람 화면에서도 카드입니다. 링크를 누른 첫
+             장면이 접힌 카드가 3D 로 펴지는 것이고, 펴진 뒤에도 카드
+             안에서 읽습니다. */
+          <div className="iv-stage-md px-3 pt-6 md:px-0 md:pt-0">
+            <CardStage>{body}</CardStage>
           </div>
-        </div>
+        ) : (
+          <div className="iv-stage-md md:overflow-hidden md:rounded-phone md:bg-white md:p-2 md:shadow-lift md:ring-1 md:ring-line">
+            {body}
+          </div>
+        )}
 
         <ShareBar slug={slug} />
       </div>

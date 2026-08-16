@@ -11,8 +11,10 @@ import { SectionPanel } from "@/components/editor/panels";
 import { Rail, type SectionId } from "@/components/editor/rail";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import {
+  createDataForTemplate,
   createOccasionData,
   getOccasion,
+  occasionOf,
   type OccasionKind,
 } from "@/lib/occasion";
 import {
@@ -23,7 +25,6 @@ import {
 import { buildQrSvg } from "@/lib/qr";
 import {
   TEMPLATES,
-  createDefaultData,
   getTemplate,
   type InvitationData,
   type SectionKey,
@@ -78,9 +79,19 @@ const PRODUCT_NAV = [
   { label: "MEAL TICKET", href: "/templates" },
 ];
 
+/* 초대장 편집기에서는 결혼식 물건을 걸어 둘 자리가 아닙니다 */
+const OCCASION_NAV = [
+  { label: "EVENT INVITATION", href: "/invitation-card" },
+  { label: "TEMPLATES", href: "/invitation-card" },
+  { label: "GUIDES", href: "/guides/invitation-wording" },
+];
+
 export function Editor({ templateId }: { templateId: string }) {
+  /* 초대장 전용 템플릿은 자기가 어느 행사의 것인지 알고 있어서,
+     주소에 ?occasion= 이 없어도 행사 기본값으로 열립니다. 템플릿 id
+     하나에만 기대므로 서버가 그려 둔 HTML 과도 어긋나지 않습니다. */
   const [data, setData] = useState<InvitationData>(() =>
-    createDefaultData(templateId),
+    createDataForTemplate(templateId),
   );
   /*
    * 초대장(행사)으로 열렸는지는 주소의 ?occasion= 으로 정합니다.
@@ -98,7 +109,9 @@ export function Editor({ templateId }: { templateId: string }) {
     () => new URLSearchParams(window.location.search).get("occasion"),
     () => null,
   );
-  const [occasion, setOccasion] = useState<OccasionKind | null>(null);
+  const [occasion, setOccasion] = useState<OccasionKind | null>(() =>
+    occasionOf(templateId),
+  );
   if (occasionParam !== occasion && occasionParam && getOccasion(occasionParam)) {
     setOccasion(occasionParam as OccasionKind);
     setData(createOccasionData(templateId, occasionParam as OccasionKind));
@@ -262,7 +275,7 @@ export function Editor({ templateId }: { templateId: string }) {
             </span>
           </Link>
           <nav className="hidden items-center gap-7 xl:flex">
-            {PRODUCT_NAV.map((n) => (
+            {(occasion ? OCCASION_NAV : PRODUCT_NAV).map((n) => (
               <Link
                 key={n.label}
                 href={n.href}
@@ -337,7 +350,7 @@ export function Editor({ templateId }: { templateId: string }) {
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* ── 좌측 아이콘 레일 ── */}
         <div className={tab === "edit" ? "contents" : "hidden lg:contents"}>
-          <Rail active={section} onSelect={goToSection} />
+          <Rail active={section} onSelect={goToSection} occasion={!!occasion} />
         </div>
 
         {/* ── 편집 패널 ── */}
@@ -380,7 +393,9 @@ export function Editor({ templateId }: { templateId: string }) {
           {/* 미리보기 헤더 */}
           <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-8">
             <p className="flex items-center gap-2">
-              <span className="font-serif text-[0.9375rem] text-ink">청첩장 미리보기</span>
+              <span className="font-serif text-[0.9375rem] text-ink">
+                {occasion ? "초대장 미리보기" : "청첩장 미리보기"}
+              </span>
             </p>
             <div className="flex items-center gap-2">
               {saved && <span className="hidden text-[0.6875rem] text-muted sm:inline">{saved} 저장됨</span>}
@@ -397,7 +412,7 @@ export function Editor({ templateId }: { templateId: string }) {
                 {publishing ? "만드는 중…" : "발행용 파일 내보내기"}
               </button>
               <button onClick={save} className="press rounded-md bg-ink px-4 py-2 text-[0.75rem] text-ivory">
-                청첩장 저장하기
+                {occasion ? "초대장 저장하기" : "청첩장 저장하기"}
               </button>
             </div>
           </div>
