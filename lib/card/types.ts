@@ -21,44 +21,55 @@
 
 import type { FontId } from "@/lib/fonts";
 
-/** 카드 앞면에 인쇄되는 그림 열여섯 가지 */
-export type ArtKind =
-  | "bloom" /* 화면을 넘어 잘려 나가는 큰 꽃 */
-  | "garden" /* 가는 선으로 그린 들꽃 */
-  | "arch" /* 아치 너머의 해 */
-  | "dune" /* 겹치는 언덕과 해 */
-  | "terrazzo" /* 테라조 조각 */
-  | "confetti" /* 손으로 뿌린 색종이 */
-  | "balloon" /* 풍선 다발 */
-  | "candle" /* 촛불과 빛무리 */
-  | "night" /* 밤하늘, 달, 능선 */
-  | "wave" /* 겹쳐 흐르는 물결 */
-  | "sprig" /* 모서리에서 뻗은 잎가지 */
-  | "stripe" /* 굵은 사선 */
-  | "frame" /* 이중 테두리와 코너 오너먼트 */
-  | "wreath" /* 둥근 잎 화환 */
-  | "ribbon" /* 매듭과 늘어진 띠 */
-  | "window"; /* 창 너머의 집 */
+/**
+ * 앞면을 무엇으로 채우는가.
+ *
+ * 도형을 조합해 그림을 흉내 내던 것을 걷어냈습니다. 벡터 도형은
+ * 아무리 다듬어도 클립아트로 읽히지, 카드가 되지는 않습니다.
+ * 대신 실제 문구류가 쓰는 두 가지 길만 남깁니다.
+ *
+ *   plate — 진짜 그림 한 점을 앞면에 통째로 앉힙니다.
+ *           퍼블릭 도메인(CC0) 명화·판화라 상업적 이용이 자유롭습니다.
+ *   type  — 그림 없이 활자와 인쇄 효과만으로 세웁니다.
+ *           못 그린 그림이 없으니 짜칠 수가 없습니다.
+ */
+export type FrontKind = "plate" | "type";
+
+/** 활자 전용 앞면의 조판 다섯 가지 */
+export type TypeLayout =
+  | "bigdate" /* 날짜 두 자리가 화면을 채웁니다 */
+  | "stack" /* 낱말을 한 줄씩 쌓아 올립니다 */
+  | "rule" /* 굵은 괘선 사이에 놓입니다 */
+  | "corner" /* 모서리에 몰아넣고 크게 비웁니다 */
+  | "seal"; /* 가운데 원형 도장 안에 */
+
+/** 앞면에 앉히는 그림 한 점 */
+export interface Plate {
+  /** public/cards/<file>.webp */
+  file: string;
+  title: string;
+  artist: string;
+  date: string;
+}
 
 /**
  * 색 한 벌.
  *
- * 다섯 칸이 아니라 여섯 칸인 이유는 tint 때문입니다. 그림에 깊이를
- * 주려면 «종이보다 살짝 진한 면»이 하나 더 있어야 하는데, soft 를
- * 그 자리에 쓰면 형태를 그리는 색이 사라집니다.
+ * 그림 카드에서는 그림 둘레의 종이색과 글자색으로만 쓰이고,
+ * 활자 카드에서는 조판 전체의 색이 됩니다.
  */
 export interface Palette {
   /** 카드 종이색 — 가장 밝은 면 */
   paper: string;
   /** 글자색 */
   ink: string;
-  /** 그림의 주색 */
+  /** 강조색 — 괘선, 라벨, 도장 */
   accent: string;
-  /** 그림의 보조 면 */
+  /** 보조 면 */
   soft: string;
-  /** 그림에서 가장 어두운 부분 */
+  /** 가장 어두운 부분 */
   deep: string;
-  /** 종이보다 한 겹 진한 바탕 — 빛과 그늘을 만듭니다 */
+  /** 종이보다 한 겹 진한 바탕 */
   tint: string;
 }
 
@@ -97,13 +108,18 @@ export interface CardDesign {
   /** 카드 이름 — 목록에 뜹니다 */
   name: string;
   occasion: OccasionId;
-  art: ArtKind;
   palette: Palette;
-  /** 앞면 글자를 그림 위 어디에 앉힐지 */
-  titlePlace: "top" | "bottom";
   /** 앞면 제목에 쓰는 글꼴 */
   titleFont: FontId;
   badge?: "NEW" | "BEST";
+  /** 그림 카드 */
+  front: FrontKind;
+  /** front === "plate" 일 때 앉히는 그림 */
+  plate?: Plate;
+  /** 그림을 종이 안쪽에 액자처럼 앉힐지, 가장자리까지 채울지 */
+  plateFit?: "inset" | "bleed";
+  /** front === "type" 일 때의 조판 */
+  layout?: TypeLayout;
 }
 
 /** 손글씨 설정 — 안쪽 오른쪽 면에만 적용됩니다 */

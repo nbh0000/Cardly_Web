@@ -88,6 +88,13 @@ export function CardGallery() {
                   </span>
                 )}
               </span>
+              {/* 그림 카드에는 화가 이름을 답니다 — 누가 그렸는지가
+                  카드를 고르는 이유가 되기도 합니다. */}
+              {design.plate && (
+                <span className="mt-1 block text-[0.75rem] text-muted">
+                  {design.plate.artist}
+                </span>
+              )}
             </button>
           </li>
         ))}
@@ -145,6 +152,11 @@ function CardModal({
           <div className="flex flex-col">
             <span className="eyebrow">{occasion.label}</span>
             <h2 className="mt-3 font-serif text-h2 text-ink">{design.name}</h2>
+            {design.plate ? (
+              <p className="mt-2 text-caption text-muted">
+                {design.plate.artist} · {design.plate.date}
+              </p>
+            ) : null}
             <p className="mt-3 text-caption text-ink-soft">{occasion.blurb}</p>
 
             <div className="mt-7 grid gap-2">

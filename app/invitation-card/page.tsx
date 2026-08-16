@@ -4,7 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { DESIGNS, OCCASIONS } from "@/lib/card/designs";
 
-const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사, 카드 ${DESIGNS.length}장. 접힌 카드 한 장에 손으로 글을 쓰고 링크로 보내면, 받는 분 화면에서 카드가 펴집니다. 가입도 결제도 없습니다.`;
+const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사, 카드 ${DESIGNS.length}장. 반 고흐·세잔·마네의 퍼블릭 도메인 명화를 앞면에 앉힌 접힌 카드에 손으로 글을 쓰고 링크로 보내세요. 가입도 결제도 없습니다.`;
 
 export const metadata: Metadata = {
   title: "모바일 초대장 — 접어서 보내는 카드",
@@ -43,6 +43,11 @@ export default function InvitationCardPage() {
               긴 페이지가 아니라 카드 한 장입니다. 앞면에 그림, 안쪽에 행사
               정보와 손으로 쓴 글, 뒷면에 오시는 길. 카드를 눌러 펼쳐 보고
               마음에 들면 그 자리에서 쓰기 시작하세요.
+            </p>
+            <p className="mt-4 text-body text-ink-soft">
+              앞면 그림은 반 고흐, 팡탱라투르, 세잔, 마네처럼 실제 미술관에
+              걸린 작품입니다. 메트로폴리탄 미술관이 퍼블릭 도메인으로 푼
+              것을 카드 크기에 맞춰 앉혔습니다.
             </p>
           </header>
 

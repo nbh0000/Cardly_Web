@@ -12,7 +12,7 @@
    때문입니다. em 이나 rem 을 쓰면 축소한 카드에서 글자만 커집니다.
    ============================================================ */
 
-import { CardArt } from "@/components/card/art";
+import { CardFront } from "@/components/card/front";
 import { dateKo, dateShort, monthDay, timeKo, weekdayEn } from "@/lib/card/doc";
 import type { CardDesign, CardDoc } from "@/lib/card/types";
 import { fontStack } from "@/lib/fonts";
@@ -35,21 +35,8 @@ function paperStyle(design: CardDesign): React.CSSProperties {
 
 export function FaceFront({ design, doc }: Props) {
   return (
-    <div className={`cd-face cd-front cd-title-${design.titlePlace}`} style={paperStyle(design)}>
-      <CardArt art={design.art} palette={design.palette} />
-
-      {/* 그림이 글자 자리까지 올라오면 읽히지 않습니다. 불투명한 띠를
-          깔면 스티커처럼 보이므로, 종이색이 가장자리에서 서서히 차오르게
-          해 그림이 «잦아드는» 것으로 보이게 합니다. */}
-      <span className="cd-front-veil" aria-hidden />
-
-      <div className="cd-front-text">
-        <span className="cd-front-mark" aria-hidden />
-        <h2 className="cd-front-title" style={{ fontFamily: fontStack(design.titleFont) }}>
-          {doc.title}
-        </h2>
-        {doc.subtitle && <p className="cd-front-sub">{doc.subtitle}</p>}
-      </div>
+    <div className="cd-face" style={paperStyle(design)}>
+      <CardFront design={design} doc={doc} />
     </div>
   );
 }
@@ -162,6 +149,18 @@ export function FaceBack({ design, doc }: Props) {
           <p className="cd-eyebrow">참석 회신</p>
           <p className="cd-back-note">{doc.rsvpTo}</p>
         </>
+      )}
+
+      {/* 앞면 그림의 출처. CC0 라 표기 의무는 없지만, 좋은 카드는 원래
+          그림을 누가 그렸는지 밝힙니다. */}
+      {design.plate && (
+        <p className="cd-back-credit">
+          앞면 그림 · {design.plate.title}
+          <br />
+          {design.plate.artist} · {design.plate.date}
+          <br />
+          메트로폴리탄 미술관 소장 (퍼블릭 도메인)
+        </p>
       )}
 
       <p className="cd-back-foot">

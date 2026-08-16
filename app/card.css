@@ -62,76 +62,272 @@
   background: color-mix(in srgb, var(--cd-ink) 18%, transparent);
 }
 
-/* ---------- 앞면 ---------- */
+/* ============================================================
+   앞면 — 그림 카드와 활자 카드
+   ============================================================ */
 
-.cd-front {
-  justify-content: flex-end;
-}
-.cd-front.cd-title-top {
-  justify-content: flex-start;
-}
-.cd-art {
+.cf {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-}
-/* 종이색이 글자 쪽 가장자리에서 차오릅니다 — 그림이 잦아드는 것처럼.
-   예전에는 글자 뒤에 둥근 종이색 얼룩을 깔았는데, 그림 한가운데
-   흰 구름이 뜬 것처럼 보였습니다. */
-.cd-front-veil {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    var(--cd-paper) 0%,
-    color-mix(in srgb, var(--cd-paper) 78%, transparent) 18%,
-    color-mix(in srgb, var(--cd-paper) 0%, transparent) 42%
-  );
-}
-.cd-title-top .cd-front-veil {
-  background: linear-gradient(
-    to bottom,
-    var(--cd-paper) 0%,
-    color-mix(in srgb, var(--cd-paper) 78%, transparent) 18%,
-    color-mix(in srgb, var(--cd-paper) 0%, transparent) 42%
-  );
+  display: flex;
+  flex-direction: column;
+  color: var(--cd-ink);
 }
 
-.cd-front-text {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 3cqw;
-  padding: 7cqw 9cqw 9cqw;
-  text-align: center;
+/* 앞면 공통 조판 */
+.cf-label {
+  font-size: 2.5cqw;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--cd-accent);
 }
-.cd-title-top .cd-front-text {
-  padding: 10cqw 9cqw 7cqw;
-}
-
-/* 제목 위의 짧은 선 — 조판이 시작되는 자리를 잡아 줍니다 */
-.cd-front-mark {
-  width: 8cqw;
+.cf-rule {
+  display: block;
+  width: 7cqw;
   height: 1px;
   background: var(--cd-accent);
-  opacity: 0.75;
+  opacity: 0.85;
 }
-
-.cd-front-title {
-  font-size: 9.4cqw;
-  line-height: 1.24;
+.cf-rule-wide {
+  width: 22cqw;
+}
+.cf-title {
+  font-size: 8.6cqw;
+  line-height: 1.26;
   font-weight: 400;
   letter-spacing: -0.015em;
   text-wrap: balance;
 }
-.cd-front-sub {
-  font-size: 3.1cqw;
-  letter-spacing: 0.2em;
-  text-indent: 0.2em;
+.cf-sub {
+  font-size: 3cqw;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
   line-height: 1.5;
+  color: color-mix(in srgb, var(--cd-ink) 60%, transparent);
+}
+
+/* ---------- 그림 카드 ----------
+   그림은 메트로폴리탄 미술관 오픈액세스(CC0)입니다. 화면에서 쨍한
+   원본을 그대로 두면 «사진을 붙인 웹페이지»가 되므로, 아주 옅게
+   눌러 종이에 인쇄된 것처럼 만듭니다. */
+
+.cf-plate-frame {
+  position: relative;
+  overflow: hidden;
+  background: var(--cd-soft);
+}
+.cf-plate-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* 인쇄 잉크의 밀도 — 채도를 조금 빼고 따뜻하게 눌러 줍니다 */
+.cf-plate-ink {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--cd-paper) 12%, transparent);
+  mix-blend-mode: multiply;
+  box-shadow: inset 0 0 6cqw -2cqw rgb(40 30 20 / 0.35);
+}
+
+/* ── 전면 그림 + 아래 캡션 띠 ── */
+.cf-plate.is-bleed .cf-plate-frame {
+  position: absolute;
+  inset: 0;
+}
+.cf-plate.is-bleed .cf-text {
+  position: relative;
+  margin-top: auto;
+  display: grid;
+  justify-items: center;
+  gap: 2.6cqw;
+  padding: 7cqw 8cqw 8cqw;
+  text-align: center;
+  background: var(--cd-paper);
+}
+/* 띠 위로 종이색이 서서히 올라와 그림과 맞물립니다 */
+.cf-plate.is-bleed .cf-text::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  height: 12cqw;
+  background: linear-gradient(
+    to top,
+    var(--cd-paper),
+    color-mix(in srgb, var(--cd-paper) 0%, transparent)
+  );
+}
+
+/* ── 여백 안에 앉힌 그림 ── */
+.cf-plate.is-inset {
+  padding: 8cqw 8cqw 0;
+}
+.cf-plate.is-inset .cf-plate-frame {
+  aspect-ratio: 4 / 5;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--cd-ink) 16%, transparent),
+    0 2cqw 4cqw -1.5cqw rgb(40 30 20 / 0.3);
+}
+.cf-plate.is-inset .cf-text {
+  display: grid;
+  justify-items: center;
+  gap: 2.4cqw;
+  padding: 6cqw 2cqw 7cqw;
+  text-align: center;
+}
+.cf-plate.is-inset .cf-title {
+  font-size: 7.4cqw;
+}
+
+/* ---------- 활자 카드 ---------- */
+
+.cf-type {
+  background: var(--cd-paper);
+}
+/* 인쇄된 종이의 결 — 활자만 있는 면은 이 층이 없으면 화면이 됩니다 */
+.cf-type::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
+/* ── 빅데이트 ── */
+.cf-bigdate {
+  justify-content: center;
+  align-items: center;
+  gap: 3cqw;
+  padding: 10cqw 8cqw;
+  text-align: center;
+}
+.cf-bigdate-num {
+  display: grid;
+  font-family: var(--font-serif);
+  font-size: 34cqw;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  color: var(--cd-accent);
+}
+.cf-bigdate-num span:last-child {
+  color: color-mix(in srgb, var(--cd-accent) 55%, var(--cd-paper));
+}
+
+/* ── 스택 ── */
+.cf-stack {
+  justify-content: flex-end;
+  gap: 3cqw;
+  padding: 10cqw 8cqw 9cqw;
+}
+.cf-stack-words {
+  display: grid;
+  font-size: 13cqw;
+  line-height: 1.02;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+.cf-stack-words span:nth-child(even) {
+  color: var(--cd-accent);
+  padding-left: 6cqw;
+}
+.cf-stack-foot {
+  font-size: 2.8cqw;
+  letter-spacing: 0.24em;
   color: color-mix(in srgb, var(--cd-ink) 58%, transparent);
+}
+
+/* ── 괘선 ── */
+.cf-ruled {
+  justify-content: center;
+  align-items: center;
+  gap: 5cqw;
+  padding: 9cqw 8cqw;
+  text-align: center;
+}
+.cf-ruled-bar {
+  width: 100%;
+  height: 1.6cqw;
+  background: var(--cd-accent);
+}
+.cf-ruled-body {
+  display: grid;
+  justify-items: center;
+  gap: 3cqw;
+}
+.cf-ruled-foot {
+  font-family: var(--font-serif);
+  font-size: 7cqw;
+  letter-spacing: 0.06em;
+  color: var(--cd-accent);
+}
+
+/* ── 코너 ── */
+.cf-corner {
+  justify-content: flex-start;
+  gap: 4cqw;
+  padding: 12cqw 9cqw 9cqw;
+  text-align: left;
+}
+.cf-corner .cf-title {
+  font-size: 10cqw;
+}
+.cf-corner-foot {
+  margin-top: auto;
+  display: grid;
+  gap: 2.4cqw;
+  font-size: 2.9cqw;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--cd-ink) 62%, transparent);
+}
+
+/* ── 도장 ── */
+.cf-seal {
+  justify-content: center;
+  align-items: center;
+  gap: 4cqw;
+  padding: 10cqw 9cqw;
+  text-align: center;
+}
+.cf-seal-ring {
+  display: grid;
+  place-items: center;
+  width: 34cqw;
+  height: 34cqw;
+  border-radius: 50%;
+  border: 1px solid var(--cd-accent);
+  outline: 1px solid color-mix(in srgb, var(--cd-accent) 45%, transparent);
+  outline-offset: 1.6cqw;
+}
+.cf-seal-inner {
+  display: grid;
+  justify-items: center;
+  gap: 1.2cqw;
+  font-family: var(--font-serif);
+  font-size: 9cqw;
+  line-height: 1;
+  color: var(--cd-accent);
+}
+.cf-seal-inner i {
+  width: 8cqw;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+.cf-seal .cf-title {
+  font-size: 7.6cqw;
+}
+.cf-seal-foot {
+  font-size: 2.8cqw;
+  letter-spacing: 0.24em;
+  color: color-mix(in srgb, var(--cd-ink) 55%, transparent);
 }
 
 /* ---------- 안쪽 왼쪽 — 행사 정보 ---------- */
@@ -244,6 +440,15 @@
   line-height: 1.8;
   color: color-mix(in srgb, var(--cd-ink) 74%, transparent);
   white-space: pre-wrap;
+}
+.cd-back-credit {
+  margin-top: 5cqw;
+  padding-top: 4cqw;
+  border-top: 1px solid color-mix(in srgb, var(--cd-ink) 12%, transparent);
+  font-size: 2.5cqw;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--cd-ink) 48%, transparent);
 }
 .cd-back-foot {
   margin-top: auto;

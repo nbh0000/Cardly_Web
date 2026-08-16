@@ -67,6 +67,12 @@ export default async function CardDetailPage({
             <div>
               <span className="eyebrow">{occasion.label}</span>
               <h1 className="mt-4 font-serif text-h1 text-ink">{design.name}</h1>
+              {design.plate && (
+                <p className="mt-3 text-caption text-muted">
+                  «{design.plate.title}» · {design.plate.artist} ·{" "}
+                  {design.plate.date}
+                </p>
+              )}
               <p className="mt-4 text-body text-ink-soft">{occasion.blurb}.</p>
 
               <div className="mt-8 grid gap-2 sm:max-w-sm">
@@ -100,6 +106,18 @@ export default async function CardDetailPage({
                   ))}
                 </dl>
               </section>
+
+              {design.plate && (
+                <section className="mt-8 border-t border-line pt-8">
+                  <h2 className="font-serif text-h3 text-ink">앞면 그림</h2>
+                  <p className="mt-3 text-caption text-ink-soft">
+                    «{design.plate.title}», {design.plate.artist},{" "}
+                    {design.plate.date}. 메트로폴리탄 미술관 오픈액세스로
+                    공개된 퍼블릭 도메인 작품이라 상업적 이용에 제약이
+                    없습니다. 카드 뒷면에도 같은 내용이 적힙니다.
+                  </p>
+                </section>
+              )}
 
               <section className="mt-8 border-t border-line pt-8">
                 <h2 className="font-serif text-h3 text-ink">보내는 방법</h2>
