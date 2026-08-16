@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { PRESETS } from "@/lib/invite/presets";
+import { DESIGNS } from "@/lib/occasion/designs";
 import { TEMPLATES } from "@/lib/invitation";
 
 const SITE = "https://cardly.kr";
@@ -73,9 +73,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  // 초대장 프리셋 — 행사별 검색어로 들어오는 자리입니다.
-  const cards: MetadataRoute.Sitemap = PRESETS.map((preset) => ({
-    url: `${SITE}/invitation-card/${preset.id}/`,
+  // 초대장 디자인 — 행사별 검색어로 들어오는 자리입니다.
+  const cards: MetadataRoute.Sitemap = DESIGNS.map((design) => ({
+    url: `${SITE}/invitation-card/${design.id}/`,
     lastModified: UPDATED,
     changeFrequency: "monthly",
     priority: 0.5,

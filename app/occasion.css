@@ -1,0 +1,613 @@
+/* ============================================================
+   모바일 초대장 — 3D 로 열리는 카드
+
+   여는 방향은 실제 카드와 같습니다. 접힌 자리(경첩)가 왼쪽에 있고,
+   자유단인 오른쪽을 들어 올려 왼쪽으로 넘깁니다. 그래서 덮개는
+   왼쪽 모서리를 축으로 rotateY 가 음수로 돕니다. 반대로 만들면
+   오른쪽에서 왼쪽으로 읽는 책이 되어 버립니다.
+
+   이름은 모두 .oc- 로 시작합니다. 청첩장 렌더러(.iv-*)와 이력서·명함
+   (.rthumb, .cthumb)과 섞이지 않게 하려는 것입니다.
+
+   색은 전부 --oc-* 변수만 봅니다. 변수는 lib/occasion/designs.ts 의
+   designVars() 가 인라인 style 로 심습니다.
+   ============================================================ */
+
+/* ── 공통 지면 ──
+   종이는 완전한 흰색이 아니라 아주 옅은 결이 있어야 «인쇄물»로 보입니다.
+   이미지를 쓰지 않고 겹친 그라디언트로 만듭니다. */
+.oc {
+  --oc-grain:
+    radial-gradient(circle at 20% 18%, rgb(255 255 255 / 0.5), transparent 42%),
+    radial-gradient(circle at 82% 76%, rgb(0 0 0 / 0.035), transparent 46%);
+  font-family: var(--oc-body, var(--font-sans));
+  color: var(--oc-ink);
+}
+
+/* ════════════════════════════════════════════════════════════
+   1. 목록에 서 있는 카드 (.oc-fold)
+
+   cardly 의 목록처럼, 접힌 카드가 책상 위에 살짝 벌어진 채 서 있는
+   모습입니다. 납작한 사각형 섬네일과 달리 «접히는 물건»이라는 것이
+   보기만 해도 읽힙니다.
+   ════════════════════════════════════════════════════════════ */
+/* 소실점을 화면 위쪽에 둡니다. 그러면 «뒤로 물러난» 것이 위로 솟아
+   보이므로, 앞장은 정면 그대로 두고도 뒷장이 위로 삐져나옵니다.
+   책상 위의 카드를 서서 내려다보는 눈높이입니다. 앞장을 기울여
+   버리면 그림이 찌그러지므로 그 방법은 쓰지 않았습니다. */
+.oc-fold {
+  perspective: 900px;
+  perspective-origin: 50% -32%;
+  /* 삐져나온 뒷장이 잘리지 않도록 위를 비웁니다 */
+  padding-top: 9%;
+}
+
+.oc-fold-in {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+}
+
+/* 뒷장 — 왼쪽 접힌 자리를 축으로 벌어져 뒤로 물러납니다. */
+.oc-fold-back {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform: rotateY(31deg);
+  background:
+    linear-gradient(102deg, rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.02) 62%),
+    var(--oc-inside, #fff);
+  box-shadow: 0 0 0 1px rgb(30 24 18 / 0.12);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 앞장 — 그림이 실리는 면 */
+.oc-fold-front {
+  position: absolute;
+  inset: 0;
+  transform: translateZ(0.6px);
+  overflow: hidden;
+  border-radius: 1px 3px 3px 1px;
+  box-shadow:
+    -1px 0 0 rgb(0 0 0 / 0.1),
+    0 10px 22px -12px rgb(24 20 16 / 0.45);
+}
+
+/* 접힌 자리 — 왼쪽 끝에 세로로 앉는 아주 가는 그늘 */
+.oc-fold-front::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  background: linear-gradient(90deg, rgb(0 0 0 / 0.22), rgb(0 0 0 / 0) 100%);
+  pointer-events: none;
+}
+
+/* 바닥 그림자 */
+.oc-fold-shadow {
+  position: absolute;
+  left: 6%;
+  right: 2%;
+  bottom: -5%;
+  height: 9%;
+  background: radial-gradient(50% 50% at 50% 50%, rgb(28 22 18 / 0.34), transparent 72%);
+  filter: blur(6px);
+}
+
+/* 손을 올리면 조금 더 벌어집니다 — 열리는 물건임을 알려 줍니다. */
+.oc-fold-link:hover .oc-fold-back,
+.oc-fold-link:focus-visible .oc-fold-back {
+  transform: rotateY(46deg);
+}
+
+/* ════════════════════════════════════════════════════════════
+   2. 표지 (.oc-cover)
+
+   판짜기 네 가지 — foot / head / center / window.
+   같은 문법으로 글자만 다른 자리에 앉히므로, 디자인이 열여덟 벌이어도
+   조판 규칙은 하나입니다.
+   ════════════════════════════════════════════════════════════ */
+.oc-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--oc-paper);
+  color: var(--oc-cover-ink);
+  overflow: hidden;
+  /* 글자 크기를 카드 «너비»에 매답니다(아래 cqw). 그래야 목록의 작은
+     섬네일과 화면 가득한 카드가 완전히 같은 조판으로 보입니다.
+     container-type 은 cqw 를 쓰는 글자의 «조상»에 걸어야 합니다. */
+  container-type: inline-size;
+}
+
+.oc-cover-art {
+  position: absolute;
+  inset: 0;
+}
+.oc-cover-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 글자가 앉는 쪽에만 그늘을 깝니다. 화면 전체를 어둡게 덮으면
+   그림을 왜 골랐는지 알 수 없게 됩니다. */
+.oc-cover-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.oc-cover[data-l="foot"] .oc-cover-scrim {
+  background: linear-gradient(
+    to top,
+    rgb(10 8 6 / 0.78) 0%,
+    rgb(10 8 6 / 0.62) 24%,
+    rgb(10 8 6 / 0.3) 48%,
+    rgb(10 8 6 / 0) 74%
+  );
+}
+.oc-cover[data-l="head"] .oc-cover-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgb(10 8 6 / 0.74) 0%,
+    rgb(10 8 6 / 0.5) 26%,
+    rgb(10 8 6 / 0.2) 46%,
+    rgb(10 8 6 / 0) 70%
+  );
+}
+.oc-cover[data-l="center"] .oc-cover-scrim {
+  background:
+    radial-gradient(72% 52% at 50% 50%, rgb(10 8 6 / 0.6), rgb(10 8 6 / 0.16) 78%),
+    linear-gradient(rgb(10 8 6 / 0.18), rgb(10 8 6 / 0.18));
+}
+
+.oc-cover-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  padding: 9%;
+}
+/* 그림 위에 바로 얹히는 판에서는 글자에 아주 옅은 그늘을 답니다.
+   그늘 없이 대비를 맞추려면 그림 전체를 어둡게 덮어야 하는데, 그러면
+   그림을 왜 골랐는지 알 수 없게 됩니다. */
+.oc-cover:not([data-l="window"]) .oc-cover-text {
+  text-shadow:
+    0 1px 14px rgb(10 8 6 / 0.55),
+    0 1px 3px rgb(10 8 6 / 0.45);
+}
+.oc-cover[data-l="foot"] .oc-cover-text {
+  margin-top: auto;
+}
+/* «눌러서 열어 보세요»가 앉을 자리를 비워 둡니다. 안 비워 두면
+   표시가 날짜 위에 겹칩니다. */
+.oc-cover[data-hint="1"][data-l="foot"] .oc-cover-text {
+  padding-bottom: 18%;
+}
+.oc-cover[data-hint="1"][data-l="window"] .oc-cover-text {
+  padding-bottom: 20%;
+}
+.oc-cover[data-l="center"] .oc-cover-text {
+  margin: auto;
+  text-align: center;
+  align-items: center;
+}
+
+/* 액자판 — 그림을 종이 안에 창처럼 오려 넣습니다. 가장 «인쇄물»에
+   가까운 판이라, 그림이 화려한 디자인에 씁니다. */
+.oc-cover[data-l="window"] {
+  padding: 7% 7% 0;
+}
+.oc-cover[data-l="window"] .oc-cover-art {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.08),
+    0 2px 10px -4px rgb(0 0 0 / 0.3);
+}
+.oc-cover[data-l="window"] .oc-cover-scrim {
+  display: none;
+}
+.oc-cover[data-l="window"] .oc-cover-text {
+  padding: 6% 0 8%;
+  text-align: center;
+  align-items: center;
+}
+
+/* 글자 세 줄 — 크기는 카드 너비(cqw)에 비례합니다. */
+.oc-cover-eyebrow {
+  font-size: 3.2cqw;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  opacity: 0.85;
+  line-height: 1.4;
+}
+.oc-cover-title {
+  font-family: var(--oc-head, var(--font-serif));
+  font-size: 11cqw;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  white-space: pre-line;
+  text-wrap: balance;
+}
+.oc-cover-date {
+  font-size: 3.6cqw;
+  letter-spacing: 0.2em;
+  opacity: 0.9;
+}
+.oc-cover[data-l="window"] .oc-cover-eyebrow,
+.oc-cover[data-l="window"] .oc-cover-date {
+  color: var(--oc-accent);
+  opacity: 1;
+}
+
+/* 표지 위 얇은 금선 — center 판에서 제목 위아래를 잡아 줍니다. */
+.oc-cover[data-l="center"] .oc-cover-title::before,
+.oc-cover[data-l="center"] .oc-cover-title::after {
+  content: "";
+  display: block;
+  width: 22%;
+  height: 1px;
+  margin: 0.5em auto;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+/* ════════════════════════════════════════════════════════════
+   3. 열리는 카드 (.oc-stage)
+   ════════════════════════════════════════════════════════════ */
+.oc-stage {
+  position: relative;
+  perspective: 1700px;
+  perspective-origin: 50% 44%;
+  /* 덮개가 왼쪽 밖으로 넘어가므로 가로만 자릅니다. clip 은 hidden 과
+     달리 스크롤 상자를 만들지 않아, 세로 그림자는 그대로 삽니다. */
+  overflow-x: clip;
+  overflow-clip-margin: 3rem;
+}
+
+.oc-sheet {
+  position: relative;
+  margin: 0 auto;
+  /* 3:4 를 그대로 지키면서 화면 높이 안에 들어오도록 «너비»를 줄입니다.
+     높이를 잘라 맞추면 카드 비율이 찌그러집니다. */
+  width: min(100%, 30rem, calc(74svh * 3 / 4));
+  background: var(--oc-inside);
+  background-image: var(--oc-grain);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    0 24px 60px -28px rgb(24 20 16 / 0.5),
+    0 2px 10px -6px rgb(24 20 16 / 0.35);
+}
+
+/* 첫 화면 — 덮개가 덮고 있는 3:4 자리 */
+.oc-first {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  transform-style: preserve-3d;
+}
+
+.oc-flap {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  transform: rotateY(0deg);
+  transition: transform 1.45s cubic-bezier(0.66, 0.02, 0.24, 1);
+  will-change: transform;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: inherit;
+  color: inherit;
+  font: inherit;
+  display: block;
+  width: 100%;
+}
+.oc-stage[data-phase="turning"] .oc-flap,
+.oc-stage[data-phase="open"] .oc-flap {
+  transform: rotateY(-172deg);
+}
+/* 다 넘어간 뒤에는 자리를 완전히 비웁니다. 왼쪽에 누워 있는 종이가
+   손가락을 가로채면 그 아래 내용을 못 누릅니다. */
+.oc-stage[data-phase="open"] .oc-flap {
+  visibility: hidden;
+  transition:
+    transform 1.45s cubic-bezier(0.66, 0.02, 0.24, 1),
+    visibility 0s linear 1.45s;
+}
+
+.oc-flap-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+/* 덮개 뒷면 — 넘어가는 동안 잠깐 보이는 종이 뒷장 */
+.oc-flap-rear {
+  transform: rotateY(180deg);
+  background: var(--oc-inside);
+  background-image: var(--oc-grain);
+  display: grid;
+  place-items: center;
+}
+.oc-flap-rear span {
+  font-size: 0.75rem;
+  letter-spacing: 0.3em;
+  color: var(--oc-ink-soft);
+  opacity: 0.5;
+}
+
+/* 종이 두께 — 자유단(오른쪽)에 세우는 얇은 띠 */
+.oc-flap-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 3px;
+  transform-origin: right center;
+  transform: rotateY(90deg);
+  background: linear-gradient(90deg, rgb(255 255 255 / 0.85), rgb(0 0 0 / 0.18));
+}
+
+/* 넘어가는 동안 안쪽에 드리우는 그늘 — 경첩 쪽이 가장 어둡습니다 */
+.oc-castin {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, rgb(16 12 8 / 0.5), rgb(16 12 8 / 0) 62%);
+  transition: opacity 1.45s ease;
+}
+.oc-stage[data-phase="turning"] .oc-castin {
+  opacity: 1;
+}
+
+/* 열어 보라는 표시 — 손가락이 갈 자리를 알려 줍니다 */
+.oc-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6rem 1.1rem;
+  min-height: 44px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: rgb(255 255 255 / 0.96);
+  background: rgb(20 16 12 / 0.42);
+  backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.28);
+  animation: oc-breathe 2.8s ease-in-out infinite;
+}
+.oc-cover[data-l="window"] .oc-hint {
+  color: var(--oc-accent);
+  background: rgb(255 255 255 / 0.72);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+.oc-hint i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  rotate: 45deg;
+  translate: -1px 0;
+}
+@keyframes oc-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.94;
+  }
+  50% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   4. 카드 안쪽
+   ════════════════════════════════════════════════════════════ */
+/* 카드를 열면 나오는 첫 면. 3:4 자리를 그대로 채우도록 절대 배치합니다 —
+   흐름에 두면 글이 길어질 때 표지 비율이 따라 늘어납니다. */
+.oc-in {
+  position: absolute;
+  inset: 0;
+  padding: 12% 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.oc-in-eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--oc-accent);
+}
+.oc-in-title {
+  font-family: var(--oc-head, var(--font-serif));
+  font-size: clamp(1.5rem, 7.2vw, 2rem);
+  line-height: 1.36;
+  letter-spacing: -0.02em;
+  white-space: pre-line;
+  color: var(--oc-ink);
+}
+.oc-in-msg {
+  font-size: 0.9375rem;
+  line-height: 2;
+  white-space: pre-line;
+  color: var(--oc-ink-soft);
+}
+.oc-in-host {
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--oc-ink-soft);
+}
+
+/* 이어지는 지면 — 덮개가 넘어간 뒤 아래로 계속됩니다.
+
+   열기 전에는 아예 자리를 차지하지 않습니다. 투명하게만 해 두면
+   닫힌 카드 아래에 빈 종이가 한참 깔려, «카드»가 아니라 «긴 페이지»로
+   보입니다. */
+.oc-rest {
+  padding: 0 10% 14%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.25rem;
+}
+.oc-stage:not([data-phase="open"]) .oc-rest {
+  display: none;
+}
+
+.oc-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--oc-accent) 45%, transparent),
+    transparent
+  );
+}
+
+.oc-when {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.oc-when-day {
+  font-family: var(--oc-head, var(--font-serif));
+  font-size: clamp(2rem, 12vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--oc-ink);
+}
+.oc-when-sub {
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  color: var(--oc-ink-soft);
+}
+.oc-when-left {
+  display: inline-block;
+  margin: 0 auto;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: var(--oc-veil);
+  color: var(--oc-accent);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.oc-where {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.oc-where-name {
+  font-family: var(--oc-head, var(--font-serif));
+  font-size: 1.125rem;
+  color: var(--oc-ink);
+}
+.oc-where-addr {
+  font-size: 0.8125rem;
+  line-height: 1.75;
+  color: var(--oc-ink-soft);
+}
+
+.oc-note {
+  padding: 1rem 1.1rem;
+  background: var(--oc-veil);
+  font-size: 0.8125rem;
+  line-height: 1.8;
+  color: var(--oc-ink-soft);
+  text-align: center;
+}
+
+.oc-acts {
+  display: grid;
+  gap: 0.5rem;
+}
+.oc-act {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 48px;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  border: 1px solid color-mix(in srgb, var(--oc-accent) 34%, transparent);
+  color: var(--oc-accent);
+  background: transparent;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+.oc-act:hover {
+  background: var(--oc-veil);
+}
+.oc-act-solid {
+  background: var(--oc-accent);
+  color: var(--oc-on-accent);
+  border-color: var(--oc-accent);
+}
+.oc-act-solid:hover {
+  background: color-mix(in srgb, var(--oc-accent) 86%, #000);
+  color: var(--oc-on-accent);
+}
+
+.oc-credit {
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--oc-ink-soft);
+  opacity: 0.65;
+}
+.oc-credit a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* 덮개가 넘어간 뒤에 차례로 떠오릅니다 — 열자마자 전부 떠 있으면
+   여는 동작이 아무 의미가 없습니다. */
+.oc-lift {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.oc-stage[data-phase="open"] .oc-lift {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* ── 모션을 줄이겠다고 한 분에게는 연출을 걸지 않습니다 ── */
+@media (prefers-reduced-motion: reduce) {
+  .oc-flap,
+  .oc-castin,
+  .oc-fold-in,
+  .oc-fold-back,
+  .oc-stage[data-phase="open"] .oc-lift {
+    transition-duration: 0.01ms !important;
+  }
+  .oc-hint {
+    animation: none;
+  }
+}

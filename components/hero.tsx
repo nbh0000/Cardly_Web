@@ -2,9 +2,9 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
-import { asset } from "@/lib/asset";
-import { PRESETS } from "@/lib/invite/presets";
-import { THEMES, getTheme } from "@/lib/invite/themes";
+import { Cover, designStyle } from "@/components/occasion/cover";
+import { DESIGNS } from "@/lib/occasion/designs";
+import { OCCASIONS, sampleFor } from "@/lib/occasion/occasions";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -125,48 +125,24 @@ function InvitationPreview() {
   );
 }
 
-/* 초대장은 청첩장과 달리 접힌 카드입니다. 홈에서도 그렇게 보여야
-   눌러 보기 전에 무엇인지 압니다. */
+/* 초대장은 청첩장과 달리 «접히는» 카드입니다. 홈에서도 세워 두어야
+   눌러 보기 전에 무엇인지 압니다. 실제 목록에 쓰는 것과 같은 3D 판을
+   그대로 씁니다 — 홈에만 따로 그린 그림이면 금세 실물과 어긋납니다. */
 function OccasionPreview() {
-  const preset = PRESETS[0]!;
-  const t = getTheme(preset.config.theme);
+  const design = DESIGNS.find((d) => d.id === "magnolia") ?? DESIGNS[0]!;
+  const sample = sampleFor(design.id, design.occasion);
   return (
-    <div className="relative aspect-[3/4] h-[10.5rem]">
-      <Behind
-        offset={[
-          { x: 13, y: 9, r: 3 },
-          { x: 6.5, y: 4.5, r: 1.5 },
-        ]}
-      />
-      <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-white p-1 shadow-card ring-1 ring-line">
-        <div
-          className="relative h-full overflow-hidden rounded-[2px]"
-          style={{ background: t.surface }}
-        >
-          {preset.config.cover.image && (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={asset(preset.config.cover.image)}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-              <span
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, rgb(20 16 12/.45), rgb(20 16 12/.1) 40%, rgb(20 16 12/.7))",
-                }}
-              />
-            </>
-          )}
-          <p
-            className="absolute inset-x-0 bottom-0 p-2.5 font-serif text-[0.6875rem] leading-snug whitespace-pre-line text-white"
-            aria-hidden
-          >
-            {preset.config.cover.title}
-          </p>
+    <div className="oc oc-fold w-[7.6rem]" style={designStyle(design)}>
+      <div className="oc-fold-in">
+        <span className="oc-fold-shadow" aria-hidden />
+        <span className="oc-fold-back" aria-hidden />
+        <div className="oc-fold-front">
+          <Cover
+            design={design}
+            eyebrow={sample.eyebrow}
+            title={sample.title}
+            date={sample.date}
+          />
         </div>
       </div>
     </div>
@@ -206,10 +182,10 @@ const TOOLS = [
   {
     href: "/invitation-card",
     eyebrow: "Invitation",
-    title: "웹 초대장",
-    body: "결혼식·돌잔치·생일·기업 행사를 하나의 템플릿으로. 모바일에서 가장 보기 좋게.",
-    meta: `행사 프리셋 ${PRESETS.length}종 · 테마 ${THEMES.length}종`,
-    badge: "템플릿",
+    title: "모바일 초대장",
+    body: "링크를 누르면 카드가 3D로 펼쳐집니다. 만들어서 카카오톡으로 바로 보냅니다.",
+    meta: `디자인 ${DESIGNS.length}종 · 행사 ${OCCASIONS.length}갈래`,
+    badge: "무료",
     preview: <OccasionPreview />,
   },
 ];
