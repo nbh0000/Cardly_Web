@@ -38,9 +38,13 @@ export function FaceFront({ design, doc }: Props) {
     <div className={`cd-face cd-front cd-title-${design.titlePlace}`} style={paperStyle(design)}>
       <CardArt art={design.art} palette={design.palette} />
 
-      {/* 글자가 그림 위에 놓이므로, 글자 뒤쪽만 종이색을 옅게 번지게 해
-          읽히도록 합니다. 불투명한 띠를 깔면 스티커처럼 보입니다. */}
+      {/* 그림이 글자 자리까지 올라오면 읽히지 않습니다. 불투명한 띠를
+          깔면 스티커처럼 보이므로, 종이색이 가장자리에서 서서히 차오르게
+          해 그림이 «잦아드는» 것으로 보이게 합니다. */}
+      <span className="cd-front-veil" aria-hidden />
+
       <div className="cd-front-text">
+        <span className="cd-front-mark" aria-hidden />
         <h2 className="cd-front-title" style={{ fontFamily: fontStack(design.titleFont) }}>
           {doc.title}
         </h2>

@@ -171,87 +171,107 @@ export function getOccasion(id: string): Occasion | undefined {
 
 /* ------------------------------------------------------------
    색 한 벌씩
+
+   채도를 낮추고 종이색을 따뜻하게 잡았습니다. 원색을 그대로 쓰면
+   화면에서는 선명해 보여도 인쇄물로는 보이지 않습니다. tint 는
+   종이보다 한 겹 진한 면이라 그림에 빛과 그늘을 만듭니다.
    ------------------------------------------------------------ */
 
 const P = {
-  cream: { paper: "#FBF4E9", ink: "#2E2419", accent: "#E2703A", soft: "#F2DFC3", deep: "#8C3D1B" },
-  blush: { paper: "#FBEDEF", ink: "#33212A", accent: "#D8536F", soft: "#F5D3DA", deep: "#8E2F45" },
-  night: { paper: "#151827", ink: "#F1EEF8", accent: "#F2C14E", soft: "#242942", deep: "#0B0D18" },
-  neon: { paper: "#120C1E", ink: "#F3ECFF", accent: "#FF4D95", soft: "#25173B", deep: "#080512" },
-  sky: { paper: "#EAF2FA", ink: "#1E2A38", accent: "#3C7FC4", soft: "#CFE2F2", deep: "#1B4C7E" },
-  forest: { paper: "#EDF1E8", ink: "#22301F", accent: "#5B7F4E", soft: "#D6E0CC", deep: "#2F4A28" },
-  clay: { paper: "#F7EFE6", ink: "#2C2119", accent: "#B4643C", soft: "#E9D7C4", deep: "#6E3A20" },
-  lilac: { paper: "#F4EFF8", ink: "#2A2233", accent: "#8E6FB8", soft: "#E2D6EE", deep: "#523682" },
-  sand: { paper: "#F4F0E5", ink: "#2A2620", accent: "#A08344", soft: "#E4DCC7", deep: "#5F4A1E" },
-  ink: { paper: "#F6F5F1", ink: "#1F2733", accent: "#2E4B6B", soft: "#DFE3E6", deep: "#152534" },
-  mint: { paper: "#E9F5F0", ink: "#1D2E29", accent: "#3E9C7E", soft: "#CCE7DC", deep: "#1E5C48" },
-  ember: { paper: "#221610", ink: "#F6EADC", accent: "#E8843C", soft: "#33221A", deep: "#120A06" },
+  /* 따뜻한 아이보리 — 어디에나 어울리는 기본 */
+  ivory: { paper: "#FBF7F0", ink: "#2B241C", accent: "#C1703F", soft: "#E7D8C0", deep: "#7B4220", tint: "#F3E9D9" },
+  /* 물 빠진 장미 */
+  blush: { paper: "#FCF2F0", ink: "#33242A", accent: "#C25E72", soft: "#F0D6D3", deep: "#7E3244", tint: "#F7E4E0" },
+  /* 마른 세이지 */
+  sage: { paper: "#F1F3EC", ink: "#242A22", accent: "#6E8B5E", soft: "#D8E1CF", deep: "#3B4E33", tint: "#E6EBDE" },
+  /* 흐린 하늘 */
+  sky: { paper: "#EEF3F7", ink: "#1F2A34", accent: "#4C82A8", soft: "#D5E3ED", deep: "#254F6D", tint: "#E3EDF4" },
+  /* 마른 자두 */
+  plum: { paper: "#F4EFF5", ink: "#2B2231", accent: "#8A6B9E", soft: "#E1D7E7", deep: "#4F3661", tint: "#EBE2EF" },
+  /* 구운 흙 */
+  clay: { paper: "#F8F0E8", ink: "#2E2219", accent: "#B4603C", soft: "#EBD9C7", deep: "#6D371D", tint: "#F1E3D4" },
+  /* 겨자와 아마 */
+  ochre: { paper: "#F8F3E4", ink: "#2C2718", accent: "#B58B2E", soft: "#E9DEBC", deep: "#6A4E14", tint: "#F1E8CE" },
+  /* 바랜 잉크 */
+  slate: { paper: "#F2F3F1", ink: "#1E2630", accent: "#456079", soft: "#DBE0E1", deep: "#22323F", tint: "#E5E8E7" },
+  /* 이끼와 물 */
+  teal: { paper: "#EDF4F2", ink: "#1D2C29", accent: "#3E8A7C", soft: "#CFE3DE", deep: "#1F544B", tint: "#E0EDE9" },
+  /* 붉은 벽돌 */
+  brick: { paper: "#F9EFEA", ink: "#2E1F19", accent: "#B0503C", soft: "#EDD5CA", deep: "#6C2A1D", tint: "#F2E0D7" },
+  /* 밤 — 어두운 종이 */
+  night: { paper: "#1B1F2E", ink: "#EFEDE6", accent: "#D9AE62", soft: "#2B3145", deep: "#10131E", tint: "#242A3C" },
+  /* 숯 — 어두운 종이 */
+  charcoal: { paper: "#22211E", ink: "#F0EDE5", accent: "#C98A54", soft: "#33312C", deep: "#141310", tint: "#2B2A26" },
 } as const;
 
 /* ------------------------------------------------------------
-   카드 서른여섯 장
+   카드 마흔 장
+
+   같은 그림이라도 색이 바뀌면 다른 물건입니다. 행사마다 네 장씩,
+   되도록 결이 다른 넷을 붙였습니다 — 그림 하나, 패턴 하나, 조판
+   하나, 어두운 것 하나.
    ------------------------------------------------------------ */
 
 export const DESIGNS: CardDesign[] = [
-  /* ── 생일 ── */
-  { id: "bd-cake", name: "케이크", occasion: "birthday", art: "cake", palette: P.cream, titlePlace: "bottom", titleFont: "gaegu", badge: "BEST" },
-  { id: "bd-balloons", name: "풍선다발", occasion: "birthday", art: "balloons", palette: P.sky, titlePlace: "bottom", titleFont: "jua" },
-  { id: "bd-confetti", name: "색종이", occasion: "birthday", art: "confetti", palette: P.blush, titlePlace: "bottom", titleFont: "hi-melody" },
-  { id: "bd-night", name: "생일밤", occasion: "birthday", art: "stars", palette: P.night, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
+  /* ══════ 생일 ══════ */
+  { id: "bd-candle", name: "촛불", occasion: "birthday", art: "candle", palette: P.ivory, titlePlace: "bottom", titleFont: "gowun-batang", badge: "BEST" },
+  { id: "bd-confetti", name: "색종이", occasion: "birthday", art: "confetti", palette: P.blush, titlePlace: "bottom", titleFont: "jua" },
+  { id: "bd-balloon", name: "풍선", occasion: "birthday", art: "balloon", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-dodum" },
+  { id: "bd-night", name: "생일밤", occasion: "birthday", art: "night", palette: P.night, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
 
-  /* ── 파티 ── */
-  { id: "pt-neon", name: "네온", occasion: "party", art: "stripe", palette: P.neon, titlePlace: "top", titleFont: "black-han-sans", badge: "BEST" },
-  { id: "pt-night", name: "밤강", occasion: "party", art: "night", palette: P.night, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "pt-confetti", name: "컨페티", occasion: "party", art: "confetti", palette: P.ember, titlePlace: "bottom", titleFont: "do-hyeon" },
-  { id: "pt-stars", name: "미러볼", occasion: "party", art: "stars", palette: P.lilac, titlePlace: "bottom", titleFont: "jua", badge: "NEW" },
+  /* ══════ 파티 ══════ */
+  { id: "pt-terrazzo", name: "테라조", occasion: "party", art: "terrazzo", palette: P.plum, titlePlace: "bottom", titleFont: "do-hyeon", badge: "BEST" },
+  { id: "pt-stripe", name: "스트라이프", occasion: "party", art: "stripe", palette: P.brick, titlePlace: "top", titleFont: "black-han-sans" },
+  { id: "pt-night", name: "한밤", occasion: "party", art: "night", palette: P.charcoal, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "pt-wave", name: "웨이브", occasion: "party", art: "wave", palette: P.teal, titlePlace: "bottom", titleFont: "jua", badge: "NEW" },
 
-  /* ── 집들이 ── */
-  { id: "hw-home", name: "우리 집", occasion: "housewarming", art: "home", palette: P.clay, titlePlace: "bottom", titleFont: "gowun-batang", badge: "BEST" },
-  { id: "hw-wreath", name: "문 앞 화환", occasion: "housewarming", art: "wreath", palette: P.forest, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
-  { id: "hw-arch", name: "창가", occasion: "housewarming", art: "arch", palette: P.cream, titlePlace: "bottom", titleFont: "gowun-dodum" },
-  { id: "hw-stripe", name: "테라코타", occasion: "housewarming", art: "stripe", palette: P.clay, titlePlace: "top", titleFont: "do-hyeon", badge: "NEW" },
+  /* ══════ 집들이 ══════ */
+  { id: "hw-window", name: "창가", occasion: "housewarming", art: "window", palette: P.clay, titlePlace: "bottom", titleFont: "gowun-batang", badge: "BEST" },
+  { id: "hw-sprig", name: "잎가지", occasion: "housewarming", art: "sprig", palette: P.sage, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "hw-arch", name: "아치", occasion: "housewarming", art: "arch", palette: P.ivory, titlePlace: "bottom", titleFont: "gowun-dodum" },
+  { id: "hw-terrazzo", name: "테라코타", occasion: "housewarming", art: "terrazzo", palette: P.brick, titlePlace: "top", titleFont: "do-hyeon", badge: "NEW" },
 
-  /* ── 돌잔치 ── */
-  { id: "fb-balloons", name: "첫 풍선", occasion: "firstbirthday", art: "balloons", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-dodum", badge: "BEST" },
+  /* ══════ 돌잔치 ══════ */
+  { id: "fb-balloon", name: "첫 풍선", occasion: "firstbirthday", art: "balloon", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-dodum", badge: "BEST" },
   { id: "fb-arch", name: "무지개문", occasion: "firstbirthday", art: "arch", palette: P.blush, titlePlace: "bottom", titleFont: "hi-melody" },
-  { id: "fb-wreath", name: "작은 화환", occasion: "firstbirthday", art: "wreath", palette: P.mint, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
-  { id: "fb-ribbon", name: "리본", occasion: "firstbirthday", art: "ribbon", palette: P.lilac, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
+  { id: "fb-garden", name: "들꽃", occasion: "firstbirthday", art: "garden", palette: P.sage, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "fb-dune", name: "언덕", occasion: "firstbirthday", art: "dune", palette: P.plum, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
 
-  /* ── 개업 ── */
-  { id: "op-ribbon", name: "테이프커팅", occasion: "opening", art: "ribbon", palette: P.sand, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
-  { id: "op-arch", name: "새 문", occasion: "opening", art: "arch", palette: P.forest, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "op-bouquet", name: "개업 화분", occasion: "opening", art: "bouquet", palette: P.cream, titlePlace: "bottom", titleFont: "gowun-dodum" },
-  { id: "op-stripe", name: "차양", occasion: "opening", art: "stripe", palette: P.ink, titlePlace: "top", titleFont: "do-hyeon", badge: "NEW" },
+  /* ══════ 개업 ══════ */
+  { id: "op-ribbon", name: "테이프커팅", occasion: "opening", art: "ribbon", palette: P.ochre, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
+  { id: "op-arch", name: "새 문", occasion: "opening", art: "arch", palette: P.teal, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "op-frame", name: "개업인사", occasion: "opening", art: "frame", palette: P.ivory, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "op-stripe", name: "차양", occasion: "opening", art: "stripe", palette: P.slate, titlePlace: "top", titleFont: "do-hyeon", badge: "NEW" },
 
-  /* ── 페스티벌 ── */
-  { id: "fs-night", name: "강변의 밤", occasion: "festival", art: "night", palette: P.night, titlePlace: "bottom", titleFont: "black-han-sans", badge: "BEST" },
-  { id: "fs-stripe", name: "포스터", occasion: "festival", art: "stripe", palette: P.ember, titlePlace: "top", titleFont: "black-han-sans" },
-  { id: "fs-stars", name: "야외무대", occasion: "festival", art: "stars", palette: P.mint, titlePlace: "bottom", titleFont: "do-hyeon" },
-  { id: "fs-confetti", name: "폭죽", occasion: "festival", art: "confetti", palette: P.neon, titlePlace: "bottom", titleFont: "jua", badge: "NEW" },
+  /* ══════ 페스티벌 ══════ */
+  { id: "fs-dune", name: "노을", occasion: "festival", art: "dune", palette: P.brick, titlePlace: "bottom", titleFont: "black-han-sans", badge: "BEST" },
+  { id: "fs-night", name: "강변의 밤", occasion: "festival", art: "night", palette: P.night, titlePlace: "bottom", titleFont: "do-hyeon" },
+  { id: "fs-wave", name: "물결", occasion: "festival", art: "wave", palette: P.teal, titlePlace: "top", titleFont: "black-han-sans" },
+  { id: "fs-terrazzo", name: "포스터", occasion: "festival", art: "terrazzo", palette: P.ochre, titlePlace: "top", titleFont: "do-hyeon", badge: "NEW" },
 
-  /* ── 모임 ── */
-  { id: "gt-wreath", name: "다시 만나", occasion: "gathering", art: "wreath", palette: P.ink, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
-  { id: "gt-path", name: "먼 길", occasion: "gathering", art: "path", palette: P.sand, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "gt-stripe", name: "네이비", occasion: "gathering", art: "stripe", palette: P.ink, titlePlace: "top", titleFont: "gothic-a1" },
-  { id: "gt-stars", name: "그 시절", occasion: "gathering", art: "stars", palette: P.night, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
+  /* ══════ 모임 ══════ */
+  { id: "gt-frame", name: "알림글", occasion: "gathering", art: "frame", palette: P.slate, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
+  { id: "gt-sprig", name: "잎가지", occasion: "gathering", art: "sprig", palette: P.ochre, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "gt-dune", name: "먼 길", occasion: "gathering", art: "dune", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "gt-night", name: "그 시절", occasion: "gathering", art: "night", palette: P.charcoal, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
 
-  /* ── 기념일 ── */
-  { id: "an-bouquet", name: "꽃다발", occasion: "anniversary", art: "bouquet", palette: P.blush, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
-  { id: "an-ribbon", name: "금박 리본", occasion: "anniversary", art: "ribbon", palette: P.sand, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "an-arch", name: "저녁 해", occasion: "anniversary", art: "arch", palette: P.clay, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
-  { id: "an-wreath", name: "올리브", occasion: "anniversary", art: "wreath", palette: P.forest, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
+  /* ══════ 기념일 ══════ */
+  { id: "an-bloom", name: "한 송이", occasion: "anniversary", art: "bloom", palette: P.blush, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
+  { id: "an-ribbon", name: "금박 리본", occasion: "anniversary", art: "ribbon", palette: P.ochre, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "an-frame", name: "액자", occasion: "anniversary", art: "frame", palette: P.clay, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "an-wreath", name: "올리브 화환", occasion: "anniversary", art: "wreath", palette: P.sage, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
 
-  /* ── 졸업 ── */
-  { id: "gd-wreath", name: "월계관", occasion: "graduation", art: "wreath", palette: P.ink, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
-  { id: "gd-path", name: "다음 길", occasion: "graduation", art: "path", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "gd-stars", name: "밤을 지나", occasion: "graduation", art: "stars", palette: P.night, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
-  { id: "gd-ribbon", name: "학위 리본", occasion: "graduation", art: "ribbon", palette: P.sand, titlePlace: "bottom", titleFont: "gowun-batang", badge: "NEW" },
+  /* ══════ 졸업 ══════ */
+  { id: "gd-wreath", name: "월계관", occasion: "graduation", art: "wreath", palette: P.slate, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "BEST" },
+  { id: "gd-arch", name: "다음 문", occasion: "graduation", art: "arch", palette: P.sky, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "gd-night", name: "밤을 지나", occasion: "graduation", art: "night", palette: P.night, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "gd-frame", name: "학위기", occasion: "graduation", art: "frame", palette: P.ochre, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
 
-  /* ── 퇴임 · 송별 ── */
-  { id: "fw-path", name: "긴 길", occasion: "farewell", art: "path", palette: P.sand, titlePlace: "bottom", titleFont: "gowun-batang", badge: "BEST" },
-  { id: "fw-bouquet", name: "감사의 꽃", occasion: "farewell", art: "bouquet", palette: P.forest, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
-  { id: "fw-arch", name: "해질녘", occasion: "farewell", art: "arch", palette: P.ember, titlePlace: "bottom", titleFont: "gowun-batang" },
-  { id: "fw-home", name: "돌아가는 길", occasion: "farewell", art: "home", palette: P.ink, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
+  /* ══════ 퇴임 · 송별 ══════ */
+  { id: "fw-dune", name: "긴 길", occasion: "farewell", art: "dune", palette: P.ochre, titlePlace: "bottom", titleFont: "gowun-batang", badge: "BEST" },
+  { id: "fw-bloom", name: "감사의 꽃", occasion: "farewell", art: "bloom", palette: P.sage, titlePlace: "bottom", titleFont: "nanum-myeongjo" },
+  { id: "fw-sprig", name: "잎가지", occasion: "farewell", art: "sprig", palette: P.slate, titlePlace: "bottom", titleFont: "gowun-batang" },
+  { id: "fw-window", name: "해질녘 창", occasion: "farewell", art: "window", palette: P.charcoal, titlePlace: "bottom", titleFont: "nanum-myeongjo", badge: "NEW" },
 ];
 
 export function getDesign(id: string): CardDesign | undefined {

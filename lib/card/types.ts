@@ -21,23 +21,34 @@
 
 import type { FontId } from "@/lib/fonts";
 
-/** 카드 앞면에 인쇄되는 그림 열두 가지 */
+/** 카드 앞면에 인쇄되는 그림 열여섯 가지 */
 export type ArtKind =
-  | "bouquet" /* 꽃다발 */
-  | "balloons" /* 풍선 다발 */
-  | "cake" /* 케이크와 촛불 */
-  | "home" /* 집과 창 */
-  | "confetti" /* 쏟아지는 색종이 */
+  | "bloom" /* 화면을 넘어 잘려 나가는 큰 꽃 */
+  | "garden" /* 가는 선으로 그린 들꽃 */
   | "arch" /* 아치 너머의 해 */
-  | "night" /* 밤 강과 달 */
-  | "stripe" /* 굵은 사선 띠 */
-  | "wreath" /* 잎 화환 */
-  | "stars" /* 별과 궤적 */
-  | "ribbon" /* 리본 매듭 */
-  | "path"; /* 산으로 난 길 */
+  | "dune" /* 겹치는 언덕과 해 */
+  | "terrazzo" /* 테라조 조각 */
+  | "confetti" /* 손으로 뿌린 색종이 */
+  | "balloon" /* 풍선 다발 */
+  | "candle" /* 촛불과 빛무리 */
+  | "night" /* 밤하늘, 달, 능선 */
+  | "wave" /* 겹쳐 흐르는 물결 */
+  | "sprig" /* 모서리에서 뻗은 잎가지 */
+  | "stripe" /* 굵은 사선 */
+  | "frame" /* 이중 테두리와 코너 오너먼트 */
+  | "wreath" /* 둥근 잎 화환 */
+  | "ribbon" /* 매듭과 늘어진 띠 */
+  | "window"; /* 창 너머의 집 */
 
+/**
+ * 색 한 벌.
+ *
+ * 다섯 칸이 아니라 여섯 칸인 이유는 tint 때문입니다. 그림에 깊이를
+ * 주려면 «종이보다 살짝 진한 면»이 하나 더 있어야 하는데, soft 를
+ * 그 자리에 쓰면 형태를 그리는 색이 사라집니다.
+ */
 export interface Palette {
-  /** 카드 종이색 */
+  /** 카드 종이색 — 가장 밝은 면 */
   paper: string;
   /** 글자색 */
   ink: string;
@@ -47,6 +58,8 @@ export interface Palette {
   soft: string;
   /** 그림에서 가장 어두운 부분 */
   deep: string;
+  /** 종이보다 한 겹 진한 바탕 — 빛과 그늘을 만듭니다 */
+  tint: string;
 }
 
 export type OccasionId =

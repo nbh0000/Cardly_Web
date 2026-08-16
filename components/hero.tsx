@@ -128,7 +128,7 @@ function InvitationPreview() {
 /* 초대장은 청첩장과 달리 접힌 카드입니다. 홈에서도 그렇게 보여야
    눌러 보기 전에 무엇인지 압니다. */
 function OccasionPreview() {
-  const design = getDesign("bd-cake") ?? DESIGNS[0]!;
+  const design = getDesign("bd-candle") ?? DESIGNS[0]!;
   return (
     <div className="relative aspect-[3/4] h-[10.5rem]">
       <Behind

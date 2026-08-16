@@ -29,8 +29,8 @@ import type { CardDesign, CardDoc } from "@/lib/card/types";
      2 뒷면   (닫고 뒤집은 카드)
    ============================================================ */
 
-export const STEPS = ["앞면", "안쪽", "뒷면"] as const;
-export type Step = 0 | 1 | 2;
+export const STEPS = ["앞면", "왼쪽", "오른쪽", "뒷면"] as const;
+export type Step = 0 | 1 | 2 | 3;
 
 export function CardBook({
   design,
@@ -84,14 +84,20 @@ export function CardBook({
     const dy = e.clientY - d.y;
     if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
     const next = dx < 0 ? current + 1 : current - 1;
-    if (next >= 0 && next <= 2) go(next as Step);
+    if (next >= 0 && next <= 3) go(next as Step);
   };
 
-  const closed = current !== 1;
+  const closed = current === 0 || current === 3;
   /* 닫힌 카드는 오른쪽 반만 차지하므로 무대를 왼쪽으로 당겨 화면
      가운데에 둡니다. 뒤집고 나면 왼쪽 반으로 옮겨 가므로 반대로
-     밀어야 같은 자리에 옵니다. */
-  const shift = current === 0 ? "-25%" : current === 2 ? "25%" : "0%";
+     밀어야 같은 자리에 옵니다.
+
+     좁은 화면에서는 무대가 두 배 넓고 한 면만 보이므로 옮기는 양도
+     두 배입니다. 두 값을 다 내려보내고 어느 쪽을 쓸지는 CSS 가
+     고릅니다 — 화면 폭을 자바스크립트로 재면 서버가 그린 결과와
+     어긋나기 때문입니다. */
+  const shift = current === 0 ? "-25%" : current === 3 ? "25%" : "0%";
+  const shiftSm = current === 0 || current === 2 ? "-50%" : "0%";
 
   return (
     <div className={`cb ${className}`} data-step={current}>
@@ -106,7 +112,8 @@ export function CardBook({
           style={
             {
               "--cb-shift": shift,
-              "--cb-flip": current === 2 ? "180deg" : "0deg",
+              "--cb-shift-sm": shiftSm,
+              "--cb-flip": current === 3 ? "180deg" : "0deg",
               "--cb-flap": closed ? "180deg" : "0deg",
             } as React.CSSProperties
           }
@@ -169,8 +176,8 @@ export function CardBook({
           <button
             type="button"
             className="cb-arrow"
-            onClick={() => go(Math.min(2, current + 1) as Step)}
-            disabled={current === 2}
+            onClick={() => go(Math.min(3, current + 1) as Step)}
+            disabled={current === 3}
             aria-label="다음 면"
           >
             ›

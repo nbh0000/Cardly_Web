@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { CardBook, type Step } from "@/components/card/card-book";
+import { CardBook, STEPS, type Step } from "@/components/card/card-book";
 import { getOccasion } from "@/lib/card/designs";
 import {
   clearDraft,
@@ -27,9 +27,10 @@ import { fontStack, fontsFor } from "@/lib/fonts";
    편집기처럼 왼쪽에 스무 개 항목을 세워 두지 않는 이유는, 카드에는
    면이 넷뿐이고 각 면에 들어갈 것이 정해져 있기 때문입니다.
 
-     앞면  : 행사 이름과 한 줄
-     안쪽  : 언제·어디서·누가 + 손으로 쓴 글
-     뒷면  : 오시는 길, 안내, 회신처
+     앞면        : 행사 이름과 한 줄
+     안쪽 왼쪽   : 언제, 어디서, 누가
+     안쪽 오른쪽 : 손으로 쓴 글
+     뒷면        : 오시는 길, 안내, 회신처
 
    쓰는 동안 이 브라우저에만 저장됩니다. 계정을 만들지 않고 쓰는
    물건이라 서버로 보낼 곳이 없고, 보낼 이유도 없습니다.
@@ -47,22 +48,30 @@ export function CardWriter({ design }: { design: CardDesign }) {
   const [copied, setCopied] = useState(false);
 
   /* 저장해 둔 초안이 있으면 그것으로 시작합니다.
-     주소나 저장소처럼 브라우저에만 있는 값은 서버가 그린 HTML 과
-     어긋나므로 useState 초기화에서 읽을 수 없습니다. 스냅샷으로 받아
-     값이 바뀐 그 렌더에서 곧바로 반영합니다 — effect 에서 setState 하면
-     렌더가 한 번 더 도는 낭비가 생깁니다. */
-  const draftKey = useSyncExternalStore(
+     저장소는 브라우저에만 있어서 서버가 그린 HTML 과 어긋나므로
+     useState 초기화에서 읽을 수 없습니다. "브라우저에 도착했다"는
+     사실만 스냅샷으로 받아, 그 렌더에서 한 번 불러옵니다 — effect 에서
+     setState 하면 렌더가 한 번 더 도는 낭비가 생깁니다.
+
+     불러오기를 «초안이 있는지»로 판단하면 안 됩니다. 처음부터 다시
+     쓰기를 누른 뒤 한 글자만 쳐도 자동 저장이 돌아 초안이 다시
+     생기고, 그러면 방금 지운 내용이 되살아나 지금 치던 글자를
+     덮어씁니다. 그래서 «이 디자인을 이미 한 번 열었는가»로 봅니다. */
+  const ready = useSyncExternalStore(
     subscribeNever,
-    () => (loadDraft(design.id) ? design.id : ""),
-    () => "",
+    () => true,
+    () => false,
   );
-  const [restoredFrom, setRestoredFrom] = useState("");
-  if (draftKey && draftKey !== restoredFrom) {
-    setRestoredFrom(draftKey);
+  const [openedFor, setOpenedFor] = useState<string | null>(null);
+  const [restored, setRestored] = useState(false);
+  if (ready && openedFor !== design.id) {
+    setOpenedFor(design.id);
     const saved = loadDraft(design.id);
-    if (saved) setDoc(saved);
+    if (saved) {
+      setDoc(saved);
+      setRestored(true);
+    }
   }
-  const restored = restoredFrom !== "";
 
   /* 타이핑할 때마다 저장하면 매 글자마다 직렬화가 돕니다. 잠깐 멈출
      때 한 번만 씁니다. */
@@ -106,7 +115,7 @@ export function CardWriter({ design }: { design: CardDesign }) {
   const reset = () => {
     clearDraft(design.id);
     setDoc(createDoc(design.id));
-    setRestoredFrom("");
+    setRestored(false);
   };
 
   return (
@@ -136,7 +145,13 @@ export function CardWriter({ design }: { design: CardDesign }) {
       <div className="shell grid gap-8 pt-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12 lg:pt-12">
         {/* ── 카드 ── */}
         <div className="lg:sticky lg:top-24 lg:self-start">
-          <CardBook design={design} doc={doc} step={step} onStep={setStep} />
+          <CardBook
+            design={design}
+            doc={doc}
+            step={step}
+            onStep={setStep}
+            className="cb-focus"
+          />
           <p className="mt-3 text-center text-[0.75rem] text-muted">
             받는 분 화면에서는 카드가 저절로 펴집니다
           </p>
@@ -169,7 +184,6 @@ export function CardWriter({ design }: { design: CardDesign }) {
           )}
 
           {step === 1 && (
-            <>
               <Panel title="안쪽 왼쪽 — 행사 정보" desc="인쇄되는 면입니다.">
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="날짜">
@@ -196,7 +210,9 @@ export function CardWriter({ design }: { design: CardDesign }) {
                   <Text value={doc.host} onChange={(v) => set("host", v)} />
                 </Field>
               </Panel>
+          )}
 
+          {step === 2 && (
               <Panel
                 title="안쪽 오른쪽 — 손으로 쓰는 글"
                 desc="카드에서 유일하게 자유로운 면입니다. 줄바꿈이 그대로 살아납니다."
@@ -268,10 +284,9 @@ export function CardWriter({ design }: { design: CardDesign }) {
                   </Field>
                 </div>
               </Panel>
-            </>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <Panel
               title="뒷면"
               desc="오시는 길과 알려 둘 것. 주소를 넣으면 지도 버튼이 생깁니다."
@@ -308,7 +323,7 @@ export function CardWriter({ design }: { design: CardDesign }) {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-ivory/95 backdrop-blur">
         <div className="shell flex items-center justify-between gap-4 py-3">
           <div className="flex gap-1">
-            {(["앞면", "안쪽", "뒷면"] as const).map((label, i) => (
+            {STEPS.map((label, i) => (
               <button
                 key={label}
                 type="button"

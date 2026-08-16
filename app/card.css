@@ -76,37 +76,62 @@
   width: 100%;
   height: 100%;
 }
-.cd-front-text {
-  position: relative;
-  padding: 9cqw 8cqw;
-  text-align: center;
-}
-/* 글자 뒤에만 종이색을 옅게 번지게 해 읽히도록 합니다.
-   불투명한 띠를 깔면 그림 위에 스티커를 붙인 것처럼 보입니다. */
-.cd-front-text::before {
-  content: "";
+/* 종이색이 글자 쪽 가장자리에서 차오릅니다 — 그림이 잦아드는 것처럼.
+   예전에는 글자 뒤에 둥근 종이색 얼룩을 깔았는데, 그림 한가운데
+   흰 구름이 뜬 것처럼 보였습니다. */
+.cd-front-veil {
   position: absolute;
-  inset: -2cqw -4cqw;
-  background: radial-gradient(
-    68% 62% at 50% 50%,
-    color-mix(in srgb, var(--cd-paper) 92%, transparent) 0%,
-    color-mix(in srgb, var(--cd-paper) 0%, transparent) 100%
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    var(--cd-paper) 0%,
+    color-mix(in srgb, var(--cd-paper) 78%, transparent) 18%,
+    color-mix(in srgb, var(--cd-paper) 0%, transparent) 42%
   );
 }
-.cd-front-title {
+.cd-title-top .cd-front-veil {
+  background: linear-gradient(
+    to bottom,
+    var(--cd-paper) 0%,
+    color-mix(in srgb, var(--cd-paper) 78%, transparent) 18%,
+    color-mix(in srgb, var(--cd-paper) 0%, transparent) 42%
+  );
+}
+
+.cd-front-text {
   position: relative;
-  font-size: 9cqw;
-  line-height: 1.26;
+  display: grid;
+  justify-items: center;
+  gap: 3cqw;
+  padding: 7cqw 9cqw 9cqw;
+  text-align: center;
+}
+.cd-title-top .cd-front-text {
+  padding: 10cqw 9cqw 7cqw;
+}
+
+/* 제목 위의 짧은 선 — 조판이 시작되는 자리를 잡아 줍니다 */
+.cd-front-mark {
+  width: 8cqw;
+  height: 1px;
+  background: var(--cd-accent);
+  opacity: 0.75;
+}
+
+.cd-front-title {
+  font-size: 9.4cqw;
+  line-height: 1.24;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 .cd-front-sub {
-  position: relative;
-  margin-top: 2.4cqw;
-  font-size: 3.4cqw;
-  letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--cd-ink) 64%, transparent);
+  font-size: 3.1cqw;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--cd-ink) 58%, transparent);
 }
 
 /* ---------- 안쪽 왼쪽 — 행사 정보 ---------- */
@@ -312,9 +337,18 @@
   transition: visibility 0s linear 0.42s;
 }
 .cb[data-step="0"] .cb-side-a,
-.cb[data-step="2"] .cb-side-a,
-.cb[data-step="1"] .cb-side-b {
+.cb[data-step="3"] .cb-side-a,
+.cb[data-step="1"] .cb-side-b,
+.cb[data-step="2"] .cb-side-b {
   visibility: hidden;
+}
+
+/* 지금 보고 있지 않은 쪽은 한 겹 물러납니다. 너른 화면에서는 두 면이
+   나란히 보이므로, 어느 쪽을 고치고 있는지 이걸로 알립니다. */
+.cb-focus[data-step="1"] .cb-leaf-r .cb-side-a,
+.cb-focus[data-step="2"] .cb-leaf-l .cb-side-a {
+  opacity: 0.42;
+  transition: opacity 0.4s var(--cb-ease);
 }
 .cb-leaf-l .cb-side {
   border-radius: 3px 0 0 3px;
@@ -391,8 +425,32 @@
   transition: transform 0.85s var(--cb-ease);
 }
 .cb[data-step="0"] .cb-cast,
-.cb[data-step="2"] .cb-cast {
+.cb[data-step="3"] .cb-cast {
   transform: scaleX(0.55);
+}
+
+/* ── 손바닥만 한 화면 ──
+   펼친 카드를 통째로 넣으면 한 면이 155px 이 되고, 손글씨가 8px 이
+   되어 읽을 수가 없습니다. 무대를 두 배로 넓혀 한 면이 화면을 꽉
+   채우게 하고, 걸음마다 그 면으로 밀어 줍니다. */
+@media (max-width: 40rem) {
+  .cb-viewport {
+    aspect-ratio: 5 / 7;
+    /* 무대가 화면보다 두 배 넓으므로 좌우를 잘라 내야 옆 면이 비어져
+       나오지 않습니다. overflow 대신 clip-path 를 쓰는 것은 위아래로는
+       그림자가 번져 나가야 하기 때문입니다. */
+    clip-path: inset(-3rem 0);
+  }
+  .cb-stage {
+    width: 200%;
+    transform: translateX(var(--cb-shift-sm)) rotateY(var(--cb-flip))
+      rotateX(3deg);
+  }
+  /* 한 면만 보이므로 흐리게 둘 이유가 없습니다 */
+  .cb-focus[data-step="1"] .cb-leaf-r .cb-side-a,
+  .cb-focus[data-step="2"] .cb-leaf-l .cb-side-a {
+    opacity: 1;
+  }
 }
 
 /* ---------- 걸음 표시 ---------- */
