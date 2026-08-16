@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { EditorShowcase } from "@/components/editor-showcase";
 import { Faq } from "@/components/faq";
-import { Features } from "@/components/features";
 import { FinalCta } from "@/components/final-cta";
 import { Hero } from "@/components/hero";
 import { SiteFooter } from "@/components/site-footer";
@@ -43,8 +41,6 @@ export default function Home() {
           </div>
         </section>
 
-        <EditorShowcase />
-        <Features />
         <Faq />
         <FinalCta />
       </main>

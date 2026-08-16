@@ -605,36 +605,279 @@
   color: var(--wi-muted);
 }
 
-/* ---------- 넓은 화면 ----------
-   초대장은 손에 쥐고 보는 물건이라 좌우로 늘리지 않습니다. 대신
-   양옆에 바탕을 깔고 가운데 한 칸으로 세웁니다. */
+/* ============================================================
+   3D 로 열리는 카드
 
-@media (min-width: 48rem) {
-  .wi-stage {
-    display: grid;
-    place-items: start center;
-    min-height: 100dvh;
-    padding: 2.5rem 1rem;
-    background: var(--wi-stage-bg, #efeae1);
+   무대 → 카드 → (안쪽 / 덮개). 덮개는 왼쪽 모서리를 경첩으로 삼아
+   오른쪽에서 왼쪽으로 넘어갑니다. 책과 같은 방향입니다.
+
+   좁은 화면에서는 카드가 화면을 거의 채우고, 넓은 화면에서는 어두운
+   바탕 위에 한 칸으로 놓입니다 — 초대장은 손에 쥐고 보는 물건이라
+   좌우로 늘리지 않습니다.
+   ============================================================ */
+
+.o3 {
+  --o3-turn: 1.5s;
+  --o3-ease: cubic-bezier(0.62, 0.01, 0.16, 1);
+
+  position: relative;
+  min-height: 100dvh;
+  padding: 0;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #2a231d 0%, #171310 68%),
+    #171310;
+  perspective: 1600px;
+  perspective-origin: 50% 38%;
+}
+
+.o3-card {
+  position: relative;
+  margin-inline: auto;
+  max-width: 30rem;
+  min-height: 100dvh;
+  transform-style: preserve-3d;
+}
+
+/* ---------- 안쪽: 초대장 ---------- */
+
+.o3-inside {
+  position: relative;
+  /* 열리기 전에는 카드 안이 보이지 않아야 하므로 화면 높이에 가둡니다.
+     열린 뒤에 문서 흐름으로 돌려주면 평소처럼 스크롤됩니다. */
+  min-height: 100dvh;
+}
+.o3[data-phase="shut"] .o3-inside,
+.o3[data-phase="turning"] .o3-inside {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ---------- 덮개 ---------- */
+
+.o3-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--wi-pad, 1.75rem);
+  padding-bottom: clamp(2.5rem, 10vw, 4rem);
+  overflow: hidden;
+  text-align: center;
+  background: var(--wi-surface);
+  transform-origin: left center;
+  transform: rotateY(0deg);
+  transition: transform var(--o3-turn) var(--o3-ease);
+  backface-visibility: hidden;
+  cursor: pointer;
+  /* 넘어가는 동안 뒤쪽이 눌리지 않도록 */
+  touch-action: manipulation;
+}
+.o3[data-phase="turning"] .o3-cover,
+.o3[data-phase="open"] .o3-cover {
+  transform: rotateY(-172deg);
+  pointer-events: none;
+}
+/* 다 넘어간 덮개는 화면에서 치웁니다 — 남겨 두면 왼쪽에 얇은 띠로
+   비쳐 보이고, 스크롤에도 딸려 옵니다. */
+.o3[data-phase="open"] .o3-cover {
+  visibility: hidden;
+  transition:
+    transform var(--o3-turn) var(--o3-ease),
+    visibility 0s linear var(--o3-turn);
+}
+
+.o3-cover-photo {
+  position: absolute;
+  inset: 0;
+}
+.o3-cover-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.o3-cover-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(18 14 10 / 0.42) 0%,
+    rgb(18 14 10 / 0.08) 32%,
+    rgb(18 14 10 / 0.66) 76%,
+    rgb(18 14 10 / 0.86) 100%
+  );
+}
+
+.o3-cover-text {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  color: #fff;
+}
+.o3-cover-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.9);
+  text-shadow: 0 1px 16px rgb(0 0 0 / 0.5);
+}
+.o3-cover-title {
+  display: grid;
+  gap: 0.15em;
+  font-family: var(--wi-heading);
+  font-size: clamp(2.5rem, 12vw, 3.5rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 28px rgb(0 0 0 / 0.4);
+}
+.o3-cover-date {
+  font-size: 0.875rem;
+  letter-spacing: 0.24em;
+  color: rgb(255 255 255 / 0.88);
+}
+
+/* 열어 보라는 표시 — 눌러야 한다는 것을 알려 주는 최소한의 신호 */
+.o3-open-hint {
+  align-self: center;
+  position: relative;
+  margin-top: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.34);
+  background: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(4px);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+.o3-open-hint i {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--wi-accent);
+  animation: o3-pulse 2.4s ease-in-out infinite;
+}
+@keyframes o3-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
   }
-  .wi-stage .iv {
-    min-height: 0;
-    border-radius: 1.25rem;
-    overflow: hidden;
-    box-shadow:
-      0 0 0 1px rgb(46 42 39 / 0.06),
-      0 2rem 4rem -1.5rem rgb(46 42 39 / 0.22);
-  }
-  .wi-stage .wi-cover {
-    min-height: 42rem;
+  50% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* ---------- 돌아가는 링크 ----------
-   초대장을 받은 사람에게는 필요 없는 것이라, 있는 줄만 알아볼 정도로
-   조용하게 둡니다. */
+/* 종이 단면 — 자유단(오른쪽)에 세워 둡니다. 이것 하나로 «면»이
+   «장»으로 읽힙니다. */
+.o3-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 5px;
+  transform-origin: 100% 50%;
+  transform: rotateY(-90deg);
+  background: linear-gradient(to bottom, #fffdf8, #efe6d8 55%, #ddd2c2);
+}
 
-.wi-back {
+/* 넘어가는 동안 지는 그늘. 경첩(왼쪽) 쪽이 가장 어둡습니다 — 면이
+   광원에서 돌아앉는 자리입니다. */
+.o3-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to right,
+    rgb(20 14 8 / 0.62) 0%,
+    rgb(20 14 8 / 0.26) 45%,
+    rgb(20 14 8 / 0) 100%
+  );
+  transition: opacity var(--o3-turn) var(--o3-ease);
+}
+.o3[data-phase="turning"] .o3-shade,
+.o3[data-phase="open"] .o3-shade {
+  opacity: 1;
+}
+
+/* 덮개가 넘어가며 안쪽 왼쪽에 드리우는 그림자 — 이 층이 없으면
+   덮개가 유리처럼 지나갑니다. */
+.o3-castin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  width: 45%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    to right,
+    rgb(20 14 8 / 0.5) 0%,
+    rgb(20 14 8 / 0.16) 46%,
+    rgb(20 14 8 / 0) 100%
+  );
+  transition: opacity 0.7s var(--o3-ease);
+}
+.o3[data-phase="turning"] .o3-castin {
+  opacity: 1;
+}
+
+/* ---------- 열린 뒤 ----------
+   카드가 어두운 바탕 위에 놓인 «종이»로 보이도록 가장자리를 세웁니다.
+   좁은 화면에서는 거의 꽉 차고, 넓은 화면에서는 한 칸으로 섭니다. */
+
+@media (min-width: 48rem) {
+  .o3 {
+    padding: 2.5rem 1rem;
+  }
+  .o3-card {
+    min-height: 0;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.3),
+      0 2.5rem 5rem -1.5rem rgb(0 0 0 / 0.6);
+    border-radius: 1rem;
+  }
+  .o3-inside,
+  .o3-cover {
+    border-radius: 1rem;
+  }
+  .o3[data-phase="shut"] .o3-inside,
+  .o3[data-phase="turning"] .o3-inside,
+  .o3-cover {
+    height: 44rem;
+  }
+  .o3-inside {
+    min-height: 44rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .o3-cover,
+  .o3-shade,
+  .o3-castin {
+    transition: none;
+  }
+  .o3-open-hint i {
+    animation: none;
+  }
+}
+
+/* ---------- 돌아가는 링크 ---------- */
+
+.o3-back {
   position: fixed;
   top: 0.75rem;
   left: 0.75rem;
@@ -644,17 +887,17 @@
   min-height: 44px;
   padding: 0 0.9rem;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.86);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  background: rgb(28 22 17 / 0.7);
   backdrop-filter: blur(6px);
-  box-shadow: 0 1px 2px rgb(46 42 39 / 0.08), 0 6px 16px rgb(46 42 39 / 0.1);
   font-size: 0.8125rem;
-  color: #57504a;
+  color: rgb(255 255 255 / 0.82);
 }
-.wi-back:hover {
-  color: #2e2a27;
+.o3-back:hover {
+  color: #fff;
 }
 @media (min-width: 48rem) {
-  .wi-back {
+  .o3-back {
     top: 1.25rem;
     left: 1.25rem;
   }

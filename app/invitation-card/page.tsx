@@ -7,10 +7,10 @@ import { dateDots, timeKo } from "@/lib/invite/format";
 import { PRESETS } from "@/lib/invite/presets";
 import { getTheme, THEMES, themeVars } from "@/lib/invite/themes";
 
-const DESCRIPTION = `결혼식·돌잔치·생일·기업 행사까지 하나의 템플릿으로 만드는 모바일 웹 초대장. 행사 정보와 사진, 색만 바꾸면 되고 ${THEMES.length}가지 테마와 ${PRESETS.length}가지 행사 프리셋이 준비되어 있습니다.`;
+const DESCRIPTION = `링크를 누르면 카드가 3D로 열리는 모바일 웹 초대장. 결혼식·돌잔치·생일·기업 행사를 하나의 템플릿으로 만들고, 행사 정보와 사진, 색만 바꾸면 됩니다. 테마 ${THEMES.length}종 · 행사 프리셋 ${PRESETS.length}종.`;
 
 export const metadata: Metadata = {
-  title: "웹 초대장 템플릿 — 모바일 중심 · 테마 6종",
+  title: "웹 초대장 템플릿 — 3D로 열리는 카드",
   description: DESCRIPTION,
   keywords: [
     "웹 초대장",
@@ -38,11 +38,17 @@ export default function InvitationTemplatePage() {
         <div className="shell">
           <header className="mx-auto max-w-narrow text-center">
             <span className="eyebrow eyebrow-center">Web Invitation</span>
-            <h1 className="mt-5 font-serif text-h1 text-ink">웹 초대장 템플릿</h1>
+            <h1 className="mt-5 font-serif text-h1 text-ink">
+              3D로 열리는 웹 초대장
+            </h1>
             <p className="mt-5 text-body text-ink-soft">
+              링크를 누르면 닫힌 카드가 놓이고, 앞장을 누르면 그 장이
+              왼쪽으로 넘어가며 열립니다. 초대장은 받아서 여는 물건이라,
+              여는 동작이 있어야 카드가 됩니다.
+            </p>
+            <p className="mt-4 text-body text-ink-soft">
               결혼식, 돌잔치, 생일, 기업 행사를 하나의 템플릿으로 만듭니다.
-              모바일에서 가장 보기 좋게 짜였고, 넓은 화면에서는 가운데 한
-              칸으로 섭니다. 행사 정보와 사진, 색만 바꾸면 됩니다.
+              모바일 기준으로 짜였고, 행사 정보와 사진, 색만 바꾸면 됩니다.
             </p>
           </header>
 
