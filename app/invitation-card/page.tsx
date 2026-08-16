@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { OCCASIONS } from "@/lib/occasion";
 import { formatPrice, PREMIUM_PRICE } from "@/lib/plan";
 
-const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사 초대장을 가입 없이 만들어 보세요. 3D로 펼쳐지는 오프닝과 화면 효과까지 값 없이 씁니다.`;
+const DESCRIPTION = `생일·파티·집들이·돌잔치·개업·페스티벌까지 ${OCCASIONS.length}가지 행사 초대장을 가입 없이 만들어 보세요. 접힌 카드가 3D로 펼쳐지는 화면 그대로, 오프닝 연출까지 값 없이 씁니다.`;
 
 export const metadata: Metadata = {
   title: "모바일 초대장 만들기 — 생일·파티·집들이",
@@ -38,9 +38,10 @@ export default function InvitationCardPage() {
             <span className="eyebrow eyebrow-center">Invitation</span>
             <h1 className="mt-5 font-serif text-h1 text-ink">모바일 초대장</h1>
             <p className="mt-5 text-body text-ink-soft">
-              생일, 파티, 집들이, 돌잔치, 개업, 페스티벌까지. 행사를 고르면
-              문구가 채워진 채로 편집기가 열리고, 청첩장과 같은 3D 오프닝과
-              화면 효과를 그대로 쓸 수 있습니다.
+              생일, 파티, 집들이, 돌잔치, 개업, 페스티벌까지. 여기서는
+              초대장을 납작한 그림이 아니라 접힌 카드로 세워 보여 드립니다.
+              손을 얹으면 열리고, 누르면 문구가 채워진 채로 편집기가
+              열립니다.
             </p>
           </header>
 

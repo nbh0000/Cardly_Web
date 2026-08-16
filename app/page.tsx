@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Assurance } from "@/components/assurance";
 import { EditorShowcase } from "@/components/editor-showcase";
 import { Faq } from "@/components/faq";
 import { Features } from "@/components/features";
@@ -7,7 +6,6 @@ import { FinalCta } from "@/components/final-cta";
 import { Hero } from "@/components/hero";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { Steps } from "@/components/steps";
 import { TemplateGrid } from "@/components/template-grid";
 import { TEMPLATES } from "@/lib/invitation";
 
@@ -47,8 +45,6 @@ export default function Home() {
 
         <EditorShowcase />
         <Features />
-        <Steps />
-        <Assurance />
         <Faq />
         <FinalCta />
       </main>
