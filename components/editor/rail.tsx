@@ -59,45 +59,19 @@ const PREMIUM_RAIL: SectionId[] = [
   "bgm",
 ];
 
-/**
- * 초대장에는 없는 항목.
- *
- * 생일 초대장을 만드는 사람에게 "신랑 정보 / 신부 정보 / 커플프로필"을
- * 내미는 것은 그냥 틀린 화면입니다. 계좌(축의금)와 하객스냅도 결혼식
- * 자리의 말이라 초대장에서는 걷어냅니다.
- */
-const WEDDING_ONLY: SectionId[] = ["groom", "bride", "couple", "account", "snap"];
-
-/** 초대장에서 달리 부르는 이름 */
-const OCCASION_LABELS: Partial<Record<SectionId, string>> = {
-  wedding: "행사 정보",
-  invite: "초대 글",
-  guestbook: "한마디",
-};
-
 export function Rail({
   active,
   onSelect,
-  occasion = false,
 }: {
   active: SectionId;
   onSelect: (id: SectionId) => void;
-  /** 초대장 편집기인지 — 항목 구성이 달라집니다 */
-  occasion?: boolean;
 }) {
-  const items = occasion
-    ? RAIL.filter((i) => !WEDDING_ONLY.includes(i.id)).map((i) => ({
-        ...i,
-        label: OCCASION_LABELS[i.id] ?? i.label,
-      }))
-    : RAIL;
-
   return (
     <nav
       aria-label="편집 항목"
       className="flex shrink-0 gap-1 overflow-x-auto border-line bg-ivory px-2 py-2 [scrollbar-width:none] lg:h-full lg:w-[4.75rem] lg:flex-col lg:gap-0.5 lg:overflow-x-visible lg:overflow-y-auto lg:border-r lg:px-1.5 lg:py-3 [&::-webkit-scrollbar]:hidden"
     >
-      {items.map((item) => {
+      {RAIL.map((item) => {
         const on = item.id === active;
         const premium = PREMIUM_RAIL.includes(item.id);
         return (

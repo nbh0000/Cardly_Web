@@ -6,7 +6,6 @@
    ============================================================ */
 
 import { type FontId, fontsFor } from "./fonts";
-import { OCCASION_TEMPLATES } from "./occasion-templates";
 
 export type CoverLayout =
   | "center" /* 정중앙 미니멀 */
@@ -18,25 +17,7 @@ export type CoverLayout =
   | "poster" /* 풀사진 위 대형 캘리그래피 */
   | "polaroid" /* 테이프로 붙인 폴라로이드 콜라주 */
   | "band" /* 컬러 배경판 + 액자 + 손글씨 라벨 */
-  | "filmstrip" /* 세로 필름 스트립 */
-  /* ── 아래부터는 초대장(결혼식이 아닌 행사) 전용 ──
-     청첩장 커버는 전부 웨딩 사진을 전제로 짜여 있습니다. 생일이나
-     집들이에 웨딩 사진이 깔리면 그것만으로 물건이 우스워지므로,
-     초대장 커버는 사진 없이 그래픽과 조판만으로 서게 만들었습니다.
-     이 값들은 청첩장 편집기의 커버 목록(COVER_LAYOUTS)에는 넣지
-     않습니다. */
-  | "ticket" /* 입장권 — 절취선과 스텁 */
-  | "marquee" /* 네온 간판 */
-  | "bigdate" /* 화면을 채우는 큰 날짜 */
-  | "confetti" /* 색종이 조각 */
-  | "balloon" /* 떠오르는 풍선 */
-  | "tag" /* 끈에 매다는 꼬리표 */
-  | "notice" /* 격식 있는 게시문 */
-  | "stamp" /* 우표와 소인 */
-  | "lineup" /* 페스티벌 라인업 포스터 */
-  | "house" /* 창문 너머의 집 */
-  | "ribbon" /* 리본 띠 */
-  | "sticker"; /* 스티커 콜라주 */
+  | "filmstrip"; /* 세로 필름 스트립 */
 
 export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "center", label: "센터" },
@@ -149,7 +130,6 @@ export const BGM_TRACKS: { id: BgmTrack; label: string }[] = [
 
 export type OpeningAnimation =
   | "none"
-  | "cardopen"
   | "gatefold"
   | "unfold"
   | "monogram"
@@ -167,7 +147,6 @@ export type OpeningAnimation =
  */
 export const OPENING_ANIMATIONS: { id: OpeningAnimation; label: string }[] = [
   { id: "none", label: "미적용" },
-  { id: "cardopen", label: "접힌 카드 열기 3D" },
   { id: "gatefold", label: "양문 열기 3D" },
   { id: "unfold", label: "카드 펼치기 3D" },
   { id: "monogram", label: "모노그램" },
@@ -472,16 +451,6 @@ export interface InvitationData {
   effectColor?: string;
   /** 입자 크기 배율 (1 = 기본) */
   effectScale?: number;
-
-  /* ---------- 초대장(결혼식이 아닌 행사) ----------
-     occasion 이 있으면 커버가 "신랑/신부" 대신 "행사명/주최자" 를 씁니다.
-     없으면 지금까지처럼 청첩장입니다. */
-  /** 행사 종류 — lib/occasion.ts 의 OccasionKind */
-  occasion?: string;
-  /** 행사 이름 (커버 첫 줄) */
-  eventTitle?: string;
-  /** 주최자 표기 (커버 둘째 줄) */
-  hostName?: string;
 
   /* 커버 */
   coverEyebrow: string;
@@ -827,7 +796,6 @@ export function getCustomTemplates(): Template[] {
 export function getTemplate(id: string): Template | undefined {
   return (
     TEMPLATES.find((t) => t.id === id) ??
-    OCCASION_TEMPLATES.find((t) => t.id === id) ??
     customTemplates.find((t) => t.id === id)
   );
 }

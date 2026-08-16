@@ -2,7 +2,9 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
-import { createOccasionData, OCCASIONS } from "@/lib/occasion";
+import { FaceFront } from "@/components/card/faces";
+import { DESIGNS, getDesign, OCCASIONS } from "@/lib/card/designs";
+import { createDoc } from "@/lib/card/doc";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -123,12 +125,10 @@ function InvitationPreview() {
   );
 }
 
+/* 초대장은 청첩장과 달리 접힌 카드입니다. 홈에서도 그렇게 보여야
+   눌러 보기 전에 무엇인지 압니다. */
 function OccasionPreview() {
-  const template = getTemplate("blanc") ?? TEMPLATES[0]!;
-  const data = {
-    ...createOccasionData(template.id, "party"),
-    fontScale: "sm" as const,
-  };
+  const design = getDesign("bd-cake") ?? DESIGNS[0]!;
   return (
     <div className="relative aspect-[3/4] h-[10.5rem]">
       <Behind
@@ -138,10 +138,8 @@ function OccasionPreview() {
         ]}
       />
       <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-white p-1 shadow-card ring-1 ring-line">
-        <div className="relative h-full overflow-hidden rounded-[2px]">
-          <div className="absolute inset-0 origin-top-left scale-[0.62] [height:161%] [width:161%]">
-            <InvitationView template={template} data={data} coverOnly />
-          </div>
+        <div className="cd-host rounded-[2px]">
+          <FaceFront design={design} doc={createDoc(design.id)} />
         </div>
       </div>
     </div>
@@ -182,9 +180,9 @@ const TOOLS = [
     href: "/invitation-card",
     eyebrow: "Invitation",
     title: "모바일 초대장",
-    body: "생일·파티·집들이·돌잔치·개업·페스티벌. 행사를 고르면 문구가 채워진 채로 열립니다.",
-    meta: `행사 ${OCCASIONS.length}종 · 링크 공유는 준비 중`,
-    badge: "미리 만들기",
+    body: "접힌 카드 한 장. 앞면에 그림, 안쪽에 손으로 쓴 글, 뒷면에 오시는 길.",
+    meta: `행사 ${OCCASIONS.length}종 · 카드 ${DESIGNS.length}장 · 링크로 바로 보내기`,
+    badge: "지금 보내기",
     preview: <OccasionPreview />,
   },
 ];

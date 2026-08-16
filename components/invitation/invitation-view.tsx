@@ -12,10 +12,6 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
-import {
-  isOccasionCover,
-  OccasionCover,
-} from "@/components/invitation/occasion-cover";
 import { SamplePhoto } from "@/components/invitation/sample-photo";
 import { asset } from "@/lib/asset";
 import { fontStack } from "@/lib/fonts";
@@ -141,11 +137,6 @@ export function InvitationView({
             key={openingKey}
             kind={data.opening as Exclude<InvitationData["opening"], "none">}
             monogram={monogramOf(data)}
-            card={{
-              script: data.coverScript,
-              title: data.eventTitle || fullName(data.groom),
-              meta: `${formatDateDots(data.date)} · ${data.venueName}`,
-            }}
             onDone={() => setOpeningDone(true)}
           />
         )}
@@ -265,17 +256,7 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   const second = data.nameOrder === "groom-first" ? data.bride : data.groom;
   const layout = data.coverLayout;
 
-  /* 초대장은 커버에 행사명과 주최자를 씁니다.
-     names 가 모든 커버 레이아웃에 그대로 전달되므로, 여기 한 곳만
-     갈라 주면 커버 11종이 전부 행사용으로 동작합니다. */
-  const names = data.occasion
-    ? { first: data.eventTitle ?? "", second: data.hostName ?? "" }
-    : { first: fullName(first), second: fullName(second) };
-
-  /* 초대장 전용 커버 열두 종. 사진 슬롯이 없어 names 를 받지 않고
-     data 만으로 그립니다. */
-  if (isOccasionCover(layout))
-    return <OccasionCover layout={layout} data={data} />;
+  const names = { first: fullName(first), second: fullName(second) };
 
   if (layout === "photo") return <CoverPhoto data={data} names={names} />;
   if (layout === "arch") return <CoverArch data={data} names={names} />;
@@ -296,15 +277,9 @@ type Names = { first: string; second: string };
 /**
  * 커버 두 줄 사이의 이음표.
  *
- * 청첩장은 "신랑 & 신부" 라서 앰퍼샌드가 맞지만, 초대장은
- * "행사명 & 주최자" 가 되어 버려 말이 되지 않습니다.
- * 초대장에서는 이음표 없이 두 줄로만 둡니다.
+ * 신랑과 신부 사이에 놓이는 앰퍼샌드입니다.
  */
-function Amp({ data, wide = false }: { data: InvitationData; wide?: boolean }) {
-  // 초대장은 행사명과 주최자를 줄로 나눕니다. 그냥 지우면 두 값이
-  // 붙어 버리고("여름밤 홈파티김도윤"), 가운뎃점을 넣으면 주최자 안의
-  // 가운뎃점과 겹쳐 읽기 어려워집니다.
-  if (data.occasion) return <br />;
+function Amp({ wide = false }: { wide?: boolean }) {
   return <span className="iv-amp">{wide ? " & " : "&"}</span>;
 }
 
@@ -322,8 +297,6 @@ function ScriptLine({
 
 /** 신랑·신부의 영문 이름. 비어 있으면 한글 이름으로 대신합니다. */
 function englishNames(data: InvitationData, names: Names) {
-  // 초대장에는 영문 이름 칸이 따로 없으므로 행사명·주최자를 그대로 씁니다.
-  if (data.occasion) return names;
   const groomFirst = data.nameOrder === "groom-first";
   return {
     first: (groomFirst ? data.groomEnglish : data.brideEnglish) || names.first,
@@ -391,7 +364,7 @@ function CoverCenter({
       <ScriptLine data={data} />
       <h1 className="iv-cover-names">
         {names.first}
-        <Amp data={data} />
+        <Amp />
         {names.second}
       </h1>
       <span className="iv-hairline" />
@@ -495,7 +468,7 @@ function CoverFloral({ data, names }: { data: InvitationData; names: Names }) {
       <ScriptLine data={data} className="iv-script-lg" />
       <h1 className="iv-cover-names iv-cover-names-italic">
         {names.first}
-        <Amp data={data} wide />
+        <Amp wide />
         {names.second}
       </h1>
       <span className="iv-pill">{formatDateDots(data.date)}</span>
@@ -623,7 +596,7 @@ function CoverPoster({ data, names }: { data: InvitationData; names: Names }) {
       <div className="iv-poster-top">
         <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
         <p className="iv-poster-en">
-          {en.first} <Amp data={data} /> {en.second}
+          {en.first} <Amp /> {en.second}
         </p>
       </div>
 
@@ -671,7 +644,7 @@ function CoverPolaroid({ data, names }: { data: InvitationData; names: Names }) 
 
       <h1 className="iv-cover-names iv-polaroid-names">
         {names.first}
-        <Amp data={data} />
+        <Amp />
         {names.second}
       </h1>
       <p className="iv-cover-meta">
@@ -697,7 +670,7 @@ function CoverBand({ data, names }: { data: InvitationData; names: Names }) {
 
       <div className="iv-band-foot">
         <p className="iv-band-en">
-          {en.first} <Amp data={data} /> {en.second}
+          {en.first} <Amp /> {en.second}
         </p>
         <h1 className="iv-cover-names iv-band-names">
           {names.first} <span className="iv-dot">&middot;</span> {names.second}
@@ -1864,11 +1837,6 @@ function Gift({ data }: { data: InvitationData }) {
  * 첫 글자를 씁니다. 둘 다 비어 있으면 모노그램 글자는 생략됩니다.
  */
 function monogramOf(data: InvitationData) {
-  // 초대장은 두 사람이 아니므로 행사명의 첫 글자를 씁니다.
-  if (data.occasion) {
-    const t = (data.eventTitle ?? "").trim();
-    return t ? t[0]! : "";
-  }
   const initial = (en: string, ko: string) => {
     const e = (en ?? "").trim();
     if (e) return e[0]!.toUpperCase();
@@ -1884,13 +1852,10 @@ function monogramOf(data: InvitationData) {
 function OpeningLayer({
   kind,
   monogram,
-  card,
   onDone,
 }: {
   kind: Exclude<InvitationData["opening"], "none">;
   monogram?: string;
-  /** 접힌 카드 열기에서 카드 겉면에 인쇄되는 것들 */
-  card?: { script: string; title: string; meta: string };
   onDone: () => void;
 }) {
   /**
@@ -1916,45 +1881,6 @@ function OpeningLayer({
     const t = setTimeout(onDone, 6000);
     return () => clearTimeout(t);
   }, [onDone]);
-
-  /* ── 접힌 카드 열기 (3D) ── 초대장의 기본 오프닝.
-     받는 사람 입장에서 링크를 누른 첫 장면이 "카드 한 장을 손에
-     받아 드는" 것이 되도록 짰습니다. 세 박자입니다.
-       ① 접힌 카드가 어두운 바닥 위에 비스듬히 놓여 있고
-       ② 앞장이 왼쪽 접힌 선을 축으로 열리며 안쪽이 드러나고
-       ③ 카드가 보는 사람 쪽으로 다가오며 화면을 채워 초대장이 됩니다
-     앞장·뒷장·단면·바닥그림자가 전부 같은 3D 공간에 있어서, 열리는
-     동안 종이 두께와 접힌 선의 그늘이 실제로 보입니다. */
-  if (kind === "cardopen") {
-    return (
-      <div className="opening op-co" aria-hidden onAnimationEnd={finish}>
-        <span className="op-co-void" />
-        <span className="op-co-stage">
-          <span className="op-co-cast" />
-
-          <span className="op-co-leaf op-paper">
-            <span className="op-co-inside">
-              <span className="op-co-inside-script">{card?.script}</span>
-              <span className="op-co-inside-rule" />
-              <span className="op-co-inside-meta">{card?.meta}</span>
-            </span>
-          </span>
-
-          <span className="op-co-front">
-            <span className="op-co-face op-paper">
-              <span className="op-co-frame" />
-              <span className="op-co-print">
-                <span className="op-co-mark">{monogram}</span>
-                <span className="op-co-title">{card?.title}</span>
-              </span>
-              <span className="op-co-shade" />
-            </span>
-            <span className="op-co-edge" />
-          </span>
-        </span>
-      </div>
-    );
-  }
 
   /* ── 양문 열기 (3D) ──
      닫힌 카드가 가운데서 갈라져, 두 짝이 경첩을 축으로 앞으로 열립니다.
