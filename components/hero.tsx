@@ -2,9 +2,6 @@ import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
-import { Cover, designStyle } from "@/components/occasion/cover";
-import { DESIGNS } from "@/lib/occasion/designs";
-import { OCCASIONS, sampleFor } from "@/lib/occasion/occasions";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -125,30 +122,6 @@ function InvitationPreview() {
   );
 }
 
-/* 초대장은 청첩장과 달리 «접히는» 카드입니다. 홈에서도 세워 두어야
-   눌러 보기 전에 무엇인지 압니다. 실제 목록에 쓰는 것과 같은 3D 판을
-   그대로 씁니다 — 홈에만 따로 그린 그림이면 금세 실물과 어긋납니다. */
-function OccasionPreview() {
-  const design = DESIGNS.find((d) => d.id === "magnolia") ?? DESIGNS[0]!;
-  const sample = sampleFor(design.id, design.occasion);
-  return (
-    <div className="oc oc-fold w-[7.6rem]" style={designStyle(design)}>
-      <div className="oc-fold-in">
-        <span className="oc-fold-shadow" aria-hidden />
-        <span className="oc-fold-back" aria-hidden />
-        <div className="oc-fold-front">
-          <Cover
-            design={design}
-            eyebrow={sample.eyebrow}
-            title={sample.title}
-            date={sample.date}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 const TOOLS = [
   {
     href: "/resume",
@@ -179,15 +152,6 @@ const TOOLS = [
     badge: "미리 만들기",
     preview: <InvitationPreview />,
   },
-  {
-    href: "/invitation-card",
-    eyebrow: "Invitation",
-    title: "모바일 초대장",
-    body: "링크를 누르면 카드가 3D로 펼쳐집니다. 만들어서 카카오톡으로 바로 보냅니다.",
-    meta: `디자인 ${DESIGNS.length}종 · 행사 ${OCCASIONS.length}갈래`,
-    badge: "무료",
-    preview: <OccasionPreview />,
-  },
 ];
 
 export function Hero() {
@@ -211,14 +175,14 @@ export function Hero() {
             <em className="not-italic text-rose-deep">브라우저에서 바로</em>
           </h1>
           <p className="mx-auto mt-5 max-w-narrow text-body-lg text-ink-soft">
-            가입도 설치도 없이 네 가지를 만듭니다. 이력서와 명함은 계속
+            가입도 설치도 없이 세 가지를 만듭니다. 이력서와 명함은 계속
             무료이고, 입력한 내용은 이 브라우저를 벗어나지 않습니다.
           </p>
         </div>
 
         {/* 도구가 먼저 보여야 합니다 — 무엇을 하는 곳인지 스크롤 없이
-            읽히도록 네 가지를 한 줄에 나란히 둡니다. */}
-        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            읽히도록 세 가지를 한 줄에 나란히 둡니다. */}
+        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {TOOLS.map((tool) => (
             <Link
               key={tool.href}
