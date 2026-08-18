@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "invite:add": "node scripts/import-invitation.mjs"
+    "invite:add": "node scripts/import-invitation.mjs",
+    "art:thumbs": "node scripts/make-art-thumbs.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",

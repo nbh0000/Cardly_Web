@@ -29,6 +29,7 @@ const COLUMNS = [
       { label: "이력서 만들기", href: "/resume" },
       { label: "명함 만들기", href: "/business-card" },
       { label: "모바일 청첩장", href: "/templates" },
+      { label: "초대장 만들기", href: "/invitation-card" },
       { label: "청첩장 요금 안내", href: "/pricing" },
     ],
   },
@@ -38,6 +39,7 @@ const COLUMNS = [
       { label: "이력서 작성 기준", href: "/resume" },
       { label: "명함 인쇄 규격", href: "/business-card" },
       { label: "청첩장 샘플 보기", href: "/preview/linen" },
+      { label: "초대장 디자인 전부 보기", href: "/invitation-card" },
     ],
   },
   {
@@ -63,8 +65,9 @@ export function SiteFooter() {
               </span>
             </p>
             <p className="mt-4 max-w-72 text-caption text-muted">
-              이력서, 명함, 모바일 청첩장을 브라우저에서 직접 만듭니다. 입력한
-              내용은 서버로 보내지 않고, 이력서와 명함은 언제나 무료입니다.
+              이력서, 명함, 모바일 청첩장, 초대장을 브라우저에서 직접
+              만듭니다. 입력한 내용은 서버로 보내지 않고, 이력서·명함·초대장은
+              언제나 무료입니다.
             </p>
           </div>
 

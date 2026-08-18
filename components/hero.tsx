@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { InvitationView } from "@/components/invitation/invitation-view";
+import { ClosedCard } from "@/components/occasion/fold";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
+import { DESIGNS, getDesign } from "@/lib/occasion/designs";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -122,6 +124,17 @@ function InvitationPreview() {
   );
 }
 
+/* 초대장은 다른 셋과 다르게 «접힌 물건» 이라 겹쳐 놓은 종이를 깔지
+   않습니다. 카드 자체가 이미 두께를 가지고 서 있습니다. */
+function InvitationCardPreview() {
+  const design = getDesign("numeral-ink");
+  return (
+    <div className="w-[9.5rem]">
+      <ClosedCard design={design} />
+    </div>
+  );
+}
+
 const TOOLS = [
   {
     href: "/resume",
@@ -152,6 +165,15 @@ const TOOLS = [
     badge: "미리 만들기",
     preview: <InvitationPreview />,
   },
+  {
+    href: "/invitation-card",
+    eyebrow: "Invitation",
+    title: "초대장",
+    body: "받는 사람이 표지를 넘겨 여는 접힌 카드입니다. 생일·돌잔치·집들이·개업·파티·기념일.",
+    meta: `디자인 ${DESIGNS.length}종 · 링크로 바로 보내기`,
+    badge: "무료",
+    preview: <InvitationCardPreview />,
+  },
 ];
 
 export function Hero() {
@@ -175,14 +197,14 @@ export function Hero() {
             <em className="not-italic text-rose-deep">브라우저에서 바로</em>
           </h1>
           <p className="mx-auto mt-5 max-w-narrow text-body-lg text-ink-soft">
-            가입도 설치도 없이 세 가지를 만듭니다. 이력서와 명함은 계속
+            가입도 설치도 없이 네 가지를 만듭니다. 이력서·명함·초대장은 계속
             무료이고, 입력한 내용은 이 브라우저를 벗어나지 않습니다.
           </p>
         </div>
 
         {/* 도구가 먼저 보여야 합니다 — 무엇을 하는 곳인지 스크롤 없이
-            읽히도록 세 가지를 한 줄에 나란히 둡니다. */}
-        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            읽히도록 네 가지를 한 줄에 나란히 둡니다. */}
+        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {TOOLS.map((tool) => (
             <Link
               key={tool.href}

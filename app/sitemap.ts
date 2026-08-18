@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { TEMPLATES } from "@/lib/invitation";
+import { DESIGNS } from "@/lib/occasion/designs";
 
 const SITE = "https://cardly.kr";
 
@@ -40,6 +41,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${SITE}/invitation-card/`,
+      lastModified: UPDATED,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${SITE}/invitation-card/make/`,
+      lastModified: UPDATED,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${SITE}/pricing/`,
       lastModified: UPDATED,
       changeFrequency: "monthly",
@@ -66,6 +79,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  // 발행된 청첩장(/i/<slug>)은 당사자와 하객만 보는 주소라 넣지 않습니다.
-  return [...core, ...previews];
+  const cards: MetadataRoute.Sitemap = DESIGNS.map((d) => ({
+    url: `${SITE}/invitation-card/${d.id}/`,
+    lastModified: UPDATED,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
+  // 발행된 청첩장(/i/<slug>)과 링크로 받은 초대장(/invitation-card/v/)은
+  // 당사자와 초대받은 사람만 보는 주소라 넣지 않습니다.
+  return [...core, ...previews, ...cards];
 }
