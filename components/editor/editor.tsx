@@ -307,7 +307,11 @@ export function Editor({ templateId }: { templateId: string }) {
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+      {/* 넓은 화면에서 편집 패널은 왼쪽 끝에, 폰은 화면 한가운데 떠 있어
+          그 사이와 오른쪽에 아무것도 없는 넓은 면이 남았습니다. 두 칸에
+          각각 제 폭을 주고 묶음을 가운데로 모아, 남는 자리가 «빈 곳» 이
+          아니라 «여백» 으로 읽히게 합니다. */}
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:justify-center">
         {/* ── 좌측 아이콘 레일 ── */}
         <div className={tab === "edit" ? "contents" : "hidden lg:contents"}>
           <Rail active={section} onSelect={goToSection} />
@@ -315,7 +319,7 @@ export function Editor({ templateId }: { templateId: string }) {
 
         {/* ── 편집 패널 ── */}
         <div
-          className={`min-h-0 min-w-0 flex-1 overflow-y-auto border-line bg-cream lg:max-w-[27rem] lg:flex-none lg:border-r ${
+          className={`min-h-0 min-w-0 flex-1 overflow-y-auto border-line bg-cream lg:w-[30rem] lg:flex-none lg:border-r xl:w-[34rem] ${
             panelOpen ? "lg:block" : "lg:hidden"
           } ${tab === "edit" ? "block" : "hidden lg:block"}`}
         >
@@ -334,7 +338,7 @@ export function Editor({ templateId }: { templateId: string }) {
 
         {/* ── 미리보기 ── */}
         <div
-          className={`relative min-h-0 flex-1 overflow-hidden bg-cream ${
+          className={`relative min-h-0 flex-1 overflow-hidden bg-sand/45 lg:w-[36rem] lg:flex-none xl:w-[42rem] ${
             tab === "preview" ? "block" : "hidden lg:block"
           }`}
         >
@@ -377,7 +381,7 @@ export function Editor({ templateId }: { templateId: string }) {
 
           {/* 폰 프레임 */}
           <div className="flex h-[calc(100%-4rem)] items-start justify-center overflow-y-auto px-4 pb-8">
-            <div className="w-full max-w-[24rem]">
+            <div className="w-full max-w-[24rem] xl:max-w-[26rem]">
               <div className="iv-stage overflow-hidden rounded-phone bg-white p-2 shadow-lift ring-1 ring-line">
                 <div ref={previewRef} className="relative max-h-[calc(100dvh-13rem)] overflow-y-auto overscroll-contain rounded-[1.5rem]">
                   <InvitationView
