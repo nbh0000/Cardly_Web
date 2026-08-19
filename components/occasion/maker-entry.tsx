@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { Maker } from "@/components/occasion/maker";
-import { FALLBACK_DESIGN, getDesign } from "@/lib/occasion/designs";
+import { FALLBACK_DESIGN, findDesign } from "@/lib/occasion/designs";
 import { sampleFor } from "@/lib/occasion/occasions";
 
 /* /invitation-card/make/?d=<디자인> 으로 들어옵니다.
@@ -24,7 +24,7 @@ function usePickedId(): string {
 
 export function MakerEntry() {
   const picked = usePickedId();
-  const design = picked ? getDesign(picked) : FALLBACK_DESIGN;
+  const design = findDesign(picked) ?? FALLBACK_DESIGN;
 
   return (
     <Maker key={design.id} initial={sampleFor(design.id, design.occasion)} />

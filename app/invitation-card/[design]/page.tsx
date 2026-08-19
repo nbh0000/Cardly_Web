@@ -6,7 +6,7 @@ import { FoldedCard } from "@/components/occasion/folded-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { ART, ART_SOURCE } from "@/lib/occasion/art";
-import { DESIGNS, designsOf, getDesign } from "@/lib/occasion/designs";
+import { DESIGNS, designsOf, findDesign } from "@/lib/occasion/designs";
 import { getOccasion, sampleFor } from "@/lib/occasion/occasions";
 
 export function generateStaticParams() {
@@ -44,9 +44,8 @@ export default async function DesignPage({
   params,
 }: PageProps<"/invitation-card/[design]">) {
   const { design: id } = await params;
-  if (!find(id)) notFound();
-
-  const design = getDesign(id);
+  const design = findDesign(id);
+  if (!design) notFound();
   const occasion = getOccasion(design.occasion);
   const sample = sampleFor(design.id, design.occasion);
   const credit = design.art ? ART[design.art] : undefined;
