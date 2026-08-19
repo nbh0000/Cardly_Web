@@ -432,3 +432,339 @@
   color: color-mix(in srgb, var(--iv-ink) 60%, transparent);
   margin-bottom: 0.5em;
 }
+
+/* ============================================================
+   컨셉 커버 넉 판
+
+   기존 열 판은 «사진을 어떻게 앉히느냐» 의 변주였습니다. 여기 넉 판은
+   청첩장을 아예 다른 물건인 척하게 만듭니다 — 입장권, 옛날 포스터,
+   신문 호외, 밤거리 간판. 물건의 문법을 빌리면 설명 없이도 분위기가
+   먼저 읽힙니다.
+
+   색은 전부 템플릿 테마 변수(--iv-*)에서 옵니다. 여기에 색을 직접
+   적으면 템플릿을 바꿔도 커버만 그대로 남습니다.
+   ============================================================ */
+
+/* ---------- 커버 · 입장권 ----------
+   윗장에 사진과 이름, 절취선 아래 스텁에 날짜·시각·장소를 넣습니다.
+   실제 입장권이 그렇게 생겼기 때문에 «오라는 자리» 로 읽힙니다. */
+
+.iv-cover-ticket {
+  padding: 2.2em 1.3em 2.4em;
+  background: var(--iv-bg);
+}
+.iv-ticket {
+  position: relative;
+  background: var(--iv-accent-soft);
+  border-radius: 0.9em;
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.16);
+}
+.iv-ticket-top {
+  padding: 1.5em 1.4em 1.7em;
+  text-align: center;
+}
+.iv-ticket-brand {
+  font-family: var(--font-thin-serif);
+  font-size: 0.68em;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-ticket-photo {
+  margin: 1.1em auto 1em;
+  width: 82%;
+  border: 1px solid color-mix(in srgb, var(--iv-accent) 40%, transparent);
+  padding: 0.35em;
+}
+.iv-ticket-photo .iv-photo {
+  aspect-ratio: 5 / 4;
+  height: auto;
+}
+.iv-ticket-names {
+  font-size: 1.5em;
+  margin-top: 0.35em;
+}
+/* 절취선 — 가운데는 점선, 양끝은 종이를 뚫은 반원.
+   반원을 배경으로 그려 두면 티켓 뒤의 바탕색이 그대로 비칩니다. */
+.iv-ticket-rip {
+  position: relative;
+  display: block;
+  height: 1.1em;
+}
+.iv-ticket-rip::before {
+  content: "";
+  position: absolute;
+  inset-inline: 1.3em;
+  top: 50%;
+  border-top: 1px dashed color-mix(in srgb, var(--iv-accent) 55%, transparent);
+}
+.iv-ticket-rip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at left center, var(--iv-bg) 0.55em, transparent 0.56em),
+    radial-gradient(circle at right center, var(--iv-bg) 0.55em, transparent 0.56em);
+}
+.iv-ticket-stub {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6em;
+  padding: 0.9em 1.4em 1.5em;
+  text-align: center;
+}
+.iv-ticket-stub > div {
+  min-width: 0;
+}
+.iv-ticket-stub span {
+  display: block;
+  font-family: var(--font-thin-serif);
+  font-size: 0.58em;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-ticket-stub b {
+  display: block;
+  margin-top: 0.45em;
+  font-size: 0.82em;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--iv-ink);
+  word-break: keep-all;
+}
+
+/* ---------- 커버 · 레트로 ----------
+   위아래로 굵은 사선 띠를 두르고 가운데에 액자를 놓습니다.
+   1980년대 행사 포스터의 판짜기입니다. */
+
+.iv-cover-retro {
+  padding: 0 0 2.2em;
+  background: var(--iv-bg);
+}
+.iv-retro-bars {
+  display: block;
+  height: 1.5em;
+  background: linear-gradient(
+    100deg,
+    var(--iv-accent) 0 33.4%,
+    var(--iv-sub) 33.4% 66.7%,
+    var(--iv-accent-soft) 66.7% 100%
+  );
+}
+.iv-retro-bars-b {
+  transform: scaleX(-1);
+}
+.iv-retro-head {
+  padding: 1.8em 1.5em 0;
+  text-align: center;
+}
+.iv-retro-eyebrow {
+  font-size: 0.7em;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+}
+.iv-retro-frame {
+  width: 74%;
+  margin: 1.3em auto 1.2em;
+  padding: 0.5em;
+  background: var(--iv-accent-soft);
+  border: 2px solid var(--iv-accent);
+}
+.iv-retro-frame .iv-photo {
+  aspect-ratio: 1 / 1;
+  height: auto;
+}
+.iv-retro-names {
+  font-size: 1.7em;
+  letter-spacing: -0.02em;
+}
+.iv-retro-en {
+  margin-top: 0.5em;
+  font-family: var(--font-thin-serif);
+  font-size: 0.74em;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-retro-foot {
+  padding: 1.2em 1.5em 1.8em;
+  text-align: center;
+}
+
+/* ---------- 커버 · 야외 ----------
+   사진을 끝까지 채우고 아치 하나만 그어 둡니다. 위에서 내려오는 빛을
+   얹어 실내 스튜디오가 아니라 «바깥» 으로 읽히게 합니다. */
+
+.iv-cover-garden {
+  position: relative;
+  padding: 0;
+  min-height: 34em;
+  overflow: hidden;
+}
+.iv-garden-photo {
+  position: absolute;
+  inset: 0;
+}
+.iv-garden-photo .iv-photo {
+  height: 100%;
+}
+.iv-garden-light {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.34) 0%,
+      rgb(0 0 0 / 0.06) 32%,
+      rgb(0 0 0 / 0.5) 78%,
+      rgb(0 0 0 / 0.68) 100%
+    ),
+    radial-gradient(
+      70% 40% at 50% 0%,
+      color-mix(in srgb, var(--iv-accent-soft) 45%, transparent) 0%,
+      transparent 70%
+    );
+}
+.iv-garden-arch {
+  position: absolute;
+  inset: 1.4em;
+  border: 1px solid color-mix(in srgb, #fff 62%, transparent);
+  border-radius: 50vw 50vw 0.3em 0.3em;
+  pointer-events: none;
+}
+.iv-garden-text {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 34em;
+  padding: 3em 2.6em 2.8em;
+  text-align: center;
+}
+.iv-garden-names {
+  font-size: 1.7em;
+  margin-top: 0.4em;
+}
+
+/* ---------- 커버 · 호외 ----------
+   신문 1면의 조판을 그대로 빌립니다. 제호, 굵은 머리기사, 괘선,
+   그리고 사진 한 컷. */
+
+.iv-cover-press {
+  padding: 2em 1.5em 2.4em;
+  background: var(--iv-bg);
+  text-align: left;
+}
+.iv-press-masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8em;
+  padding-bottom: 0.55em;
+  border-bottom: 3px double var(--iv-ink);
+  font-family: var(--font-thin-serif);
+  font-size: 0.62em;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--iv-ink);
+}
+.iv-press-kicker {
+  margin-top: 1em;
+  font-size: 0.72em;
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-press-names {
+  margin-top: 0.35em;
+  font-size: 1.75em;
+  line-height: 1.24;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+.iv-press-rule {
+  display: block;
+  height: 1px;
+  margin: 0.9em 0 1em;
+  background: color-mix(in srgb, var(--iv-ink) 32%, transparent);
+}
+.iv-press-body {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 1em;
+  align-items: start;
+}
+.iv-press-photo .iv-photo {
+  aspect-ratio: 4 / 5;
+  height: auto;
+}
+.iv-press-lede {
+  font-size: 0.8em;
+  line-height: 1.85;
+  color: var(--iv-sub);
+  word-break: keep-all;
+}
+.iv-press-foot {
+  margin-top: 1.2em;
+  padding-top: 0.9em;
+  border-top: 1px solid color-mix(in srgb, var(--iv-ink) 22%, transparent);
+  text-align: left;
+}
+
+/* ---------- 커버 · 네온 ----------
+   밤 사진 위에 간판 글자를 켭니다. 글로우는 text-shadow 만으로 만들고
+   색은 강조색 하나만 씁니다 — 두 색을 켜면 바로 촌스러워집니다. */
+
+.iv-cover-neon {
+  position: relative;
+  padding: 0;
+  min-height: 34em;
+  overflow: hidden;
+  background: var(--iv-bg);
+}
+.iv-neon-photo {
+  position: absolute;
+  inset: 0;
+  filter: brightness(0.52) saturate(0.85);
+}
+.iv-neon-photo .iv-photo {
+  height: 100%;
+}
+.iv-neon-text {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 34em;
+  padding: 3em 2.4em;
+  text-align: center;
+}
+.iv-neon-script {
+  color: var(--iv-accent);
+  text-shadow:
+    0 0 0.12em color-mix(in srgb, var(--iv-accent) 90%, #fff),
+    0 0 0.5em var(--iv-accent),
+    0 0 1.1em color-mix(in srgb, var(--iv-accent) 70%, transparent);
+}
+.iv-neon-names {
+  margin-top: 0.6em;
+  font-size: 1.6em;
+  color: #fff;
+  text-shadow: 0 0 0.6em rgb(0 0 0 / 0.6);
+}
+.iv-neon-tube {
+  display: block;
+  width: 3.4em;
+  height: 1px;
+  margin: 1.1em auto;
+  background: var(--iv-accent);
+  box-shadow: 0 0 0.5em var(--iv-accent);
+}

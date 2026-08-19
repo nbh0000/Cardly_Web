@@ -17,7 +17,13 @@ export type CoverLayout =
   | "poster" /* 풀사진 위 대형 캘리그래피 */
   | "polaroid" /* 테이프로 붙인 폴라로이드 콜라주 */
   | "band" /* 컬러 배경판 + 액자 + 손글씨 라벨 */
-  | "filmstrip"; /* 세로 필름 스트립 */
+  | "filmstrip" /* 세로 필름 스트립 */
+  /* ── 컨셉 판 — 청첩장이 다른 물건인 척합니다 ── */
+  | "ticket" /* 절취선 있는 입장권 */
+  | "retro" /* 사선 띠를 두른 옛날 포스터 */
+  | "garden" /* 야외 · 풀사진 위 아치 */
+  | "press" /* 신문 1면 호외 */
+  | "neon"; /* 밤거리 간판 */
 
 export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "center", label: "센터" },
@@ -30,6 +36,11 @@ export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "polaroid", label: "폴라로이드" },
   { id: "band", label: "컬러밴드" },
   { id: "filmstrip", label: "필름" },
+  { id: "ticket", label: "입장권" },
+  { id: "retro", label: "레트로" },
+  { id: "garden", label: "야외" },
+  { id: "press", label: "호외" },
+  { id: "neon", label: "네온" },
 ];
 
 /* ---------- 사진 보정 ----------
@@ -769,6 +780,149 @@ export const TEMPLATES: Template[] = [
     script: "Camellia",
     photoSeed: 19,
     theme: { bg: "#FAF4F4", ink: "#463033", sub: "#EFDCDE", accent: "#A6606A", accentSoft: "#F6E7E9" },
+  },
+
+  /* ---- 컨셉 계열 : 청첩장을 다른 물건인 척하게 만드는 쪽 ----
+
+     앞의 스무 벌은 «어떤 분위기의 청첩장인가» 의 변주였습니다. 여기 열
+     벌은 아예 다른 물건의 문법을 빌립니다 — 입장권, 옛날 포스터, 신문
+     호외, 밤거리 간판, 사진관 액자. 결혼식이 «행사» 인 만큼, 행사에
+     딸려 오는 물건들이 청첩장이 되면 무슨 자리인지가 글보다 먼저
+     읽힙니다.
+
+     색은 컨셉에서 뽑았습니다. 야구장은 잔디와 흙, 심야극장은 검정과
+     놋쇠, 탑승권은 하늘과 활주로. 지어낸 색을 얹으면 컨셉이 «흉내» 로
+     보입니다.                                                        */
+
+  {
+    id: "ballpark",
+    name: "야구장 티켓",
+    categories: ["modern", "photo"],
+    badge: "NEW",
+    coverLayout: "ticket",
+    headingFont: "do-hyeon",
+    photoTone: "warm",
+    script: "Play Ball",
+    eyebrow: "ADMIT ONE · SEASON 2026",
+    photoSeed: 20,
+    theme: { bg: "#DCE6D8", ink: "#1E2A20", sub: "#B7C9B2", accent: "#0F5A31", accentSoft: "#FBF7EA" },
+  },
+  {
+    id: "cinema",
+    name: "심야극장",
+    categories: ["modern", "classic"],
+    badge: "NEW",
+    coverLayout: "ticket",
+    headingFont: "hahmlet",
+    photoTone: "bw",
+    script: "Now Showing",
+    eyebrow: "ADMIT TWO · LATE SHOW",
+    photoSeed: 21,
+    theme: { bg: "#0E0C0B", ink: "#F3EADA", sub: "#6B5B44", accent: "#C79A45", accentSoft: "#1E1A16" },
+  },
+  {
+    id: "boarding",
+    name: "탑승권",
+    categories: ["modern", "minimal"],
+    badge: "NEW",
+    coverLayout: "ticket",
+    headingFont: "gothic-a1",
+    photoTone: "cool",
+    script: "Just Married",
+    eyebrow: "BOARDING PASS · GATE 05",
+    photoSeed: 22,
+    theme: { bg: "#E8EFF6", ink: "#17283D", sub: "#C2D2E4", accent: "#245C93", accentSoft: "#FBFDFF" },
+  },
+  {
+    id: "seoul88",
+    name: "서울 88",
+    categories: ["modern"],
+    badge: "NEW",
+    coverLayout: "retro",
+    headingFont: "black-han-sans",
+    photoTone: "film",
+    script: "Welcome",
+    eyebrow: "1988 · SEOUL",
+    photoSeed: 23,
+    theme: { bg: "#F5EFE2", ink: "#20242B", sub: "#3E7E8C", accent: "#D8503C", accentSoft: "#F0C64B" },
+  },
+  {
+    id: "mixtape",
+    name: "믹스테이프",
+    categories: ["modern", "photo"],
+    badge: "NEW",
+    coverLayout: "retro",
+    headingFont: "jua",
+    photoTone: "fade",
+    script: "Side A",
+    eyebrow: "TRACK 01 · FOREVER",
+    photoSeed: 24,
+    theme: { bg: "#F3EDF3", ink: "#2B2130", sub: "#7A5C86", accent: "#8A3E6B", accentSoft: "#EBD9E6" },
+  },
+  {
+    id: "garden-party",
+    name: "가든 파티",
+    categories: ["photo", "floral"],
+    badge: "NEW",
+    coverLayout: "garden",
+    headingFont: "gowun-batang",
+    photoTone: "warm",
+    script: "In the garden",
+    eyebrow: "OUTDOOR WEDDING",
+    photoSeed: 25,
+    theme: { bg: "#1F2A20", ink: "#EAF0E6", sub: "#9DB29A", accent: "#7FA36F", accentSoft: "#E8F0E5" },
+  },
+  {
+    id: "sunset",
+    name: "선셋",
+    categories: ["photo", "modern"],
+    badge: "NEW",
+    coverLayout: "garden",
+    headingFont: "diphylleia",
+    photoTone: "warm",
+    script: "Golden hour",
+    eyebrow: "SEASIDE CEREMONY",
+    photoSeed: 26,
+    theme: { bg: "#2E1C15", ink: "#F8E7D8", sub: "#C79878", accent: "#D9743F", accentSoft: "#F8E3D2" },
+  },
+  {
+    id: "extra",
+    name: "호외",
+    categories: ["classic", "modern"],
+    badge: "NEW",
+    coverLayout: "press",
+    headingFont: "nanum-myeongjo",
+    photoTone: "bw",
+    script: "Extra! Extra!",
+    eyebrow: "특보 · SPECIAL EDITION",
+    photoSeed: 27,
+    theme: { bg: "#F4F1E8", ink: "#1C1A17", sub: "#5C574F", accent: "#8A2B21", accentSoft: "#E7E2D5" },
+  },
+  {
+    id: "neon-night",
+    name: "네온 나이트",
+    categories: ["modern", "photo"],
+    badge: "NEW",
+    coverLayout: "neon",
+    headingFont: "gothic-a1",
+    photoTone: "cool",
+    script: "Marry me",
+    eyebrow: "AFTER NINE",
+    photoSeed: 28,
+    theme: { bg: "#0C0F1A", ink: "#E6E9F5", sub: "#7A83A6", accent: "#F0508C", accentSoft: "#1B1A2E" },
+  },
+  {
+    id: "studio88",
+    name: "사진관 1988",
+    categories: ["classic", "photo"],
+    badge: "NEW",
+    coverLayout: "band",
+    headingFont: "gowun-batang",
+    photoTone: "warm",
+    script: "Portrait",
+    eyebrow: "충무로 사진관",
+    photoSeed: 29,
+    theme: { bg: "#F3EADA", ink: "#3B2C1E", sub: "#D8C4A6", accent: "#8A5A2B", accentSoft: "#E7D6BC" },
   },
 ];
 

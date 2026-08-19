@@ -269,6 +269,11 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   if (layout === "band") return <CoverBand data={data} names={names} />;
   if (layout === "filmstrip")
     return <CoverFilmstrip data={data} names={names} />;
+  if (layout === "ticket") return <CoverTicket data={data} names={names} />;
+  if (layout === "retro") return <CoverRetro data={data} names={names} />;
+  if (layout === "garden") return <CoverGarden data={data} names={names} />;
+  if (layout === "press") return <CoverPress data={data} names={names} />;
+  if (layout === "neon") return <CoverNeon data={data} names={names} />;
   return <CoverCenter data={data} names={names} template={template} />;
 }
 
@@ -721,6 +726,184 @@ function CoverFilmstrip({ data, names }: { data: InvitationData; names: Names })
         <br />
         {data.venueName} {data.venueHall}
       </p>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   컨셉 커버 다섯 판
+
+   청첩장을 다른 물건인 척하게 만드는 판들입니다. 입장권·옛날 포스터·
+   신문 호외·밤거리 간판. 물건의 문법을 빌리면 «무슨 자리인지» 가
+   글보다 먼저 읽힙니다.
+
+   어떤 판이든 들어가는 값은 같습니다 — 눈썹글, 사진, 두 사람 이름,
+   날짜·시각·장소. 판이 달라도 채우는 칸은 같아야 템플릿을 바꿔도
+   써 둔 내용이 그대로 옮겨 갑니다.
+   ──────────────────────────────────────────────────────────── */
+
+/** 입장권 — 야구장·극장·탑승권이 같이 씁니다 */
+function CoverTicket({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-ticket">
+      <div className="iv-ticket">
+        <div className="iv-ticket-top">
+          <p className="iv-ticket-brand">{data.coverEyebrow}</p>
+          <div className="iv-ticket-photo">
+            <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+          </div>
+          <ScriptLine data={data} className="iv-script-lg" />
+          <h1 className="iv-cover-names iv-ticket-names">
+            {names.first} <span className="iv-dot">&middot;</span> {names.second}
+          </h1>
+        </div>
+
+        <span className="iv-ticket-rip" aria-hidden />
+
+        {/* 스텁 — 실제 입장권이 그렇듯 «언제·어디로» 만 적습니다 */}
+        <div className="iv-ticket-stub">
+          <div>
+            <span>Date</span>
+            <b>{formatDateDots(data.date)}</b>
+          </div>
+          <div>
+            <span>Time</span>
+            <b>{formatTimeKo(data.time)}</b>
+          </div>
+          <div>
+            <span>Place</span>
+            <b>{data.venueName}</b>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** 레트로 — 위아래 사선 띠 + 가운데 액자 */
+function CoverRetro({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-retro">
+      <span className="iv-retro-bars" aria-hidden />
+
+      <div className="iv-retro-head">
+        <p className="iv-eyebrow iv-retro-eyebrow">{data.coverEyebrow}</p>
+        <div className="iv-retro-frame">
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        </div>
+        <h1 className="iv-cover-names iv-retro-names">
+          {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        </h1>
+        <p className="iv-retro-en">
+          {en.first} &nbsp;&amp;&nbsp; {en.second}
+        </p>
+      </div>
+
+      <div className="iv-retro-foot">
+        <ScriptLine data={data} />
+        <p className="iv-cover-meta">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
+
+      <span className="iv-retro-bars iv-retro-bars-b" aria-hidden />
+    </section>
+  );
+}
+
+/** 야외 — 사진을 끝까지 채우고 아치 하나만 */
+function CoverGarden({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-garden">
+      <PhotoSlot
+        src={data.coverPhoto}
+        fit={data.coverPhotoFit}
+        className="iv-garden-photo"
+        seed={0}
+      />
+      <span className="iv-garden-light" aria-hidden />
+      <span className="iv-garden-arch" aria-hidden />
+
+      <div className="iv-garden-text">
+        <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
+        <ScriptLine data={data} className="iv-script-lg iv-on-photo" />
+        <h1 className="iv-cover-names iv-on-photo iv-garden-names">
+          {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        </h1>
+        <p className="iv-cover-meta iv-on-photo">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/** 호외 — 신문 1면 조판 */
+function CoverPress({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-press">
+      <div className="iv-press-masthead">
+        <span>{en.first} &amp; {en.second}</span>
+        <span>{formatDateDots(data.date)}</span>
+      </div>
+
+      <p className="iv-press-kicker">{data.coverEyebrow}</p>
+      <h1 className="iv-cover-names iv-press-names">
+        {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        <br />
+        결혼합니다
+      </h1>
+      <span className="iv-press-rule" aria-hidden />
+
+      <div className="iv-press-body">
+        <div className="iv-press-photo">
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        </div>
+        {/* 기사 리드처럼 한 문단. 사용자가 쓴 인사말이 아니라 커버
+            전용 문구라, 길어지지 않도록 날짜와 장소만 문장으로 씁니다. */}
+        <p className="iv-press-lede">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}, {data.venueName}
+          {data.venueHall ? ` ${data.venueHall}` : ""}에서 두 사람이 예식을
+          올립니다. 오셔서 자리를 빛내 주십시오.
+        </p>
+      </div>
+
+      <div className="iv-press-foot">
+        <ScriptLine data={data} />
+      </div>
+    </section>
+  );
+}
+
+/** 네온 — 밤 사진 위에 켜는 간판 */
+function CoverNeon({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-neon">
+      <PhotoSlot
+        src={data.coverPhoto}
+        fit={data.coverPhotoFit}
+        className="iv-neon-photo"
+        seed={0}
+      />
+      <div className="iv-neon-text">
+        <p className="iv-eyebrow iv-on-photo">{data.coverEyebrow}</p>
+        <ScriptLine data={data} className="iv-script-lg iv-neon-script" />
+        <span className="iv-neon-tube" aria-hidden />
+        <h1 className="iv-cover-names iv-neon-names">
+          {names.first} <span className="iv-dot">&middot;</span> {names.second}
+        </h1>
+        <p className="iv-cover-meta iv-on-photo">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
     </section>
   );
 }
