@@ -130,7 +130,7 @@ export interface ArtCredit {
 
 export const LIMITS = {
   eyebrow: 24,
-  title: 40,
+  title: 30,
   host: 30,
   message: 400,
   place: 40,
