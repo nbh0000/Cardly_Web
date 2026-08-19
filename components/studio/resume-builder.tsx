@@ -108,7 +108,11 @@ export function ResumeBuilder() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
-  const [overflow, setOverflow] = useState(false);
+  /** 저장하면 몇 쪽이 되는지 (A4 기준) */
+  const [pages, setPages] = useState(1);
+  /** 시트의 실제 높이(px). 미리보기 칸을 여기에 맞춰야 두 쪽째가
+      잘려 보이지 않습니다. */
+  const [sheetHeight, setSheetHeight] = useState(297 * MM);
   const [layoutFilter, setLayoutFilter] = useState("all");
 
   /* 미리보기 배율.
@@ -142,14 +146,17 @@ export function ResumeBuilder() {
   );
   useDraft<Draft>(KEY, snapshot, restore);
 
-  /* 시트는 A4 한 장에 고정돼 있어 넘친 내용은 잘립니다.
-     조판이 끝난 다음 프레임에 재어 보고 미리 알려 줍니다. */
+  /* 시트는 A4 한 장에서 시작해 내용만큼 자랍니다. 조판이 끝난 다음
+     프레임에 재어, 저장하면 몇 쪽이 되는지 미리 알려 줍니다.
+     1mm 쯤의 반올림 오차로 두 쪽이 됐다고 하지 않도록 여유를 둡니다. */
   useEffect(() => {
     const el = sheetRef.current;
     if (!el) return;
-    const id = requestAnimationFrame(() =>
-      setOverflow(el.scrollHeight > el.clientHeight + 2),
-    );
+    const id = requestAnimationFrame(() => {
+      const page = 297 * MM;
+      setPages(Math.max(1, Math.ceil(el.offsetHeight / page - 0.01)));
+      setSheetHeight(el.offsetHeight);
+    });
     return () => cancelAnimationFrame(id);
   }, [data, layout, template, photo, font]);
 
@@ -874,11 +881,12 @@ ${
       }
       toolbar={
         <div className="space-y-2">
-          {/* A4 한 장을 넘기면 아래가 잘립니다. 저장하기 전에 알려 줍니다. */}
-          {overflow ? (
-            <p className="rounded-md border border-rose-mist bg-rose-veil px-3 py-2 text-[0.75rem] text-rose-deep">
-              내용이 A4 한 장을 넘어 아래가 잘립니다. 오래된 항목을 줄이거나
-              블록 크기를 낮춰 주세요.
+          {/* 두 쪽이 되는 것은 잘못이 아닙니다. 어디서 나뉘는지만 알려
+              주면 됩니다 — 나뉘는 자리에는 시트에 가는 선이 그어집니다. */}
+          {pages > 1 ? (
+            <p className="rounded-md border border-line bg-cream px-3 py-2 text-[0.75rem] text-ink-soft">
+              내용이 {pages}쪽이라 {pages}장으로 저장됩니다. 한 장에 담고
+              싶으면 오래된 항목을 줄이거나 블록 크기를 낮춰 주세요.
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-ivory px-3 py-2">
@@ -952,7 +960,9 @@ ${
         <div
           style={{
             width: stage.width * zoom,
-            height: stage.height * zoom,
+            // 시트가 두 쪽으로 자라면 칸도 같이 자라야 아래가 잘리지
+            // 않습니다. stage.height 는 A4 한 장 기준입니다.
+            height: sheetHeight * stage.scale * zoom,
             boxShadow: "0 14px 34px rgb(46 42 39 / 0.14)",
           }}
         >

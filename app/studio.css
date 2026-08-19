@@ -33,16 +33,38 @@
 
   position: relative;
   width: 210mm;
-  /* A4 한 장에 고정합니다. min-height 로 두면 내용이 길어질 때 시트가
-     늘어나고, PDF 는 210 × 297 mm 한 장에 그 이미지를 밀어 넣으므로
-     결과물이 세로로 눌립니다. 넘친 내용은 잘라 내고 경고로 알립니다. */
-  height: 297mm;
+  /* A4 한 장에서 시작하되, 내용이 길면 그만큼 자랍니다.
+     예전에는 height 를 297mm 로 못 박고 넘친 내용을 잘라 냈습니다.
+     경고를 띄우긴 했지만, 저장한 파일에서 글이 통째로 사라지는 것은
+     경고로 덮을 수 있는 일이 아닙니다. 이제 시트가 자라고 PDF 가
+     쪽수를 늘립니다(lib/studio/export.ts). */
+  min-height: 297mm;
   background: var(--pp);
   color: var(--tx);
   font-size: 3.7mm; /* 10.5pt */
   line-height: 1.58;
   overflow: hidden;
   transform-origin: top left;
+}
+
+/* 쪽이 나뉘는 자리에 그어 두는 안내선.
+   두 장이 되는 것 자체는 문제가 아니지만, 어디서 잘리는지 모르는 채로
+   저장하면 표 한가운데가 끊깁니다. 편집 중에만 보이고 저장할 때는
+   빠집니다. */
+.sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(297mm - 1px),
+    color-mix(in srgb, var(--ac) 34%, transparent) calc(297mm - 1px) 297mm
+  );
+}
+.sheet.is-export::before {
+  display: none;
 }
 
 .sheet h2,

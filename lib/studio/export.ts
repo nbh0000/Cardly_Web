@@ -99,12 +99,60 @@ export async function canvasToBlob(
   });
 }
 
-/** A4 한 장짜리 PDF. 시트를 이미지로 찍어 페이지 전체에 채웁니다. */
+/**
+ * A4 PDF. 시트를 이미지로 찍고, 한 장을 넘으면 쪽을 나눠 담습니다.
+ *
+ * 예전에는 캔버스를 통째로 210 × 297 mm 한 장에 밀어 넣었습니다. 시트가
+ * A4 한 장에 고정돼 있었으므로 그때는 맞는 계산이었지만, 넘친 내용은
+ * 저장하는 순간 사라졌습니다. 이제 시트가 자라므로 캔버스도 길어지고,
+ * 가로를 210mm 에 맞춘 다음 세로를 A4 높이만큼씩 끊어 쪽을 만듭니다.
+ *
+ * 마지막 쪽도 흰 종이를 깔아 A4 높이를 채웁니다. 남는 만큼만 담으면
+ * 마지막 장의 세로가 짧아져 인쇄할 때 확대되어 나옵니다.
+ */
 export async function sheetToPdfBlob(el: HTMLElement): Promise<Blob> {
   const canvas = await captureCanvas(el, 3);
   const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF("p", "mm", "a4");
-  pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, 210, 297);
+
+  const PAGE_W = 210;
+  const PAGE_H = 297;
+  /** 캔버스 가로가 210mm 에 해당하므로, 여기서 1mm 가 몇 픽셀인지 나옵니다 */
+  const pxPerMm = canvas.width / PAGE_W;
+  const pagePx = Math.max(1, Math.round(PAGE_H * pxPerMm));
+  const pages = Math.max(1, Math.ceil(canvas.height / pagePx));
+
+  if (pages === 1) {
+    // 한 장이면 있는 그대로 — 세로가 짧아도 A4 에 맞춰 늘리지 않습니다.
+    const slice = document.createElement("canvas");
+    slice.width = canvas.width;
+    slice.height = pagePx;
+    const ctx = slice.getContext("2d");
+    if (!ctx) throw new Error("캔버스 변환 실패");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, slice.width, slice.height);
+    ctx.drawImage(canvas, 0, 0);
+    pdf.addImage(slice.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, PAGE_W, PAGE_H);
+    return pdf.output("blob");
+  }
+
+  const slice = document.createElement("canvas");
+  slice.width = canvas.width;
+  slice.height = pagePx;
+  const ctx = slice.getContext("2d");
+  if (!ctx) throw new Error("캔버스 변환 실패");
+
+  for (let page = 0; page < pages; page++) {
+    const top = page * pagePx;
+    const height = Math.min(pagePx, canvas.height - top);
+    // 크기를 다시 넣으면 캔버스가 지워집니다 — 매 쪽 흰 종이부터 깝니다.
+    slice.height = pagePx;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, slice.width, slice.height);
+    ctx.drawImage(canvas, 0, top, canvas.width, height, 0, 0, canvas.width, height);
+    if (page > 0) pdf.addPage();
+    pdf.addImage(slice.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, PAGE_W, PAGE_H);
+  }
   return pdf.output("blob");
 }
 
