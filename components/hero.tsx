@@ -3,7 +3,7 @@ import { InvitationView } from "@/components/invitation/invitation-view";
 import { ClosedCard } from "@/components/occasion/fold";
 import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
-import { DESIGNS, getDesign } from "@/lib/occasion/designs";
+import { DESIGNS, findDesign } from "@/lib/occasion/designs";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
@@ -127,7 +127,8 @@ function InvitationPreview() {
 /* 초대장은 다른 셋과 다르게 «접힌 물건» 이라 겹쳐 놓은 종이를 깔지
    않습니다. 카드 자체가 이미 두께를 가지고 서 있습니다. */
 function InvitationCardPreview() {
-  const design = getDesign("numeral-ink");
+  const design = findDesign("numeral-ink");
+  if (!design) return null;
   return (
     <div className="w-[9.5rem]">
       <ClosedCard design={design} />

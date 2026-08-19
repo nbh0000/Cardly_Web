@@ -1,32 +1,32 @@
-import { asset } from "@/lib/asset";
-import { fontStack } from "@/lib/fonts";
+import { CoverArt } from "@/components/occasion/cover-art";
 import { ART, ART_SOURCE } from "@/lib/occasion/art";
 import { designVars } from "@/lib/occasion/designs";
 import {
   dateDots,
   dateKo,
   dateShort,
-  mapHref,
-  smsHref,
-  telHref,
   timeKo,
   toDate,
 } from "@/lib/occasion/format";
-import type { Design, InviteData } from "@/lib/occasion/types";
+import {
+  ON_PHOTO_LAYOUTS,
+  type Design,
+  type InviteData,
+} from "@/lib/occasion/types";
 
 /* 카드의 넉 면.
 
-   목록의 6rem 짜리 섬네일과 화면 가득한 카드가 이 파일의 같은
-   컴포넌트를 씁니다. 글자 크기가 전부 cqw(면의 폭)에 매달려 있어
-   따로 «작은 판» 을 만들지 않아도 어느 크기에서든 같은 조판으로
-   앉습니다. 미리보기와 실물이 다르면 그건 미리보기가 아닙니다. */
+   목록의 작은 카드와 화면 가득한 카드가 같은 컴포넌트를 씁니다. 크기가
+   다른 것은 바깥에서 zoom 으로 줄이기 때문이고, 조판은 완전히 같습니다.
+   따로 «작은 판» 을 만들면 반드시 어느 한쪽이 틀어집니다.
 
+   글자 크기는 전부 토큰의 px 값입니다(app/occasion-tokens.css). 카드가
+   고정 폭이라 가능한 일이고, 덕분에 어떤 화면에서도 본문이 12px 아래로
+   내려가지 않습니다. */
+
+/** 카드 뿌리에 얹는 색 세 개. `oc` 클래스와 함께 써야 토큰이 붙습니다. */
 export function designStyle(d: Design): React.CSSProperties {
-  return {
-    ...designVars(d),
-    "--oc-head": fontStack(d.headFont),
-    "--oc-body": fontStack(d.bodyFont),
-  } as React.CSSProperties;
+  return designVars(d) as React.CSSProperties;
 }
 
 /** 11.14 — 숫자 판에서 표지의 주인공이 되는 날짜 */
@@ -41,11 +41,10 @@ function numeral(ymd: string): string {
 function monogram(host: string, title: string): string {
   const source = host.trim() || title.trim();
   if (!source) return "";
-  const parts = source
+  return source
     .split(/[·,/&\s]+/)
     .map((s) => s.trim())
-    .filter(Boolean);
-  return parts
+    .filter(Boolean)
     .slice(0, 2)
     .map((p) => [...p][0] ?? "")
     .join("");
@@ -61,26 +60,22 @@ export function Cover({
 }: {
   design: Design;
   data: Pick<InviteData, "eyebrow" | "title" | "date" | "host">;
-  /** 첫 화면에 크게 뜨는 그림이면 먼저 받아 옵니다 */
   priority?: boolean;
-  /** 목록·고르는 칸처럼 작게 뜨는 자리 — 폭 480px 판을 씁니다 */
   thumb?: boolean;
 }) {
+  /* 사진 위에 글자가 놓이는 판은 글자가 흰색입니다. 템플릿이 정할 일이
+     아닙니다 — 어떤 사진이 와도 스크림 위에서는 흰색이 맞습니다. */
+  const onPhoto = ON_PHOTO_LAYOUTS.includes(design.cover);
+
   return (
-    <div className="oc-cover" data-l={design.cover}>
+    <div
+      className="oc-cover"
+      data-l={design.cover}
+      style={onPhoto ? { color: "#fff" } : undefined}
+    >
       {design.art && (
         <>
-          <div className="oc-cover-art">
-            {/* 정적 내보내기라 next/image 최적화 대상이 아닙니다. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={asset(`/art/${thumb ? "thumb/" : ""}${design.art}`)}
-              alt=""
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              decoding="async"
-            />
-          </div>
+          <CoverArt file={design.art} thumb={thumb} priority={priority} />
           <span className="oc-cover-scrim" aria-hidden />
         </>
       )}
@@ -114,7 +109,9 @@ export function InsideLeft({ data }: { data: InviteData }) {
   );
 }
 
-/* ── ③ 속 오른쪽 — 언제, 어디로 ───────────────────────────── */
+/* ── ③ 속 오른쪽 — 언제, 어디로 ───────────────────────────────
+   단추는 여기 없습니다. 카드 안은 받아서 읽는 면이고, 누르는 것들은
+   카드 밖 아래에 둡니다(components/occasion/actions.tsx).          */
 
 export function InsideRight({
   data,
@@ -124,8 +121,6 @@ export function InsideRight({
   /** 남은 날. 보는 날마다 달라지므로 밖에서 받습니다 */
   daysLeft: number | null;
 }) {
-  const mapQuery = data.address || data.place;
-
   return (
     <div className="oc-in">
       {data.date && (
@@ -158,35 +153,6 @@ export function InsideRight({
           </div>
         </>
       )}
-
-      <div className="oc-acts">
-        {mapQuery && (
-          <a
-            className="oc-act oc-act-solid"
-            href={mapHref(mapQuery)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            길 찾기
-          </a>
-        )}
-        {data.phone && (
-          <a className="oc-act" href={telHref(data.phone)}>
-            전화
-          </a>
-        )}
-        {data.rsvp && data.phone && (
-          <a
-            className="oc-act"
-            href={smsHref(
-              data.phone,
-              `${data.title.replace(/\n/g, " ")} — 참석하겠습니다.`,
-            )}
-          >
-            참석 알리기
-          </a>
-        )}
-      </div>
     </div>
   );
 }
