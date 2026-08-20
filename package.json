@@ -7,15 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "invite:add": "node scripts/import-invitation.mjs",
-    "art:thumbs": "node scripts/make-art-thumbs.mjs",
-    "og:make": "node scripts/make-og.mjs"
+    "invite:add": "node scripts/import-invitation.mjs"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "next": "16.3.0",
-    "pretendard": "^1.3.9",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

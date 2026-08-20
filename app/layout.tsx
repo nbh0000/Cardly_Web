@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { TEMPLATES } from "@/lib/invitation";
-import { DESIGNS } from "@/lib/occasion/designs";
 import { FONT_VARIABLES } from "./fonts";
 import "./globals.css";
 
-const DESCRIPTION = `이력서와 명함을 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요. 열리는 초대장 카드 ${DESIGNS.length}종과 모바일 청첩장 ${TEMPLATES.length}종 템플릿도 값 없이 만들어 보실 수 있습니다.`;
+const DESCRIPTION = `이력서와 명함을 회원가입 없이 브라우저에서 바로 만들고 PDF·PNG로 저장하세요. 모바일 청첩장 ${TEMPLATES.length}종 템플릿도 값 없이 만들어 보실 수 있습니다.`;
 
 export const metadata: Metadata = {
   // 운영 도메인. 상대 경로로 적은 canonical·OG 주소가 모두 이 값을 기준으로 절대화됩니다.
@@ -26,10 +25,6 @@ export const metadata: Metadata = {
     "모바일청첩장",
     "청첩장 제작",
     "무료 청첩장",
-    "초대장 만들기",
-    "모바일 초대장",
-    "생일 초대장",
-    "돌잔치 초대장",
     "무료 디자인 도구",
   ],
   alternates: { canonical: "/" },
@@ -107,12 +102,6 @@ const SITE_JSON_LD = {
           position: 3,
           name: "모바일 청첩장 만들기",
           url: "https://cardly.kr/templates/",
-        },
-        {
-          "@type": "ListItem",
-          position: 4,
-          name: "초대장 만들기",
-          url: "https://cardly.kr/invitation-card/",
         },
       ],
     },
