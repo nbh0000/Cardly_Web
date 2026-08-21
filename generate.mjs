@@ -7,10 +7,11 @@
 
    결과: cardly-artworks/01-wedding-floral-arch.png … 20장 + preview.html
 
-   모델은 실행할 때 API 에 물어보고 고릅니다. 이름을 코드에 박아 두면
-   그 모델이 없어진 날 조용히 죽습니다. 선호 순서는 화질 순이고, 셋 다
-   없으면 이름에 image 가 들어간 아무 모델이나 씁니다.
-   GEMINI_IMAGE_MODEL 을 주면 그 값을 그대로 씁니다.                 */
+   모델은 실행할 때 API 에 물어보고 화질 순으로 늘어놓습니다. 이름을 코드에
+   박아 두면 그 모델이 없어진 날 조용히 죽습니다. 한 장마다 앞에서부터
+   시도하고, 앞의 것이 막히면 다음 것으로 내려갑니다 — 화질 좋은 모델은
+   하루 몫이 적어서 스무 장을 다 만들기 전에 막히는 일이 잦습니다.
+   GEMINI_IMAGE_MODEL 을 주면 그 값 하나만 씁니다.                  */
 
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -39,6 +40,11 @@ const PREFERRED = [
    받으면 잘라 낼 여유가 없어 구도가 상합니다. */
 const ASPECT = "3:4";
 
+/* 받을 수 있는 가장 큰 판으로 받습니다. 표지는 카드 화면을 가득 채우는
+   그림이라, 화면 배율이 2배·3배인 기기에서 흐려지면 그것으로 끝입니다.
+   줄이는 것은 언제든 할 수 있지만 없는 화소를 만들어 낼 수는 없습니다. */
+const SIZE = process.env.GEMINI_IMAGE_SIZE ?? "4K";
+
 const PREFIX =
   "Vertical 5:7 portrait greeting card artwork, full-bleed illustration, high resolution, textured paper feel. ";
 
@@ -57,6 +63,8 @@ const SUFFIX =
 /** 호출 사이 쉬는 시간 — 레이트리밋을 피합니다 */
 const GAP_MS = 2000;
 const TRIES = 3;
+/** 한 번의 호출을 기다려 주는 시간. 4K 는 25초쯤 걸립니다 */
+const REQ_MS = 100_000;
 
 const CARDS = [
   {
@@ -185,36 +193,60 @@ const CARDS = [
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** API 에 물어보고 쓸 모델을 고릅니다 */
-async function pickModel() {
-  if (process.env.GEMINI_IMAGE_MODEL) return process.env.GEMINI_IMAGE_MODEL;
+/** API 에 물어보고 쓸 모델을 화질 순으로 늘어놓습니다 */
+async function pickModels() {
+  if (process.env.GEMINI_IMAGE_MODEL) return [process.env.GEMINI_IMAGE_MODEL];
 
-  const res = await fetch(`${API}/models?key=${KEY}&pageSize=200`);
+  const res = await fetch(`${API}/models?key=${KEY}&pageSize=200`, {
+    signal: AbortSignal.timeout(30_000),
+  });
   if (!res.ok) throw new Error(`모델 목록을 못 받았습니다 (${res.status})`);
   const { models = [] } = await res.json();
   const names = models.map((m) => m.name.replace(/^models\//, ""));
 
-  for (const want of PREFERRED) if (names.includes(want)) return want;
+  const picked = PREFERRED.filter((want) => names.includes(want));
+  if (picked.length) return picked;
 
   /* 선호 목록이 전부 없어졌을 때의 마지막 수단 — preview 가 아닌 것을
      먼저 봅니다. */
   const any = names.filter((n) => /image/.test(n) && !/preview/.test(n));
-  if (any.length) return any[0];
-  const preview = names.find((n) => /image/.test(n));
-  if (preview) return preview;
+  if (any.length) return any;
+  const preview = names.filter((n) => /image/.test(n));
+  if (preview.length) return preview;
   throw new Error("이미지 생성 모델이 하나도 없습니다");
 }
 
 /** 한 장 만듭니다. 실패하면 예외를 던집니다 */
 async function generate(model, prompt) {
+  try {
+    return await request(model, prompt);
+  } catch (e) {
+    /* 응답을 아예 시작하지 않거나 소켓이 끊긴 것 — 이 판에서는 막힌
+       모델로 봅니다. 프롬프트를 고쳐도 달라지지 않습니다. */
+    if (e.name === "TimeoutError" || e.name === "AbortError" || e.message === "fetch failed") {
+      /* TimeoutError 의 message 는 읽기 전용이라 고쳐 쓸 수 없습니다.
+         새 오류로 갈아 끼웁니다. */
+      const blocked = new Error("응답이 없습니다");
+      blocked.blocked = true;
+      throw blocked;
+    }
+    throw e;
+  }
+}
+
+async function request(model, prompt) {
   const res = await fetch(`${API}/models/${model}:generateContent?key=${KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    /* 시간 제한이 없으면 영영 기다립니다. 화질 좋은 모델은 하루 몫을
+       다 쓰면 429 를 주는 대신 «응답을 시작하지 않는» 식으로 막히는데,
+       그때 이 스크립트가 첫 장에서 멈춰 선 채로 밤을 새웁니다. */
+    signal: AbortSignal.timeout(REQ_MS),
     body: JSON.stringify({
       contents: [{ parts: [{ text: PREFIX + prompt + SUFFIX }] }],
       generationConfig: {
         responseModalities: ["IMAGE"],
-        imageConfig: { aspectRatio: ASPECT, imageSize: "2K" },
+        imageConfig: { aspectRatio: ASPECT, imageSize: SIZE },
       },
     }),
   });
@@ -247,7 +279,7 @@ async function withRetry(label, fn) {
     try {
       return await fn();
     } catch (e) {
-      if (e.fatal || attempt >= TRIES) throw e;
+      if (e.fatal || e.blocked || attempt >= TRIES) throw e;
       const wait = 2000 * 2 ** (attempt - 1);
       console.log(`   ↻ ${label} 실패(${e.message}) — ${wait / 1000}초 뒤 ${attempt + 1}번째 시도`);
       await sleep(wait);
@@ -300,8 +332,44 @@ ${cells}
 
 await mkdir(OUT, { recursive: true });
 
-const model = await pickModel();
-console.log(`모델: ${model}   비율: ${ASPECT}   저장: ${OUT}\n`);
+/* 쓸 수 있는 모델을 화질 순으로 늘어놓습니다. 한 장을 만들 때 앞에서부터
+   시도하고, 앞의 것이 막히면 다음 것으로 내려갑니다.
+
+   화질 좋은 모델은 하루 몫이 훨씬 적습니다. 다 쓰고 나면 429 를 주는 대신
+   응답을 아예 시작하지 않는 식으로 막히는데, 그때 스무 장을 통째로
+   포기하는 것보다 한 급 아래 모델로 마저 만드는 편이 낫습니다. 도중에
+   앞의 모델이 풀리면 그다음 장부터 다시 그것으로 올라갑니다. */
+const models = await pickModels();
+console.log(
+  `모델: ${models.join(" → ")}   비율: ${ASPECT}   크기: ${SIZE}   저장: ${OUT}\n`,
+);
+/**
+ * 앞에서부터 시도해 처음 성공한 것을 돌려줍니다.
+ *
+ * 연결 자체가 막히는 모델은 그 자리에서 목록에서 빼 버립니다. 화질 좋은
+ * 모델은 하루 몫을 다 쓰면 429 를 주는 대신 응답을 시작하지 않는 식으로
+ * 막히는데, 그것을 스무 번 다시 물어보면 스무 번 다 기다리게 됩니다.
+ * 한 번 막힌 것은 이번 판에서는 막힌 것으로 칩니다.
+ */
+async function generateWithFallback(prompt) {
+  let last;
+  for (const model of [...models]) {
+    try {
+      return { bytes: await withRetry(model, () => generate(model, prompt)), model };
+    } catch (e) {
+      last = e;
+      /* 프롬프트가 문제면 모델을 바꿔도 같은 답이 옵니다 */
+      if (e.fatal) throw e;
+      if (e.blocked && models.length > 1) {
+        models.splice(models.indexOf(model), 1);
+        console.log(`   ↧ ${model} 이 막혔습니다(${e.message}) — 남은 장은 다음 모델로`);
+      } else {
+        console.log(`   ↧ ${model} 실패(${e.message}) — 다음 모델로`);
+      }
+    }
+  }
+  throw last ?? new Error("쓸 수 있는 모델이 없습니다");
+}
 
 const done = [];
 const failed = [];
@@ -317,10 +385,13 @@ for (const [i, card] of queue.entries()) {
   const file = `${card.id}-${card.slug}.png`;
   process.stdout.write(`[${i + 1}/${queue.length}] ${file} … `);
   try {
-    const bytes = await withRetry(file, () => generate(model, card.prompt));
+    const { bytes, model } = await generateWithFallback(card.prompt);
     await writeFile(path.join(OUT, file), bytes);
     done.push({ ...card, file });
-    console.log(`${(bytes.length / 1024).toFixed(0)}KB`);
+    console.log(
+      `${(bytes.length / 1024 / 1024).toFixed(1)}MB` +
+        (model === models[0] ? "" : `  (${model})`),
+    );
   } catch (e) {
     failed.push({ ...card, file, why: e.message });
     console.log(`실패 — ${e.message}`);

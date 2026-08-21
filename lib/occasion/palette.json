@@ -1,102 +1,102 @@
 {
   "wedding-floral-arch": {
-    "bg": "#FEFCF6",
-    "ink": "#494F45",
-    "point": "#A58378"
+    "bg": "#FDFBF6",
+    "ink": "#4B4F45",
+    "point": "#9E827A"
   },
   "wedding-line-couple": {
-    "bg": "#FDF8EE",
-    "ink": "#4F4A43",
-    "point": "#96876D"
+    "bg": "#FCF8F3",
+    "ink": "#4E4945",
+    "point": "#918A84"
   },
   "engagement-rings": {
     "bg": "#FDFBF7",
-    "ink": "#5E4B3D",
-    "point": "#A8856C"
+    "ink": "#574D43",
+    "point": "#9D835C"
   },
   "bridal-shower": {
-    "bg": "#FEFBF8",
-    "ink": "#694338",
-    "point": "#BF7565"
+    "bg": "#FCEBE6",
+    "ink": "#584235",
+    "point": "#A77A64"
   },
   "dol-baby-tiger": {
-    "bg": "#FDEFE1",
-    "ink": "#594237",
-    "point": "#AA7A64"
+    "bg": "#FBEFE4",
+    "ink": "#484551",
+    "point": "#A0795C"
   },
   "dol-table": {
-    "bg": "#FFFBF2",
-    "ink": "#7F3228",
-    "point": "#86352A"
+    "bg": "#FEFAF3",
+    "ink": "#5C3126",
+    "point": "#5C3126"
   },
   "baby-shower-moon": {
-    "bg": "#F9EBD5",
-    "ink": "#404550",
-    "point": "#977D5C"
+    "bg": "#F7E8D8",
+    "ink": "#484147",
+    "point": "#937D68"
   },
   "birthday-animals": {
-    "bg": "#FEFBF3",
-    "ink": "#4C4D4F",
-    "point": "#B58245"
+    "bg": "#FDF8EE",
+    "ink": "#624537",
+    "point": "#BC7A4A"
   },
   "birthday-cake": {
-    "bg": "#FEFDFA",
-    "ink": "#694620",
-    "point": "#B58412"
+    "bg": "#F8E7D6",
+    "ink": "#65381F",
+    "point": "#B0702A"
   },
   "kids-dino": {
-    "bg": "#FDFBF7",
-    "ink": "#5E463C",
-    "point": "#9D8867"
+    "bg": "#FBF9F7",
+    "ink": "#4B4E36",
+    "point": "#9C854D"
   },
   "hwangap-peony": {
-    "bg": "#FDF8EF",
-    "ink": "#7A3731",
-    "point": "#B12B25"
+    "bg": "#FBF0E2",
+    "ink": "#504736",
+    "point": "#7E252C"
   },
   "anniversary-carnation": {
-    "bg": "#FEFBF5",
-    "ink": "#832D36",
-    "point": "#D35F57"
+    "bg": "#FDFAF6",
+    "ink": "#544E3B",
+    "point": "#C37069"
   },
   "housewarming": {
-    "bg": "#F8EBD9",
-    "ink": "#4C4231",
-    "point": "#A86243"
+    "bg": "#FDEBD2",
+    "ink": "#2E2E2A",
+    "point": "#734D38"
   },
   "homeparty-wine": {
-    "bg": "#E8E5D1",
-    "ink": "#5B3736",
-    "point": "#550A24"
+    "bg": "#EBE5D7",
+    "ink": "#3F403C",
+    "point": "#9C7745"
   },
   "garden-party": {
-    "bg": "#E9E9D6",
-    "ink": "#414531",
-    "point": "#858258"
+    "bg": "#E9E8D7",
+    "ink": "#414332",
+    "point": "#5F7556"
   },
   "picnic": {
-    "bg": "#FDF8ED",
-    "ink": "#6B3F28",
-    "point": "#A25C39"
+    "bg": "#EEE5BF",
+    "ink": "#434026",
+    "point": "#AA5534"
   },
   "christmas-party": {
-    "bg": "#FDFBF8",
-    "ink": "#4B4A38",
-    "point": "#7E534C"
+    "bg": "#F9F1EC",
+    "ink": "#55482F",
+    "point": "#563426"
   },
   "yearend-party": {
-    "bg": "#FCFAF7",
-    "ink": "#283038",
-    "point": "#010E29"
+    "bg": "#EEE6D8",
+    "ink": "#272939",
+    "point": "#111A35"
   },
   "newyear-sunrise": {
-    "bg": "#F7F1E8",
-    "ink": "#38465D",
-    "point": "#EB4929"
+    "bg": "#ECE9E5",
+    "ink": "#23305D",
+    "point": "#E34833"
   },
   "opening-shop": {
-    "bg": "#FEFCF7",
-    "ink": "#4C4F33",
-    "point": "#55291C"
+    "bg": "#F9EAD2",
+    "ink": "#5D3E26",
+    "point": "#74361F"
   }
 }

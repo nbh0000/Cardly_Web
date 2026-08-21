@@ -159,7 +159,7 @@ export function FoldedCard({
                 aria-expanded={pos > 0}
                 tabIndex={pos === 0 ? 0 : -1}
               />
-              <Cover design={found} data={data} priority />
+              <Cover design={found} priority />
             </div>
           </div>
 

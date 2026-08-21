@@ -283,13 +283,13 @@ export function Maker({ initial }: { initial: InviteData }) {
           <section>
             <h2 className="font-serif text-h2 text-ink">내용</h2>
             <p className="mt-2 text-caption text-ink-soft">
-              표지 · 인사말 · 일정이 각각 카드의 한 면입니다. 고친 자리는 옆
-              카드에 바로 반영됩니다.
+              표지는 그림이고, 인사말과 일정이 각각 카드 속의 한 면입니다.
+              고친 자리는 옆 카드에 바로 반영됩니다.
             </p>
 
             <div className="mt-block grid gap-5">
               <Field
-                label="표지 윗줄"
+                label="윗줄"
                 hint="영문 한 줄. 비워도 됩니다."
                 value={data.eyebrow}
                 max={LIMITS.eyebrow}
@@ -304,7 +304,7 @@ export function Maker({ initial }: { initial: InviteData }) {
               </Field>
 
               <Field
-                label="표지 큰 글씨"
+                label="큰 글씨"
                 hint="줄을 바꾸면 카드에서도 바뀝니다."
                 value={data.title}
                 max={LIMITS.title}
@@ -320,7 +320,7 @@ export function Maker({ initial }: { initial: InviteData }) {
 
               <Field
                 label="초대하는 사람"
-                hint="이니셜 표지에서는 이 이름의 첫 글자가 쓰입니다."
+                hint="카드 안과 뒤표지에 들어갑니다."
                 value={data.host}
                 max={LIMITS.host}
               >

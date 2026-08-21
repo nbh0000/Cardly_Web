@@ -1,16 +1,7 @@
 import { CoverArt } from "@/components/occasion/cover-art";
 import { designVars } from "@/lib/occasion/designs";
-import {
-  dateDots,
-  dateKo,
-  dateShort,
-  timeKo,
-} from "@/lib/occasion/format";
-import {
-  ON_ART_LAYOUTS,
-  type Design,
-  type InviteData,
-} from "@/lib/occasion/types";
+import { dateKo, dateShort, timeKo } from "@/lib/occasion/format";
+import type { Design, InviteData } from "@/lib/occasion/types";
 
 /* 카드의 넉 면.
 
@@ -29,48 +20,39 @@ export function designStyle(d: Design): React.CSSProperties {
 
 /* ── ① 앞표지 ─────────────────────────────────────────────── */
 
+/**
+ * 표지는 그림뿐입니다.
+ *
+ * 제목도 날짜도 얹지 않습니다. 얹으면 두 가지를 동시에 잃습니다 — 글자가
+ * 묻히지 않게 깐 베일이 그림을 흐리고, 고쳐 쓰라고 넣어 둔 예시 문구가
+ * 그림 위에 인쇄되어 카드가 광고 배너처럼 읽힙니다. 실물 인사장이 그렇듯
+ * 앞은 그림이고 말은 안에 있습니다.
+ */
 export function Cover({
   design,
-  data,
   priority = false,
   thumb = false,
 }: {
   design: Design;
-  data: Pick<InviteData, "eyebrow" | "title" | "date" | "host">;
   priority?: boolean;
   thumb?: boolean;
 }) {
-  /* 글자가 그림 위에 직접 놓이는 판인지. 그렇다면 글자색은 템플릿이
-     아니라 «그 자리의 그림이 밝은가 어두운가» 가 정합니다. */
-  const onArt = ON_ART_LAYOUTS.includes(design.cover);
-
   return (
-    <div
-      className="oc-cover"
-      data-l={design.cover}
-      data-on={onArt ? "art" : "paper"}
-      data-tone={design.tone}
-    >
+    <div className="oc-cover">
       <CoverArt file={design.art} thumb={thumb} priority={priority} />
-      {onArt && <span className="oc-cover-scrim" aria-hidden />}
-
-      <span className="oc-deco" aria-hidden />
-
-      <div className="oc-cover-text">
-        {data.eyebrow && <span className="oc-cover-eyebrow">{data.eyebrow}</span>}
-        <span className="oc-cover-title">{data.title}</span>
-        {data.date && <span className="oc-cover-date">{dateDots(data.date)}</span>}
-      </div>
     </div>
   );
 }
 
-/* ── ② 속 왼쪽 — 초대 글 ──────────────────────────────────── */
+/* ── ② 속 왼쪽 — 무엇을 위한 자리인가, 그리고 초대 글 ─────────
+   표지에서 내려온 제목이 이 면의 머리가 됩니다. 카드를 열었을 때
+   «무슨 자리인지» 가 가장 먼저 읽혀야 합니다.                      */
 
 export function InsideLeft({ data }: { data: InviteData }) {
   return (
     <div className="oc-in">
       <p className="oc-in-eyebrow">{data.eyebrow || "Invitation"}</p>
+      {data.title && <p className="oc-in-title">{data.title}</p>}
       {data.message && <p className="oc-in-msg">{data.message}</p>}
       {data.host && <p className="oc-in-host">{data.host} 드림</p>}
     </div>

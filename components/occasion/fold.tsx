@@ -36,7 +36,7 @@ export function ClosedCard({
         <div className="fc-model">
           <div className="fc-page fc-page-1">
             <div className="fc-face">
-              <Cover design={design} data={sample} thumb />
+              <Cover design={design} thumb />
             </div>
           </div>
           <div className="fc-page fc-page-2">

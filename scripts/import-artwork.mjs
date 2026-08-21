@@ -1,8 +1,8 @@
 /* 생성한 표지 그림을 제품에 들입니다.
 
-   generate.mjs 가 만든 cardly-artworks/*.png 는 3:4 · 2K · 3MB 짜리
-   원본입니다. 그대로 배포하면 목록 한 장에 60MB 가 실립니다. 여기서
-   카드 비율(5:7)로 자르고 webp 로 줄여 public/art/ 에 넣습니다.
+   generate.mjs 가 만든 cardly-artworks/*.png 는 3:4 · 4K 짜리 원본입니다.
+   그대로 배포하면 목록 한 장에 수백 MB 가 실립니다. 여기서 카드 비율(5:7)로
+   자르고 webp 로 줄여 public/art/ 에 넣습니다.
 
      node scripts/import-artwork.mjs
 
@@ -22,10 +22,10 @@ const THUMB = path.join(OUT, "thumb");
 
 /** 카드 비율 — 5:7 세로 */
 const RATIO = 5 / 7;
-/** 화면 가득 뜰 때 쓰는 폭 */
-const FULL_W = 1080;
-/** 목록·고르는 칸에서 쓰는 폭 */
-const THUMB_W = 480;
+/** 화면 가득 뜰 때 쓰는 폭 — 카드는 CSS 로 420px 이므로 배율 3배까지 받습니다 */
+const FULL_W = 1600;
+/** 목록·고르는 칸에서 쓰는 폭 — 그 자리에서 151px 이므로 넉넉합니다 */
+const THUMB_W = 560;
 
 /* ── 색 뽑기 ─────────────────────────────────────────────── */
 
@@ -199,7 +199,7 @@ for (const file of files) {
   const height = Math.round(FULL_W / RATIO);
   await sharp(source)
     .resize(FULL_W, height, { fit: "cover", position: sharp.strategy.attention })
-    .webp({ quality: 82 })
+    .webp({ quality: 88 })
     .toFile(path.join(OUT, webp));
 
   await sharp(source)
@@ -207,7 +207,7 @@ for (const file of files) {
       fit: "cover",
       position: sharp.strategy.attention,
     })
-    .webp({ quality: 78 })
+    .webp({ quality: 84 })
     .toFile(path.join(THUMB, webp));
 
   out[name] = await palette(source);

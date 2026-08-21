@@ -108,21 +108,32 @@ npx serve out
 
 ### 표지 그림 — 만들어서 들입니다
 
+표지는 그림입니다. 그 위에 제목도 날짜도 얹지 않습니다 — 얹으면 글자가 묻히지 않게 깐
+베일이 그림을 흐리고, 고쳐 쓰라고 넣어 둔 예시 문구가 그림 위에 인쇄되어 카드가 광고
+배너처럼 읽힙니다. 실물 인사장이 그렇듯 앞은 그림이고 말은 안에 있습니다. 제목은 카드를
+열면 나오는 속 왼쪽 면의 머리가 됩니다.
+
 스무 장 모두 Google Gemini 이미지 생성으로 만들었습니다. 손으로 짠 벡터 도형은 아무리
 다듬어도 클립아트로 읽히고, 색면과 괘선만으로는 실물 카드가 주는 화사함이 나오지
 않습니다.
 
 ```
 export GEMINI_API_KEY=…          # PowerShell: $env:GEMINI_API_KEY = '…'
-node generate.mjs                # → cardly-artworks/*.png (3:4 · 2K) + preview.html
+node generate.mjs                # → cardly-artworks/*.png (3:4 · 4K) + preview.html
 ONLY=02,07 node generate.mjs     # 몇 장만 다시 뽑을 때
 npm run art:import               # → public/art/*.webp + lib/occasion/palette.json
 npm run og:make                  # → public/og/invitation-card/*.jpg
 ```
 
-- 모델 이름은 코드에 박지 않고 실행할 때 API 에 물어 고릅니다(`gemini-3-pro-image` 우선).
-- `cardly-artworks/` 원본은 장당 3MB 라 커밋하지 않습니다(`.gitignore`). 배포에 나가는
-  것은 `import-artwork.mjs` 가 5:7 로 잘라 만든 webp 뿐입니다.
+- **4K 로 받습니다.** 표지는 카드 화면을 가득 채우는 그림이라 배율 2배·3배 기기에서
+  흐려지면 그것으로 끝입니다. 줄이는 것은 언제든 되지만 없는 화소는 못 만듭니다.
+- 모델 이름은 코드에 박지 않고 실행할 때 API 에 물어 **화질 순으로 늘어놓습니다**
+  (`gemini-3-pro-image` → `3.1-flash-image` → `2.5-flash-image`). 화질 좋은 모델은 하루
+  몫이 적어 스무 장을 다 만들기 전에 막히는데, 막히면 그 모델을 이번 판에서 빼고 다음
+  것으로 마저 만듭니다. 막힌 모델은 429 가 아니라 «응답을 시작하지 않는» 식으로 막히므로
+  호출마다 시간 제한을 겁니다.
+- `cardly-artworks/` 원본은 4K 라 장당 10MB 가 넘습니다. 커밋하지 않습니다(`.gitignore`).
+  배포에 나가는 것은 `import-artwork.mjs` 가 5:7 로 잘라 만든 webp 뿐입니다.
 - **액자 벗기기** — 이따금 그림 대신 «인쇄된 카드를 찍은 사진»(손에 들린 카드, 흰 여백과
   그림자)이 옵니다. 프롬프트로 대부분 막았고, 그래도 남는 것은 들일 때 테두리를 잘라
   냅니다(`isFramed`).
