@@ -1,0 +1,102 @@
+{
+  "wedding-floral-arch": {
+    "bg": "#FEFCF6",
+    "ink": "#494F45",
+    "point": "#A58378"
+  },
+  "wedding-line-couple": {
+    "bg": "#FDF8EE",
+    "ink": "#4F4A43",
+    "point": "#96876D"
+  },
+  "engagement-rings": {
+    "bg": "#FDFBF7",
+    "ink": "#5E4B3D",
+    "point": "#A8856C"
+  },
+  "bridal-shower": {
+    "bg": "#FEFBF8",
+    "ink": "#694338",
+    "point": "#BF7565"
+  },
+  "dol-baby-tiger": {
+    "bg": "#FDEFE1",
+    "ink": "#594237",
+    "point": "#AA7A64"
+  },
+  "dol-table": {
+    "bg": "#FFFBF2",
+    "ink": "#7F3228",
+    "point": "#86352A"
+  },
+  "baby-shower-moon": {
+    "bg": "#F9EBD5",
+    "ink": "#404550",
+    "point": "#977D5C"
+  },
+  "birthday-animals": {
+    "bg": "#FEFBF3",
+    "ink": "#4C4D4F",
+    "point": "#B58245"
+  },
+  "birthday-cake": {
+    "bg": "#FEFDFA",
+    "ink": "#694620",
+    "point": "#B58412"
+  },
+  "kids-dino": {
+    "bg": "#FDFBF7",
+    "ink": "#5E463C",
+    "point": "#9D8867"
+  },
+  "hwangap-peony": {
+    "bg": "#FDF8EF",
+    "ink": "#7A3731",
+    "point": "#B12B25"
+  },
+  "anniversary-carnation": {
+    "bg": "#FEFBF5",
+    "ink": "#832D36",
+    "point": "#D35F57"
+  },
+  "housewarming": {
+    "bg": "#F8EBD9",
+    "ink": "#4C4231",
+    "point": "#A86243"
+  },
+  "homeparty-wine": {
+    "bg": "#E8E5D1",
+    "ink": "#5B3736",
+    "point": "#550A24"
+  },
+  "garden-party": {
+    "bg": "#E9E9D6",
+    "ink": "#414531",
+    "point": "#858258"
+  },
+  "picnic": {
+    "bg": "#FDF8ED",
+    "ink": "#6B3F28",
+    "point": "#A25C39"
+  },
+  "christmas-party": {
+    "bg": "#FDFBF8",
+    "ink": "#4B4A38",
+    "point": "#7E534C"
+  },
+  "yearend-party": {
+    "bg": "#FCFAF7",
+    "ink": "#283038",
+    "point": "#010E29"
+  },
+  "newyear-sunrise": {
+    "bg": "#F7F1E8",
+    "ink": "#38465D",
+    "point": "#EB4929"
+  },
+  "opening-shop": {
+    "bg": "#FEFCF7",
+    "ink": "#4C4F33",
+    "point": "#55291C"
+  }
+}
