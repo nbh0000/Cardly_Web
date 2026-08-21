@@ -186,15 +186,14 @@ const TOOLS = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-24 pb-section md:pt-32">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[70vh]"
-        style={{
-          background:
-            "radial-gradient(70% 55% at 50% 0%, #F4EAE5 0%, rgba(244,234,229,0) 72%)",
-        }}
-      />
+    /* 도구 칸이 놓이는 띠.
+
+       머리 아래로 옅게 물든 바탕을 한 겹 깔고 그 위에 흰 카드를 올립니다.
+       카드가 바탕에서 떠 보여야 «고르는 자리» 로 읽히고, 띠가 아래에서
+       한 번 더 선으로 끊기므로 머리 · 고르는 자리 · 그 밖이 눈으로 나뉩니다.
+       예전에는 위에서 아래로 사라지는 방사형 그러데이션이라 어디서 끝나는지
+       알 수 없었습니다. */
+    <section className="relative border-b border-line-soft bg-rose-veil/45 pt-28 pb-section md:pt-32">
 
       <div className="shell">
         {/* 머리글은 화면에 두지 않습니다.

@@ -29,12 +29,16 @@ export function SiteHeader() {
   }, [open]);
 
   return (
+    /* 머리는 언제나 한 겹의 띠입니다.
+
+       예전에는 맨 위에서 투명하게 떠 있다가 스크롤해야 배경이 생겼습니다.
+       그러면 «어디까지가 머리이고 어디부터가 내용인지» 가 페이지를 내려야
+       비로소 정해집니다. 도구를 고르러 온 사람에게는 그 경계가 처음부터
+       분명한 편이 낫습니다 — 띠와 아래 내용을 선 하나로 확실히 나눕니다.
+       스크롤하면 그림자만 얹어 띄웁니다. */
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300 ${
-        scrolled || open
-          ? // 85% 는 헤더 글자와 아래 제목이 겹쳐 보일 만큼 비쳤습니다.
-            "border-b border-line-soft bg-ivory/92 backdrop-blur-md"
-          : "border-b border-transparent bg-transparent"
+      className={`fixed inset-x-0 top-0 z-50 border-b border-line-soft bg-ivory/92 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled || open ? "shadow-[0_1px_16px_-6px_rgb(40_30_20/0.22)]" : ""
       }`}
     >
       <div className="shell flex h-16 items-center justify-between gap-6 md:h-20">
