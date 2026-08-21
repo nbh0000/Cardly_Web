@@ -5,6 +5,7 @@ import { type FontId, fontGroupsFor, fontStack, toFontId } from "@/lib/fonts";
 import { asset } from "@/lib/asset";
 import {
   ADDABLE,
+  artThumb,
   CARD_GROUPS,
   CARD_TEMPLATES,
   type CardCorner,
@@ -312,11 +313,11 @@ export function CardStudio() {
                       "--tx": t.text,
                       // 아트는 배경 사진을, 심플은 CSS 로 그린 면을 깝니다.
                       backgroundImage: t.art
-                        ? `url(${asset("/" + t.art.url)})`
+                        ? `url(${asset("/" + artThumb(t.art))})`
                         : undefined,
                       backgroundPosition: t.art?.position,
                       // 아틀라스는 4열 × 5행이라 한 칸이 카드 한 장 크기가 됩니다.
-                      backgroundSize: t.art ? "400% 500%" : undefined,
+                      backgroundSize: t.art ? (t.art.size ?? "400% 500%") : undefined,
                       background: t.surface,
                       borderColor: template.id === t.id ? "#8a6558" : undefined,
                       boxShadow:
@@ -705,7 +706,7 @@ export function CardStudio() {
                       ? {
                           backgroundImage: `url(${asset("/" + template.art.url)})`,
                           backgroundPosition: template.art.position,
-                          backgroundSize: "400% 500%",
+                          backgroundSize: template.art.size ?? "400% 500%",
                         }
                       : { background: template.surface }
                   }

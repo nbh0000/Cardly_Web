@@ -49,3 +49,7 @@ next-env.d.ts
 # 생성한 표지 그림 원본 (3:4 · 2K · 장당 3MB).
 # 배포에 쓰는 것은 scripts/import-artwork.mjs 가 만든 public/art/*.webp 입니다.
 /cardly-artworks/
+
+# 생성한 명함 배경 원본 (16:9 · 2K~4K).
+# 배포에 쓰는 것은 scripts/import-card-art.mjs 가 만든 public/card-art/*.webp 입니다.
+/cardly-cards/

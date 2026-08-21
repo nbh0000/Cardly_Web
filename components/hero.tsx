@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { asset } from "@/lib/asset";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { ClosedCard } from "@/components/occasion/fold";
-import { CARD_TEMPLATES } from "@/lib/studio/card-templates";
+import { artThumb, CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { createDefaultData, getTemplate, TEMPLATES } from "@/lib/invitation";
 import { DESIGNS, findDesign } from "@/lib/occasion/designs";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
@@ -9,7 +10,8 @@ import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 /* 카드 안의 미리보기는 실제 템플릿 렌더러를 그대로 씁니다.
    따로 그린 그림이 아니라서 템플릿이 바뀌면 홈도 같이 바뀝니다. */
 const RESUME_PICKS = ["banner-navy", "sidebar-forest", "rule-ink"];
-const CARD_PICKS = ["band-charcoal", "bar-ivory", "rules-sand"];
+/* 앞장은 시그니처 배경 한 장 — 홈에서도 가장 새 템플릿이 보입니다. */
+const CARD_PICKS = ["sig-1", "bar-ivory", "rules-sand"];
 
 /* 세 미리보기는 같은 문법을 씁니다.
    — 앞의 한 장을 크게 보여 주고, 뒤의 두 장은 가장자리만 살짝 내밀어
@@ -89,6 +91,11 @@ function CardPreview() {
             "--ac": t.accent,
             "--bg": t.bg,
             "--tx": t.text,
+            backgroundImage: t.art
+              ? `url(${asset("/" + artThumb(t.art))})`
+              : undefined,
+            backgroundPosition: t.art?.position,
+            backgroundSize: t.art?.size,
           } as React.CSSProperties
         }
       >

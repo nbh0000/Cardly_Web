@@ -1,0 +1,122 @@
+{
+  "marble-noir": {
+    "bg": "#232021",
+    "accent": "#876848",
+    "archetype": 18,
+    "dark": true
+  },
+  "linen-sand": {
+    "bg": "#DCC5B0",
+    "accent": "#77685B",
+    "archetype": 4,
+    "dark": false
+  },
+  "leather-burgundy": {
+    "bg": "#2D070A",
+    "accent": "#6D605E",
+    "archetype": 3,
+    "dark": true
+  },
+  "concrete-cool": {
+    "bg": "#BAB9BF",
+    "accent": "#646262",
+    "archetype": 5,
+    "dark": false
+  },
+  "foil-navy": {
+    "bg": "#0B1022",
+    "accent": "#5F616A",
+    "archetype": 16,
+    "dark": true
+  },
+  "kraft-olive": {
+    "bg": "#CC9F73",
+    "accent": "#F7F3EA",
+    "archetype": 16,
+    "dark": true
+  },
+  "terrazzo-cream": {
+    "bg": "#F6ECE3",
+    "accent": "#AB7B60",
+    "archetype": 13,
+    "dark": false
+  },
+  "metal-graphite": {
+    "bg": "#4D4D53",
+    "accent": "#BEC7D7",
+    "archetype": 1,
+    "dark": true
+  },
+  "botanical-forest": {
+    "bg": "#090E0C",
+    "accent": "#5D6357",
+    "archetype": 14,
+    "dark": true
+  },
+  "watercolour-slate": {
+    "bg": "#F4F0ED",
+    "accent": "#4F6176",
+    "archetype": 12,
+    "dark": false
+  },
+  "ivory-plain": {
+    "bg": "#F9F0DD",
+    "accent": "#8B8479",
+    "archetype": 13,
+    "dark": false
+  },
+  "gradient-dusk": {
+    "bg": "#CEA2AD",
+    "accent": "#7C4D46",
+    "archetype": 19,
+    "dark": true
+  },
+  "deco-emerald": {
+    "bg": "#064C2B",
+    "accent": "#7C9786",
+    "archetype": 16,
+    "dark": true
+  },
+  "arc-blush": {
+    "bg": "#F1D8D4",
+    "accent": "#8D7961",
+    "archetype": 19,
+    "dark": false
+  },
+  "riso-duo": {
+    "bg": "#FBF1DE",
+    "accent": "#A03B24",
+    "archetype": 19,
+    "dark": false
+  },
+  "midcentury-blocks": {
+    "bg": "#FAEAD3",
+    "accent": "#04667D",
+    "archetype": 16,
+    "dark": false
+  },
+  "grid-white": {
+    "bg": "#F1F0EC",
+    "accent": "#878481",
+    "archetype": 19,
+    "dark": false
+  },
+  "night-constellation": {
+    "bg": "#060C24",
+    "accent": "#626169",
+    "archetype": 15,
+    "dark": true
+  },
+  "iridescent-pastel": {
+    "bg": "#F3D4CC",
+    "accent": "#8C7768",
+    "archetype": 12,
+    "dark": false
+  },
+  "clay-terracotta": {
+    "bg": "#B05D39",
+    "accent": "#E5CAB9",
+    "archetype": 9,
+    "dark": true
+  }
+}

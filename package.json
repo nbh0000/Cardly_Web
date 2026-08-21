@@ -9,6 +9,7 @@
     "lint": "eslint",
     "invite:add": "node scripts/import-invitation.mjs",
     "art:import": "node scripts/import-artwork.mjs",
+    "card:import": "node scripts/import-card-art.mjs",
     "og:make": "node scripts/make-og.mjs"
   },
   "dependencies": {

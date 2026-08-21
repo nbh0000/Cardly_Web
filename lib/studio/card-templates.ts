@@ -10,6 +10,9 @@
  * 보여줍니다. 그래서 저장한 PNG 는 인쇄 규격 그대로 나옵니다.
  */
 
+import CARD_ART from "@/lib/studio/card-art.json";
+import ARCHETYPE_JSON from "@/lib/studio/archetypes.json";
+
 export type CardKind = "art" | "simple" | "deco";
 
 export type CardDecoId =
@@ -66,35 +69,24 @@ export type Placement = {
  *
  * 배경마다 비어 있는 자리가 다르기 때문에, 이름과 연락처를 어디에 앉힐지가
  * 배경 그림만큼 중요합니다. 예전 Cardly 가 쓰던 좌표를 그대로 옮겨 왔습니다.
+ *
+ * 좌표 자체는 lib/studio/archetypes.json 에 있습니다. 명함 배경을 들이는
+ * 스크립트(scripts/import-card-art.mjs)가 «이 배경에는 어느 배치가 맞는가»
+ * 를 재서 고르는데, 그러려면 TypeScript 밖에서도 읽을 수 있어야 합니다.
  */
-const ARCHETYPES: Placement[] = [
-  { company: [7, 10, 90], name: [7, 43, 145], role: [7, 61, 92], contacts: [[7, 82], [39, 82], [71, 82]], align: "left" },
-  { company: [62, 11, 82], name: [8, 34, 155], role: [9, 55, 90], contacts: [[9, 76], [9, 84], [63, 84]], align: "left" },
-  { company: [8, 12, 88], name: [50, 38, 145], role: [50, 57, 88], contacts: [[8, 80], [40, 80], [70, 80]], align: "center" },
-  { company: [72, 12, 84], name: [8, 66, 150], role: [8, 83, 86], contacts: [[58, 65], [58, 75], [58, 85]], align: "left" },
-  { company: [8, 45, 86], name: [37, 24, 150], role: [38, 43, 90], contacts: [[38, 67], [38, 77], [68, 77]], align: "left" },
-  { company: [42, 10, 90], name: [42, 39, 148], role: [42, 57, 88], contacts: [[42, 76], [42, 84], [70, 84]], align: "left" },
-  { company: [8, 12, 90], name: [8, 30, 168], role: [9, 52, 92], contacts: [[9, 74], [9, 83], [62, 83]], align: "left" },
-  { company: [50, 13, 92], name: [50, 42, 150], role: [50, 60, 88], contacts: [[18, 82], [50, 82], [76, 82]], align: "center" },
-  { company: [73, 75, 84], name: [8, 18, 150], role: [8, 37, 90], contacts: [[8, 66], [8, 76], [8, 86]], align: "left" },
-  { company: [8, 10, 86], name: [8, 70, 145], role: [8, 86, 84], contacts: [[58, 17], [58, 27], [58, 37]], align: "left" },
-  { company: [46, 14, 88], name: [46, 45, 158], role: [46, 64, 88], contacts: [[8, 79], [38, 79], [69, 79]], align: "left" },
-  { company: [8, 82, 86], name: [8, 20, 160], role: [8, 41, 90], contacts: [[55, 60], [55, 71], [55, 82]], align: "left" },
-  { company: [68, 12, 82], name: [50, 40, 152], role: [50, 58, 88], contacts: [[14, 80], [46, 80], [74, 80]], align: "center" },
-  { company: [10, 16, 88], name: [10, 40, 142], role: [10, 58, 86], contacts: [[61, 39], [61, 51], [61, 63]], align: "left" },
-  { company: [44, 84, 84], name: [8, 18, 162], role: [8, 39, 90], contacts: [[8, 70], [39, 70], [69, 70]], align: "left" },
-  { company: [8, 11, 86], name: [33, 37, 150], role: [33, 56, 88], contacts: [[33, 76], [58, 76], [58, 85]], align: "left" },
-  { company: [50, 12, 90], name: [50, 35, 160], role: [50, 55, 90], contacts: [[50, 72], [50, 80], [50, 88]], align: "center" },
-  { company: [75, 12, 82], name: [8, 47, 154], role: [8, 66, 88], contacts: [[8, 83], [39, 83], [69, 83]], align: "left" },
-  { company: [8, 13, 88], name: [57, 26, 148], role: [57, 45, 86], contacts: [[57, 65], [57, 75], [57, 85]], align: "left" },
-  { company: [8, 78, 84], name: [8, 25, 148], role: [8, 44, 88], contacts: [[50, 25], [50, 36], [50, 47]], align: "left" },
-];
+const ARCHETYPES = ARCHETYPE_JSON as Placement[];
 
-/** 배경 그림 한 칸 — 아틀라스에서 잘라 쓸 자리 */
+/** 배경 그림 — 아틀라스에서 잘라 쓰거나, 한 장을 통째로 깔거나 */
 export type CardArt = {
   url: string;
-  /** background-position. 아틀라스는 4열 × 5행이라 background-size 는 400% 500% */
+  /** background-position */
   position: string;
+  /**
+   * background-size. 아틀라스는 4열 × 5행이라 «400% 500%» 로 한 칸만
+   * 보이게 하고, 시그니처처럼 한 장짜리 배경은 «cover» 로 채웁니다.
+   * 적지 않으면 아틀라스로 봅니다 — 기존 100종이 전부 그렇습니다.
+   */
+  size?: string;
 };
 
 export type CardTemplate = {
@@ -116,6 +108,78 @@ export type CardTemplate = {
   /** 장식 — CSS 도형 레이어 */
   deco?: CardDecoId;
 };
+
+/* ------------------------------------------------------------
+   시그니처 20종 — 생성한 배경
+
+   아틀라스 100종과 달리 한 장에 한 배경입니다. 스무 장 모두 Gemini 이미지
+   생성으로 만들었고(generate-cards.mjs), 인쇄에 나가는 판은 폭 2800px 라
+   90 × 50 mm 800dpi 저장에서도 흐려지지 않습니다.
+
+   여기서 정하는 것은 «어떤 배경을 쓰는가» 와 «이름을 붙이는 것» 뿐입니다.
+   글자를 어디에 앉힐지(배치 원형)와 밝은 글자를 쓸지 어두운 글자를 쓸지는
+   scripts/import-card-art.mjs 가 배경을 재서 정해 card-art.json 에 적어
+   둡니다. 손으로 고르면 스무 장 가운데 반드시 몇 장은 이름이 얼룩 위에
+   놓이고, 어느 장이 그런지 찾기도 어렵습니다.
+   ------------------------------------------------------------ */
+
+const SIGNATURE_GROUP = "시그니처";
+
+/** 배경 파일 이름 → 목록에 보이는 이름. 순서가 곧 목록 순서입니다. */
+const SIGNATURE_NAMES: [string, string][] = [
+  ["marble-noir", "느와르 마블"],
+  ["linen-sand", "샌드 리넨"],
+  ["leather-burgundy", "버건디 레더"],
+  ["concrete-cool", "콘크리트"],
+  ["foil-navy", "네이비 포일"],
+  ["kraft-olive", "크라프트 올리브"],
+  ["terrazzo-cream", "테라조"],
+  ["metal-graphite", "그래파이트"],
+  ["botanical-forest", "포레스트"],
+  ["watercolour-slate", "슬레이트 워시"],
+  ["ivory-plain", "아이보리"],
+  ["gradient-dusk", "더스크"],
+  ["deco-emerald", "에메랄드 데코"],
+  ["arc-blush", "블러시 아크"],
+  ["riso-duo", "리소 듀오"],
+  ["midcentury-blocks", "미드센추리"],
+  ["grid-white", "화이트 그리드"],
+  ["night-constellation", "컨스텔레이션"],
+  ["iridescent-pastel", "이리데센트"],
+  ["clay-terracotta", "테라코타"],
+];
+
+type ArtMeasure = {
+  bg: string;
+  accent: string;
+  archetype: number;
+  dark: boolean;
+};
+
+const SIGNATURE_TEMPLATES: CardTemplate[] = SIGNATURE_NAMES.map(
+  ([slug, name], i) => {
+    const measured = (CARD_ART as Record<string, ArtMeasure>)[slug];
+    if (!measured) {
+      throw new Error(
+        `«${slug}» 의 배경이 lib/studio/card-art.json 에 없습니다 — npm run card:import 를 돌리세요`,
+      );
+    }
+    return {
+      id: `sig-${i + 1}`,
+      name,
+      kind: "art" as const,
+      group: SIGNATURE_GROUP,
+      // 배경이 사진이라 종이 질감을 덧씌우지 않습니다.
+      paper: "matte" as const,
+      corner: "soft" as const,
+      bg: measured.bg,
+      text: measured.dark ? "#f7f4ee" : "#1a1a1f",
+      accent: measured.accent,
+      placement: ARCHETYPES[measured.archetype]!,
+      art: { url: `card-art/${slug}.webp`, position: "center", size: "cover" },
+    };
+  },
+);
 
 /* ------------------------------------------------------------
    아트 100종
@@ -283,17 +347,33 @@ const DECO_TEMPLATES: CardTemplate[] = DECOS.flatMap((deco) =>
 /* ------------------------------------------------------------ */
 
 export const CARD_TEMPLATES: CardTemplate[] = [
+  /* 시그니처가 맨 위입니다 — 가장 새로 만든 것이 먼저 보여야 합니다. */
+  ...SIGNATURE_TEMPLATES,
   ...ART_TEMPLATES,
   ...SIMPLE_TEMPLATES,
   ...DECO_TEMPLATES,
 ];
 
-/** 목록 위 갈래 고르기 — 아틀라스 다섯 갈래 + 심플 + 장식 */
+/** 목록 위 갈래 고르기 — 시그니처 + 아틀라스 다섯 갈래 + 심플 + 장식 */
 export const CARD_GROUPS: string[] = [
+  SIGNATURE_GROUP,
   ...ATLASES.map((a) => a.group),
   "심플",
   "장식",
 ];
+
+/**
+ * 고르는 칸에서 쓸 작은 판.
+ *
+ * 시그니처 배경은 인쇄용이라 한 장이 폭 2800px 입니다. 편집기 왼쪽의
+ * 칸은 70px 남짓인데 거기에 큰 판 스무 장을 물리면 목록을 여는 순간
+ * 수십 MB 를 받습니다. 아틀라스 100종은 원본이 이미 작아 그대로 씁니다.
+ */
+export function artThumb(art: CardArt): string {
+  return art.url.startsWith("card-art/")
+    ? art.url.replace("card-art/", "card-art/thumb/")
+    : art.url;
+}
 
 export const DEFAULT_CARD_TEMPLATE = CARD_TEMPLATES[0]!;
 
