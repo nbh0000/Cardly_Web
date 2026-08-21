@@ -768,3 +768,359 @@
   background: var(--iv-accent);
   box-shadow: 0 0 0.5em var(--iv-accent);
 }
+
+/* ════════════════════════════════════════════════════════════
+   커버 다섯 판 더 — 청첩장이 또 다른 물건인 척합니다
+
+   입장권·호외·네온과 같은 계열입니다. 그림을 그리지 않고 «구조» 로만
+   만듭니다 — 우표의 톱니, 창살, 접힌 자국, 달력 격자, 리본 띠는 모두
+   선과 면이라 어떤 사진 위에도 얹히고, 손으로 그린 도형처럼 클립아트로
+   읽히지 않습니다.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── 우표 ─────────────────────────────────────────────────── */
+
+.iv-cover-stamp {
+  position: relative;
+  padding: 2.4em 1.5em 2.6em;
+  text-align: center;
+  background: var(--iv-bg);
+}
+/* 항공우편 봉투의 빗금 테두리 */
+.iv-stamp-air {
+  position: absolute;
+  inset: 0.55em;
+  pointer-events: none;
+  border: 0.42em solid transparent;
+  border-image: repeating-linear-gradient(
+      45deg,
+      var(--iv-accent) 0 0.5em,
+      transparent 0.5em 1em,
+      var(--iv-sub) 1em 1.5em,
+      transparent 1.5em 2em
+    )
+    12;
+  opacity: 0.7;
+}
+.iv-stamp {
+  position: relative;
+  width: 76%;
+  margin: 0 auto 1.4em;
+  padding: 0.55em 0.55em 0.75em;
+  background: var(--iv-accent-soft);
+  filter: drop-shadow(0 10px 22px rgb(0 0 0 / 0.16));
+}
+/* 우표의 톱니 — 위아래 가장자리를 배경색 원으로 갉아 냅니다.
+   배경색으로 갉으므로 바탕이 무엇이든 종이를 뜯어낸 것처럼 보입니다. */
+.iv-stamp::before,
+.iv-stamp::after {
+  content: "";
+  position: absolute;
+  inset-inline: -0.02em;
+  height: 0.68em;
+  background:
+    radial-gradient(circle at 0.34em 50%, var(--iv-bg) 0.3em, transparent 0.31em)
+    repeat-x;
+  background-size: 0.68em 100%;
+}
+.iv-stamp::before {
+  top: -0.34em;
+}
+.iv-stamp::after {
+  bottom: -0.34em;
+}
+.iv-stamp-photo {
+  position: relative;
+  overflow: hidden;
+}
+.iv-stamp-photo .iv-photo {
+  aspect-ratio: 4 / 5;
+  height: auto;
+}
+/* 소인 — 비스듬히 찍힌 동그란 도장 */
+.iv-stamp-mark {
+  position: absolute;
+  right: 0.5em;
+  bottom: 0.5em;
+  display: grid;
+  place-content: center;
+  gap: 0.1em;
+  width: 5.2em;
+  height: 5.2em;
+  border: 2px solid var(--iv-accent);
+  border-radius: 50%;
+  rotate: -14deg;
+  color: var(--iv-accent);
+  text-align: center;
+  /* 소인은 사진 위에 찍힙니다. 어두운 사진에서도 읽히도록 종이색을
+     옅게 깔아 둡니다 — 예전에 multiply 로 겹쳤더니 어두운 사진에서는
+     도장이 통째로 사라졌습니다. */
+  background: color-mix(in srgb, var(--iv-accent-soft) 86%, transparent);
+  backdrop-filter: saturate(0.6);
+}
+.iv-stamp-mark b {
+  font-family: var(--font-thin-serif);
+  font-size: 0.62em;
+  letter-spacing: 0.06em;
+}
+.iv-stamp-mark i {
+  font-style: normal;
+  font-size: 0.5em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-top: 1px solid currentColor;
+  padding-top: 0.25em;
+  margin-top: 0.1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 4.2em;
+}
+.iv-stamp-value {
+  margin-top: 0.55em;
+  font-family: var(--font-thin-serif);
+  font-size: 0.6em;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-stamp-names {
+  margin-top: 0.3em;
+}
+
+/* ── 창 ───────────────────────────────────────────────────── */
+
+.iv-cover-window {
+  padding: 2.2em 1.4em 2.6em;
+  text-align: center;
+  background: var(--iv-bg);
+}
+.iv-window {
+  position: relative;
+  margin: 1.1em auto 0;
+  width: 88%;
+  overflow: hidden;
+  /* 위가 둥근 창 */
+  border-radius: 46% 46% 3% 3% / 26% 26% 2% 2%;
+  box-shadow: 0 16px 34px rgb(0 0 0 / 0.18);
+}
+.iv-window .iv-photo {
+  aspect-ratio: 3 / 4;
+  height: auto;
+}
+/* 창살 — 세로 하나, 가로 둘. 사진 위에 얹는 선이라 그림을 가리지
+   않으면서 «창 너머» 라는 것만 말합니다. */
+.iv-window-bars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --iv-bar: color-mix(in srgb, var(--iv-bg) 88%, transparent);
+  background:
+    linear-gradient(var(--iv-bar), var(--iv-bar)) 50% 0 / 3px 100% no-repeat,
+    linear-gradient(var(--iv-bar), var(--iv-bar)) 0 34% / 100% 3px no-repeat,
+    linear-gradient(var(--iv-bar), var(--iv-bar)) 0 67% / 100% 3px no-repeat;
+  box-shadow: inset 0 0 0 5px var(--iv-bar);
+}
+.iv-window-sill {
+  margin-top: 1.5em;
+  padding-top: 1.3em;
+  border-top: 3px solid color-mix(in srgb, var(--iv-accent) 34%, transparent);
+}
+.iv-window-sill .iv-cover-names {
+  margin-top: 0.25em;
+}
+
+/* ── 편지 ─────────────────────────────────────────────────── */
+
+.iv-cover-letter {
+  padding: 2.2em 1.3em 2.6em;
+  background: var(--iv-bg);
+}
+.iv-letter {
+  position: relative;
+  padding: 2.2em 1.6em 2.6em;
+  text-align: center;
+  background: var(--iv-accent-soft);
+  box-shadow: 0 14px 32px rgb(0 0 0 / 0.14);
+}
+/* 접힌 자국 — 종이가 한 번 접혀 있었다는 것만 말합니다 */
+.iv-letter-fold {
+  position: absolute;
+  inset-inline: 0;
+  top: 38%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--iv-ink) 22%, transparent) 12% 88%,
+    transparent
+  );
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--iv-bg) 70%, transparent);
+}
+.iv-letter-names {
+  font-size: 1.55em;
+  line-height: 1.32;
+  margin-top: 0.5em;
+}
+/* 봉랍 — 두 사람의 첫 글자를 찍습니다 */
+.iv-letter-seal {
+  position: absolute;
+  left: 50%;
+  bottom: -1.35em;
+  translate: -50% 0;
+  display: grid;
+  place-content: center;
+  width: 2.7em;
+  height: 2.7em;
+  border-radius: 50%;
+  background: var(--iv-accent);
+  color: var(--iv-accent-soft);
+  font-family: var(--font-thin-serif);
+  font-size: 0.9em;
+  letter-spacing: 0.04em;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--iv-bg) 40%, transparent),
+    0 6px 14px rgb(0 0 0 / 0.24);
+}
+.iv-letter-photo {
+  width: 62%;
+  margin: 2.6em auto 0;
+  padding: 0.4em 0.4em 1.4em;
+  background: color-mix(in srgb, var(--iv-bg) 70%, #fff);
+  rotate: -3.5deg;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.16);
+}
+.iv-letter-photo .iv-photo {
+  aspect-ratio: 1 / 1;
+  height: auto;
+}
+
+/* ── 달력 ─────────────────────────────────────────────────── */
+
+.iv-cover-calendar {
+  padding: 2.2em 1.4em 2.6em;
+  text-align: center;
+  background: var(--iv-bg);
+}
+.iv-cal-photo {
+  overflow: hidden;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.16);
+}
+.iv-cal-photo .iv-photo {
+  aspect-ratio: 5 / 3;
+  height: auto;
+}
+.iv-cal-sheet {
+  margin: 1.3em auto 1.4em;
+  padding: 1.1em 1em 1.2em;
+  background: var(--iv-accent-soft);
+}
+.iv-cal-month {
+  font-family: var(--font-thin-serif);
+  font-size: 0.72em;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: var(--iv-accent);
+}
+.iv-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.28em 0;
+  margin-top: 0.9em;
+  font-size: 0.62em;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--iv-ink) 62%, transparent);
+}
+.iv-cal-grid > span {
+  display: grid;
+  place-items: center;
+  /* 칸을 살짝 납작하게 — 정사각형으로 두면 여섯 줄이 커버 한 판을
+     통째로 먹습니다. 실제 달력도 가로가 더 넓습니다. */
+  aspect-ratio: 1.25;
+}
+.iv-cal-head {
+  color: var(--iv-accent);
+  font-family: var(--font-thin-serif);
+}
+/* 그날 — 동그라미 하나가 이 판의 전부입니다.
+   예전에는 ::before 에 z-index: -1 로 원을 깔았는데, 그러면 부모의
+   배경보다 뒤로 가서 아예 보이지 않습니다. 칸 자체를 칠합니다. */
+.iv-cal-grid > span[data-on] {
+  /* 칸이 가로로 넓으므로 border-radius 로 칠하면 타원이 됩니다.
+     radial-gradient 의 원은 짧은 축을 따라가 진짜 동그라미가 됩니다. */
+  background: radial-gradient(circle, var(--iv-accent) 46%, transparent 47%);
+  color: var(--iv-accent-soft);
+  font-weight: 600;
+}
+.iv-cal-names {
+  margin-top: 0.3em;
+}
+
+/* ── 리본 ─────────────────────────────────────────────────── */
+
+.iv-cover-ribbon {
+  padding: 2.2em 1.4em 3em;
+  text-align: center;
+  background: var(--iv-bg);
+}
+.iv-ribbon-card {
+  position: relative;
+  width: 86%;
+  margin: 0 auto;
+  overflow: hidden;
+  box-shadow: 0 16px 34px rgb(0 0 0 / 0.2);
+}
+.iv-ribbon-card .iv-photo {
+  aspect-ratio: 3 / 4;
+  height: auto;
+}
+/* 카드를 세로로 두르는 리본. 양 가장자리를 어둡게 해 실크가 접히며
+   빛을 받는 것처럼 보이게 합니다. */
+.iv-ribbon-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 62%;
+  width: 2.2em;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--iv-accent) 82%, #000) 0 12%,
+    var(--iv-accent) 12% 62%,
+    color-mix(in srgb, var(--iv-accent) 70%, #000) 62% 100%
+  );
+  box-shadow: 0 0 18px rgb(0 0 0 / 0.2);
+}
+/* 리본에 매달린 이름표 */
+.iv-ribbon-tag {
+  position: relative;
+  width: 78%;
+  margin: -2.2em auto 0;
+  padding: 1.6em 1.2em 1.4em;
+  background: var(--iv-accent-soft);
+  box-shadow: 0 12px 26px rgb(0 0 0 / 0.18);
+  /* 아래 두 모서리를 잘라 낸 이름표 모양 */
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%);
+}
+.iv-ribbon-hole {
+  position: absolute;
+  top: 0.7em;
+  left: 50%;
+  translate: -50% 0;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background: var(--iv-bg);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.3);
+}
+.iv-ribbon-tag .iv-eyebrow {
+  margin-top: 0.5em;
+}
+.iv-ribbon-names {
+  font-size: 1.4em;
+  margin-top: 0.35em;
+}
+.iv-ribbon-tag .iv-cover-meta {
+  margin-bottom: 0.8em;
+}

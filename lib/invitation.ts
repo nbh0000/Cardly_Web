@@ -23,7 +23,12 @@ export type CoverLayout =
   | "retro" /* 사선 띠를 두른 옛날 포스터 */
   | "garden" /* 야외 · 풀사진 위 아치 */
   | "press" /* 신문 1면 호외 */
-  | "neon"; /* 밤거리 간판 */
+  | "neon" /* 밤거리 간판 */
+  | "stamp" /* 소인이 찍힌 기념우표 */
+  | "window" /* 격자창 너머 */
+  | "letter" /* 접었던 편지지 + 봉랍 */
+  | "calendar" /* 그날에 동그라미 친 달력 */
+  | "ribbon"; /* 리본으로 묶고 이름표를 단 카드 */
 
 export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "center", label: "센터" },
@@ -41,6 +46,11 @@ export const COVER_LAYOUTS: { id: CoverLayout; label: string }[] = [
   { id: "garden", label: "야외" },
   { id: "press", label: "호외" },
   { id: "neon", label: "네온" },
+  { id: "stamp", label: "우표" },
+  { id: "window", label: "창" },
+  { id: "letter", label: "편지" },
+  { id: "calendar", label: "달력" },
+  { id: "ribbon", label: "리본" },
 ];
 
 /* ---------- 사진 보정 ----------
@@ -923,6 +933,140 @@ export const TEMPLATES: Template[] = [
     eyebrow: "충무로 사진관",
     photoSeed: 29,
     theme: { bg: "#F3EADA", ink: "#3B2C1E", sub: "#D8C4A6", accent: "#8A5A2B", accentSoft: "#E7D6BC" },
+  },
+  /* ---- 사물 계열 : 청첩장이 또 다른 물건인 척하는 쪽 ----
+     입장권·호외·네온에 이어 다섯 판을 더 넣었습니다. 판마다 두 벌씩이고,
+     같은 판이어도 색·글꼴·사진 보정·문구가 전부 달라 서로 다른 물건으로
+     읽힙니다 — 색만 바꾼 두 벌은 한 벌을 두 번 세어 놓은 것뿐입니다. */
+  {
+    id: "postmark",
+    name: "소인",
+    categories: ["classic", "photo"],
+    badge: "NEW",
+    coverLayout: "stamp",
+    headingFont: "nanum-myeongjo",
+    photoTone: "film",
+    script: "Par Avion",
+    eyebrow: "WEDDING POST",
+    photoSeed: 30,
+    theme: { bg: "#F2EDE4", ink: "#2C2A26", sub: "#C7B9A3", accent: "#9B4A34", accentSoft: "#FBF7F0" },
+  },
+  {
+    id: "airmail",
+    name: "항공우편",
+    categories: ["modern", "photo"],
+    badge: "NEW",
+    coverLayout: "stamp",
+    headingFont: "gothic-a1",
+    photoTone: "cool",
+    script: "From us, to you",
+    eyebrow: "SPECIAL DELIVERY",
+    photoSeed: 31,
+    theme: { bg: "#1C2436", ink: "#EEF1F6", sub: "#37455F", accent: "#C7D4E6", accentSoft: "#243049" },
+  },
+  {
+    id: "casement",
+    name: "여닫이창",
+    categories: ["minimal", "classic"],
+    badge: "NEW",
+    coverLayout: "window",
+    headingFont: "gowun-batang",
+    photoTone: "warm",
+    script: "Come and see",
+    eyebrow: "우리 집 창가에서",
+    photoSeed: 32,
+    theme: { bg: "#EFE9DF", ink: "#33302A", sub: "#D6CCBB", accent: "#7B6A52", accentSoft: "#F7F3EB" },
+  },
+  {
+    id: "chapel-window",
+    name: "채플",
+    categories: ["classic", "floral"],
+    badge: "NEW",
+    coverLayout: "window",
+    headingFont: "hahmlet",
+    photoTone: "fade",
+    script: "In the light",
+    eyebrow: "THE CEREMONY",
+    photoSeed: 33,
+    theme: { bg: "#26382F", ink: "#F2EFE6", sub: "#3B5145", accent: "#D9C089", accentSoft: "#2F4438" },
+  },
+  {
+    id: "wax-seal",
+    name: "봉랍",
+    categories: ["classic", "minimal"],
+    badge: "NEW",
+    coverLayout: "letter",
+    headingFont: "nanum-myeongjo",
+    photoTone: "warm",
+    script: "You are invited",
+    eyebrow: "삼가 알려 드립니다",
+    photoSeed: 34,
+    theme: { bg: "#E8E0D2", ink: "#302A22", sub: "#CFC2AC", accent: "#7A2B25", accentSoft: "#FAF6EE" },
+  },
+  {
+    id: "blue-letter",
+    name: "푸른 편지",
+    categories: ["minimal", "modern"],
+    badge: "NEW",
+    coverLayout: "letter",
+    headingFont: "gowun-dodum",
+    photoTone: "cool",
+    script: "A letter for you",
+    eyebrow: "우리가 보내는 편지",
+    photoSeed: 35,
+    theme: { bg: "#DEE6EC", ink: "#25313B", sub: "#BCCAD6", accent: "#33566E", accentSoft: "#F4F8FB" },
+  },
+  {
+    id: "that-day",
+    name: "그날",
+    categories: ["modern", "minimal"],
+    badge: "NEW",
+    coverLayout: "calendar",
+    headingFont: "sans",
+    photoTone: "none",
+    script: "Mark the day",
+    eyebrow: "SAVE THE DATE",
+    photoSeed: 36,
+    theme: { bg: "#FBFAF7", ink: "#1F1E1C", sub: "#E2DFD8", accent: "#C2452F", accentSoft: "#F4F1EA" },
+  },
+  {
+    id: "one-circle",
+    name: "동그라미 하나",
+    categories: ["minimal", "photo"],
+    badge: "NEW",
+    coverLayout: "calendar",
+    headingFont: "nanum-gothic",
+    photoTone: "bw",
+    script: "The one day",
+    eyebrow: "우리의 하루",
+    photoSeed: 37,
+    theme: { bg: "#22211F", ink: "#F5F3EE", sub: "#3A3835", accent: "#C9A46B", accentSoft: "#2C2B28" },
+  },
+  {
+    id: "silk-ribbon",
+    name: "실크 리본",
+    categories: ["floral", "classic"],
+    badge: "NEW",
+    coverLayout: "ribbon",
+    headingFont: "gowun-batang",
+    photoTone: "warm",
+    script: "With love",
+    eyebrow: "초대합니다",
+    photoSeed: 38,
+    theme: { bg: "#F6EDE9", ink: "#3A2A2A", sub: "#E3CFC8", accent: "#B0656B", accentSoft: "#FDF8F6" },
+  },
+  {
+    id: "velvet-tag",
+    name: "벨벳 태그",
+    categories: ["modern", "classic"],
+    badge: "NEW",
+    coverLayout: "ribbon",
+    headingFont: "diphylleia",
+    photoTone: "film",
+    script: "Save our date",
+    eyebrow: "THE INVITATION",
+    photoSeed: 39,
+    theme: { bg: "#EFE8E2", ink: "#2A2320", sub: "#D5C7BC", accent: "#3F5B4A", accentSoft: "#FAF6F2" },
   },
 ];
 

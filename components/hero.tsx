@@ -197,22 +197,20 @@ export function Hero() {
       />
 
       <div className="shell">
-        <div className="rise mx-auto max-w-narrow text-center">
-          <span className="eyebrow eyebrow-center">Cardly</span>
-          <h1 className="mt-5 font-serif text-display text-ink">
-            필요한 서류와 카드를,
-            <br />
-            <em className="not-italic text-rose-deep">브라우저에서 바로</em>
-          </h1>
-          <p className="mx-auto mt-5 max-w-narrow text-body-lg text-ink-soft">
-            가입도 설치도 없이 네 가지를 만듭니다. 이력서·명함·초대장은 계속
-            무료이고, 입력한 내용은 이 브라우저를 벗어나지 않습니다.
-          </p>
-        </div>
+        {/* 머리글은 화면에 두지 않습니다.
+
+            «필요한 서류와 카드를 브라우저에서 바로» 같은 문장은 바로 아래
+            네 장의 카드가 이미 하는 말을 한 번 더 하는 것뿐입니다. 홈은
+            물건이어야 하고, 물건에 대한 설명이어서는 안 됩니다.
+
+            다만 문서에 h1 이 하나도 없으면 스크린리더가 «이 페이지가 무엇인지»
+            읽어 줄 것이 없고 검색엔진도 제목을 잃습니다. 그래서 눈에는 안
+            보이고 읽어 주기만 하는 한 줄만 남깁니다. */}
+        <h1 className="sr-only">Cardly — 이력서 · 명함 · 모바일 청첩장 · 초대장</h1>
 
         {/* 도구가 먼저 보여야 합니다 — 무엇을 하는 곳인지 스크롤 없이
             읽히도록 네 가지를 한 줄에 나란히 둡니다. */}
-        <div className="rise mt-block grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rise grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {TOOLS.map((tool) => (
             <Link
               key={tool.href}

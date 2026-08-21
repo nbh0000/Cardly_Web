@@ -274,6 +274,12 @@ function Cover({ template, data }: { template: Template; data: InvitationData })
   if (layout === "garden") return <CoverGarden data={data} names={names} />;
   if (layout === "press") return <CoverPress data={data} names={names} />;
   if (layout === "neon") return <CoverNeon data={data} names={names} />;
+  if (layout === "stamp") return <CoverStamp data={data} names={names} />;
+  if (layout === "window") return <CoverWindow data={data} names={names} />;
+  if (layout === "letter") return <CoverLetter data={data} names={names} />;
+  if (layout === "calendar")
+    return <CoverCalendar data={data} names={names} />;
+  if (layout === "ribbon") return <CoverRibbon data={data} names={names} />;
   return <CoverCenter data={data} names={names} template={template} />;
 }
 
@@ -308,6 +314,46 @@ function englishNames(data: InvitationData, names: Names) {
     second: (groomFirst ? data.brideEnglish : data.groomEnglish) || names.second,
   };
 }
+
+/**
+ * 달력 한 판을 만듭니다 — 그 달의 첫 요일만큼 앞을 비우고 날짜를 채웁니다.
+ *
+ * 커버에 실제로 넘길 수 있는 달력을 그리려는 것이 아닙니다. «그날» 하나에
+ * 동그라미가 쳐진 그림이면 되므로, 그 달의 칸만 정확하면 충분합니다.
+ */
+function calendarDays(iso: string) {
+  const dt = parseDate(iso);
+  const year = dt.getFullYear();
+  const month = dt.getMonth();
+  const first = new Date(year, month, 1).getDay();
+  const last = new Date(year, month + 1, 0).getDate();
+
+  const cells: (number | null)[] = Array.from({ length: first }, () => null);
+  for (let d = 1; d <= last; d++) cells.push(d);
+  /* 마지막 줄을 채워 격자가 삐뚤어지지 않게 합니다 */
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  return {
+    month: `${MONTH_EN[month]} ${year}`,
+    date: dt.getDate(),
+    cells,
+  };
+}
+
+const MONTH_EN = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 function PhotoSlot({
   src,
@@ -902,6 +948,174 @@ function CoverNeon({ data, names }: { data: InvitationData; names: Names }) {
           {formatDateKo(data.date)} {formatTimeKo(data.time)}
           <br />
           {data.venueName} {data.venueHall}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/** 우표 — 소인이 찍힌 기념우표 한 장 */
+function CoverStamp({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-stamp">
+      {/* 항공우편 봉투의 빗금 테두리 */}
+      <span className="iv-stamp-air" aria-hidden />
+
+      <div className="iv-stamp">
+        <div className="iv-stamp-photo">
+          <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+          {/* 소인 — 사진 위에 비스듬히 찍힙니다 */}
+          <span className="iv-stamp-mark" aria-hidden>
+            <b>{formatDateDots(data.date)}</b>
+            <i>{data.venueName}</i>
+          </span>
+        </div>
+        <p className="iv-stamp-value">{data.coverEyebrow}</p>
+      </div>
+
+      <ScriptLine data={data} />
+      <h1 className="iv-cover-names iv-stamp-names">
+        {names.first} <span className="iv-dot">&middot;</span> {names.second}
+      </h1>
+      <p className="iv-cover-meta">
+        {en.first} &amp; {en.second}
+        <br />
+        {formatDateKo(data.date)} {formatTimeKo(data.time)}
+      </p>
+    </section>
+  );
+}
+
+/** 창 — 격자창 너머로 보는 두 사람 */
+function CoverWindow({ data, names }: { data: InvitationData; names: Names }) {
+  return (
+    <section className="iv-cover iv-cover-window">
+      <p className="iv-eyebrow">{data.coverEyebrow}</p>
+
+      <div className="iv-window">
+        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        {/* 창틀 — 사진 위에 얹는 살. 그림이 아니라 선이라 어떤 사진에도
+            얹힙니다. */}
+        <span className="iv-window-bars" aria-hidden />
+      </div>
+
+      {/* 창턱 — 이름이 여기 놓입니다 */}
+      <div className="iv-window-sill">
+        <ScriptLine data={data} />
+        <h1 className="iv-cover-names">
+          {names.first}
+          <Amp wide />
+          {names.second}
+        </h1>
+        <p className="iv-cover-meta">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/** 편지 — 접었던 자국이 남은 편지지와 봉랍 */
+function CoverLetter({ data, names }: { data: InvitationData; names: Names }) {
+  const initials = `${names.first.slice(0, 1)}${names.second.slice(0, 1)}`;
+  return (
+    <section className="iv-cover iv-cover-letter">
+      <div className="iv-letter">
+        {/* 접힌 자국 — 종이가 한 번 접혀 있었다는 것만 말합니다 */}
+        <span className="iv-letter-fold" aria-hidden />
+
+        <p className="iv-eyebrow">{data.coverEyebrow}</p>
+        <ScriptLine data={data} className="iv-script-lg" />
+        <h1 className="iv-cover-names iv-letter-names">
+          {names.first}
+          <br />
+          {names.second}
+        </h1>
+        <span className="iv-hairline" />
+        <p className="iv-cover-meta">
+          {formatDateKo(data.date)} {formatTimeKo(data.time)}
+          <br />
+          {data.venueName} {data.venueHall}
+        </p>
+
+        {/* 봉랍 — 두 사람의 첫 글자를 찍습니다 */}
+        <span className="iv-letter-seal" aria-hidden>
+          {initials}
+        </span>
+      </div>
+
+      {/* 편지 밑에 깔린 사진 — 봉투에서 반쯤 꺼낸 것처럼 */}
+      <div className="iv-letter-photo">
+        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+      </div>
+    </section>
+  );
+}
+
+/** 달력 — 그날 하루에 동그라미 */
+function CoverCalendar({ data, names }: { data: InvitationData; names: Names }) {
+  const day = calendarDays(data.date);
+  return (
+    <section className="iv-cover iv-cover-calendar">
+      <div className="iv-cal-photo">
+        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+      </div>
+
+      <div className="iv-cal-sheet">
+        <p className="iv-cal-month">{day.month}</p>
+        <div className="iv-cal-grid" aria-hidden>
+          {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+            <span key={i} className="iv-cal-head">
+              {d}
+            </span>
+          ))}
+          {day.cells.map((n, i) => (
+            <span key={i} data-on={n === day.date ? "1" : undefined}>
+              {n ?? ""}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <ScriptLine data={data} />
+      <h1 className="iv-cover-names iv-cal-names">
+        {names.first} <span className="iv-dot">&middot;</span> {names.second}
+      </h1>
+      <p className="iv-cover-meta">
+        {formatTimeKo(data.time)} · {data.venueName} {data.venueHall}
+      </p>
+    </section>
+  );
+}
+
+/** 리본 — 실크 리본으로 묶고 이름표를 달았습니다 */
+function CoverRibbon({ data, names }: { data: InvitationData; names: Names }) {
+  const en = englishNames(data, names);
+  return (
+    <section className="iv-cover iv-cover-ribbon">
+      <div className="iv-ribbon-card">
+        <PhotoSlot src={data.coverPhoto} fit={data.coverPhotoFit} seed={0} />
+        {/* 카드를 세로로 두르는 리본 */}
+        <span className="iv-ribbon-band" aria-hidden />
+      </div>
+
+      {/* 리본에 매달린 이름표 */}
+      <div className="iv-ribbon-tag">
+        <span className="iv-ribbon-hole" aria-hidden />
+        <p className="iv-eyebrow">{data.coverEyebrow}</p>
+        <h1 className="iv-cover-names iv-ribbon-names">
+          {names.first}
+          <Amp wide />
+          {names.second}
+        </h1>
+        <ScriptLine data={data} />
+        <p className="iv-cover-meta">
+          {en.first} &amp; {en.second}
+          <br />
+          {formatDateKo(data.date)} · {data.venueName}
         </p>
       </div>
     </section>
