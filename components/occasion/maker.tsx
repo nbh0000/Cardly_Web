@@ -8,7 +8,13 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ClosedCard } from "@/components/occasion/fold";
+import { SharePanel } from "@/components/publish/share-panel";
+import { backendEnabled } from "@/lib/backend/client";
+import { docUrl } from "@/lib/backend/docs";
+import { useDocStore } from "@/lib/backend/use-doc";
 import { FoldedCard } from "@/components/occasion/folded-card";
 import { DESIGNS, findDesign } from "@/lib/occasion/designs";
 import { OCCASIONS } from "@/lib/occasion/occasions";
@@ -28,9 +34,10 @@ import { LIMITS, type InviteData } from "@/lib/occasion/types";
    미리보기는 받는 사람 화면과 같은 컴포넌트(FoldedCard)입니다. 복제하면
    반드시 한쪽만 고쳐지는 날이 옵니다.
 
-   서버가 없으므로 내용은 주소 뒤에 실려 나갑니다(lib/occasion/share).
-   가입도 결제도 없고, 적은 글이 이 브라우저 밖으로 나가는 때는 «링크를
-   직접 보낼 때» 뿐입니다.
+   적는 동안에는 이 브라우저에만 남습니다. 로그인해 두면 계정에 저장되어
+   다른 기기에서 이어서 고칠 수 있고, «발행» 을 누르면 짧은 주소가 생깁니다.
+   가입하지 않고 내용을 주소에 통째로 실어 보내는 옛 길도 그대로 열어
+   두었습니다(lib/occasion/share) — 이미 그렇게 보낸 초대장이 돌아다닙니다.
    ════════════════════════════════════════════════════════════ */
 
 const DRAFT_KEY = "cardly:occasion:draft";
@@ -97,6 +104,7 @@ const INPUT =
   "w-full min-h-[44px] rounded-md border border-line bg-white px-3.5 py-2.5 text-body text-ink outline-none transition-colors placeholder:text-hint focus:border-rose";
 
 export function Maker({ initial }: { initial: InviteData }) {
+  const router = useRouter();
   const [data, setData] = useState<InviteData>(initial);
   const [step, setStep] = useState<Step>(0);
   const [sending, setSending] = useState(false);
@@ -104,6 +112,44 @@ export function Maker({ initial }: { initial: InviteData }) {
   /** 마지막으로 저장한 시각 — 저장했다는 것을 눈에 보이게 합니다 */
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const restored = useRef(false);
+
+  /* 계정에 저장하고 주소를 받는 부분. 로그인하지 않았으면 지금까지처럼
+     이 브라우저에만 저장되고, 발행 단추가 로그인으로 안내합니다. */
+  const store = useDocStore<InviteData>({
+    kind: "occasion",
+    data,
+    title: (d) => d.title.replace(/\n/g, " ").slice(0, 40),
+    design: (d) => d.d,
+    eventDate: (d) => d.date || null,
+    onNormalized: setData,
+  });
+
+  const [adopted, setAdopted] = useState<string | null>(null);
+  const loadedDoc = store.loaded;
+  if (loadedDoc && adopted !== loadedDoc.doc.id) {
+    setAdopted(loadedDoc.doc.id);
+    setData((d) => ({ ...d, ...loadedDoc.data }));
+    setStep(1);
+  }
+
+  const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState<string | null>(
+    null,
+  );
+
+  const publish = useCallback(async () => {
+    if (!store.online) {
+      router.push(`/login?next=${encodeURIComponent("/invitation-card/make/")}`);
+      return;
+    }
+    setPublishing(true);
+    try {
+      const result = await store.publish();
+      if (result) setPublished(result.slug);
+    } finally {
+      setPublishing(false);
+    }
+  }, [store, router]);
 
   const origin = useOrigin();
   const canShare = useCanShare();
@@ -472,24 +518,90 @@ export function Maker({ initial }: { initial: InviteData }) {
             <FoldedCard data={data} design={design} />
           </div>
 
-          <div className="mx-auto mt-block grid max-w-narrow gap-2">
-            {canShare && (
-              <button type="button" className="btn btn-primary" onClick={share}>
-                카카오톡 · 메시지로 보내기
-              </button>
+          {/* ── 발행 ──
+              주소를 하나 받아 보냅니다. 받는 사람은 짧은 주소를 누르고,
+              카카오톡에는 표지 그림이 미리보기로 뜹니다. 참석 회신과
+              방명록도 이 주소를 통해서만 모입니다. */}
+          <div className="mx-auto mt-block max-w-narrow">
+            {published ? (
+              <>
+                <h3 className="text-center font-serif text-h3 text-ink">
+                  초대장 주소가 만들어졌습니다
+                </h3>
+                <p className="mt-2 mb-6 text-center text-caption text-ink-soft">
+                  무료 발행은 7일 동안 열려 있습니다.
+                </p>
+                <SharePanel
+                  url={docUrl("occasion", published)}
+                  slug={published}
+                  title={data.title.replace(/\n/g, " ")}
+                  description={[data.date, data.time, data.place]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  fresh
+                />
+                <div className="mt-6 flex gap-2">
+                  <Link
+                    href={store.doc ? `/account/doc/?id=${store.doc.id}` : "/account"}
+                    className="btn btn-ghost flex-1 bg-white"
+                  >
+                    링크 관리
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="grid gap-2">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={publishing || !backendEnabled}
+                  onClick={publish}
+                >
+                  {publishing
+                    ? "발행하는 중…"
+                    : store.online
+                      ? "링크 발행하고 보내기"
+                      : "로그인하고 발행하기"}
+                </button>
+                <p className="text-center text-[0.75rem] leading-relaxed text-muted">
+                  발행하면 짧은 주소가 생기고, 카카오톡에 붙였을 때 표지 그림이
+                  함께 보입니다. 무료로 7일, 결제하면 행사일 뒤까지 열립니다.
+                </p>
+
+                {/* 가입하기 싫은 사람을 위한 옛 길 — 내용을 주소에 통째로
+                    싣습니다. 그대로 두는 이유는 이미 이 방식으로 보낸 초대장이
+                    돌아다니고 있고, 계정 없이 한 장 보내고 끝내려는 사람에게는
+                    이쪽이 더 빠르기 때문입니다. */}
+                <details className="mt-4 rounded-md border border-line bg-white px-4 py-3">
+                  <summary className="cursor-pointer text-[0.8125rem] text-ink-soft">
+                    가입 없이 지금 바로 보내기
+                  </summary>
+                  <p className="mt-3 text-[0.75rem] leading-relaxed text-muted">
+                    내용을 주소 안에 담아 보냅니다. 계정도 발행도 필요 없지만,
+                    주소가 길고 참석 회신·방명록은 쓸 수 없습니다.
+                  </p>
+                  <div className="mt-4 grid gap-2">
+                    {canShare && (
+                      <button type="button" className="btn btn-ghost bg-white" onClick={share}>
+                        메시지로 보내기
+                      </button>
+                    )}
+                    <a
+                      className="btn btn-ghost bg-white"
+                      href={`sms:?&body=${encodeURIComponent(smsBody)}`}
+                    >
+                      문자로 보내기
+                    </a>
+                    <button type="button" className="btn btn-ghost bg-white" onClick={copy}>
+                      {copied ? "복사했습니다" : "링크 복사"}
+                    </button>
+                    <p className="mt-2 break-all rounded-md bg-cream px-3 py-2.5 font-mono text-[0.6875rem] leading-relaxed text-muted">
+                      {link}
+                    </p>
+                  </div>
+                </details>
+              </div>
             )}
-            <a
-              className="btn btn-ghost bg-white"
-              href={`sms:?&body=${encodeURIComponent(smsBody)}`}
-            >
-              문자로 보내기
-            </a>
-            <button type="button" className="btn btn-ghost bg-white" onClick={copy}>
-              {copied ? "복사했습니다" : "링크 복사"}
-            </button>
-            <p className="mt-2 break-all rounded-md bg-cream px-3 py-2.5 font-mono text-[0.6875rem] leading-relaxed text-muted">
-              {link}
-            </p>
           </div>
         </section>
       )}
@@ -501,7 +613,15 @@ export function Maker({ initial }: { initial: InviteData }) {
             className="min-w-0 flex-1 truncate text-[0.75rem] text-muted"
             aria-live="polite"
           >
-            {savedAt ? `${savedAt} 자동 저장됨` : "적는 대로 이 브라우저에 저장됩니다"}
+            {store.state === "saving"
+              ? "저장하는 중…"
+              : store.savedAt
+                ? `${store.savedAt} 계정에 저장됨`
+                : store.online
+                  ? "적는 대로 계정에 저장됩니다"
+                  : savedAt
+                    ? `${savedAt} 이 브라우저에 저장됨`
+                    : "적는 대로 이 브라우저에 저장됩니다"}
           </p>
           {step > 0 && (
             <button
@@ -548,8 +668,7 @@ export function Maker({ initial }: { initial: InviteData }) {
           >
             <h3 className="font-serif text-h2 text-ink">보내기</h3>
             <p className="mt-2 text-caption text-ink-soft">
-              내용이 링크 안에 통째로 들어 있습니다. 이 링크를 받은 사람은
-              가입 없이 카드를 열어 봅니다.
+              받는 사람은 가입 없이 링크만 누르면 카드가 열립니다.
             </p>
 
             <div className="mt-6 grid gap-2">

@@ -15,6 +15,7 @@ import {
   Toggle,
 } from "@/components/editor/controls";
 import { samplePhoto } from "@/components/invitation/sample-photo";
+import { FREE_GALLERY_PHOTOS } from "@/lib/plan";
 import type { SectionId } from "@/components/editor/rail";
 import { fontGroupsFor } from "@/lib/fonts";
 import {
@@ -55,6 +56,12 @@ export type Set = <K extends keyof InvitationData>(
 interface Props {
   data: InvitationData;
   set: Set;
+  /**
+   * 이 청첩장이 결제된 것인지. 지금은 갤러리 장수에만 쓰이지만,
+   * 값이 «화면» 이 아니라 «문서» 에 붙어 있다는 사실을 편집기가 알아야
+   * 하는 곳이 앞으로 늘어납니다.
+   */
+  plan?: "free" | "premium";
   setData: Dispatch<SetStateAction<InvitationData>>;
   /** "위치 바꾸기" 클릭 시 순서 변경 패널로 이동 */
   onGoOrder: () => void;
@@ -893,7 +900,7 @@ function Accounts({ data, set, onGoOrder, onReveal }: Props) {
 
 /* ---------------- 갤러리 ---------------- */
 
-function Gallery({ data, set, onGoOrder, onReveal }: Props) {
+function Gallery({ data, set, onGoOrder, onReveal, plan }: Props) {
   return (
     <>
       <PanelHead title="갤러리" desc="소중한 순간이 담긴 사진을 올려주세요." />
@@ -918,7 +925,18 @@ function Gallery({ data, set, onGoOrder, onReveal }: Props) {
                 ))}
               </div>
             </div>
-            <MultiImageUpload label="사진 업로드" values={data.gallery} onChange={(v) => set("gallery", v)} max={60} />
+            <MultiImageUpload
+              label="사진 업로드"
+              values={data.gallery}
+              onChange={(v) => set("gallery", v)}
+              max={plan === "premium" ? 60 : FREE_GALLERY_PHOTOS}
+            />
+            {plan !== "premium" && (
+              <p className="text-[0.75rem] leading-relaxed text-muted">
+                무료로 발행하면 사진 {FREE_GALLERY_PHOTOS}장까지 올라갑니다.
+                결제하면 장수 제한이 없어집니다.
+              </p>
+            )}
             <span className="text-[0.6875rem] text-muted">· 최대 60장까지 업로드할 수 있습니다. ‹ › 버튼으로 순서를 바꿀 수 있어요</span>
             <ToggleCard label="이미지 확대 및 다운로드 방지" checked={data.galleryProtect} onChange={(v) => set("galleryProtect", v)} />
           </>

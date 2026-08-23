@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # 사용자가 청첩장·초대장을 발행하면 Supabase 엣지 함수(site-refresh)가
+  # 이 이벤트를 쏩니다. 그 빌드가 /w/<슬러그> HTML 을 만들고, 그때부터
+  # 카카오톡 링크 미리보기에 이름과 사진이 뜹니다.
+  repository_dispatch:
+    types: [publish]
+  # 발행 신호를 놓쳤을 때를 대비한 그물. 하루 두 번 다시 굽습니다.
+  schedule:
+    - cron: "17 3,15 * * *"
 
 # Pages 배포에 필요한 최소 권한
 permissions:
@@ -35,11 +43,19 @@ jobs:
           GITHUB_PAGES: "true"
           # 커스텀 도메인(cardly.kr) 루트에 올라가므로 basePath 는 비웁니다.
           NEXT_PUBLIC_BASE_PATH: ""
-          # 데이터베이스 연결용. 시크릿이 없으면 빈 값이 되고,
-          # 관리자 페이지는 브라우저 저장 모드로 동작합니다.
+          NEXT_PUBLIC_SITE_URL: "https://cardly.kr"
+          # 계정·저장·발행에 쓰는 공개 키. 시크릿이 없으면 빈 값이 되고,
+          # 사이트는 «만들어 보기» 까지만 되는 상태로 그대로 섭니다.
           # (anon 키는 브라우저에 노출되는 공개 키입니다 — 보호는 RLS 가 합니다)
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # 카카오톡 공유 카드용 JavaScript 키 (없어도 링크 공유는 됩니다)
+          NEXT_PUBLIC_KAKAO_JS_KEY: ${{ secrets.KAKAO_JS_KEY }}
+          # 토스페이먼츠 클라이언트 키 (결제창을 여는 공개 키)
+          NEXT_PUBLIC_TOSS_CLIENT_KEY: ${{ secrets.TOSS_CLIENT_KEY }}
+          # 발행된 문서의 미리보기 HTML 을 굽기 위해 빌드에서만 씁니다.
+          # 절대 NEXT_PUBLIC_ 을 붙이지 마세요 — 브라우저로 나가면 안 됩니다.
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npm run build
 
       - name: Disable Jekyll processing

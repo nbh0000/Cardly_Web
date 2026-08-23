@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSession } from "@/lib/backend/auth";
+import { backendEnabled } from "@/lib/backend/client";
 
+/* 무엇을 파는 곳인지가 차례에 드러나야 합니다. 링크를 발행하는 둘이
+   앞에 서고, 브라우저 안에서 끝나는 서류가 뒤에 섭니다. */
 const NAV = [
-  { href: "/resume", label: "이력서" },
-  { href: "/business-card", label: "명함" },
   { href: "/templates", label: "모바일 청첩장" },
   { href: "/invitation-card", label: "초대장" },
+  { href: "/resume", label: "이력서" },
+  { href: "/business-card", label: "명함" },
 ];
 
 export function SiteHeader() {
+  const session = useSession();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -71,7 +76,15 @@ export function SiteHeader() {
           >
             요금 안내
           </Link>
-          <Link href="/resume" className="btn btn-primary btn-sm">
+          {backendEnabled && (
+            <Link
+              href={session ? "/account" : "/login"}
+              className="text-caption text-ink-soft transition-colors hover:text-rose-deep"
+            >
+              {session ? "내 카드함" : "로그인"}
+            </Link>
+          )}
+          <Link href="/templates" className="btn btn-primary btn-sm">
             무료로 만들기
           </Link>
         </div>
@@ -117,12 +130,21 @@ export function SiteHeader() {
           ))}
           <div className="py-6">
             <Link
-              href="/resume"
+              href="/templates"
               onClick={() => setOpen(false)}
               className="btn btn-primary w-full"
             >
               무료로 만들기
             </Link>
+            {backendEnabled && (
+              <Link
+                href={session ? "/account" : "/login"}
+                onClick={() => setOpen(false)}
+                className="mt-3 block text-center text-caption text-ink-soft"
+              >
+                {session ? "내 카드함" : "로그인"}
+              </Link>
+            )}
           </div>
         </nav>
       </div>

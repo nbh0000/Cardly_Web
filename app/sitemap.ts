@@ -86,7 +86,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  // 발행된 청첩장(/i/<slug>)과 링크로 받은 초대장(/invitation-card/v/)은
-  // 당사자와 초대받은 사람만 보는 주소라 넣지 않습니다.
+  // 발행된 청첩장(/w/<slug>)·초대장(/i/<slug>)과 링크로 받은 초대장
+  // (/invitation-card/v/)은 링크를 받은 사람만 보는 주소라 넣지 않습니다.
+  // 로그인·카드함·결제 화면도 색인할 이유가 없어 빠집니다.
   return [...core, ...previews, ...cards];
 }

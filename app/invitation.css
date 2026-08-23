@@ -717,6 +717,15 @@
   gap: 1em;
   text-align: left;
 }
+
+/* 보내지 못했을 때 그 자리에서 알려 줍니다. 창을 띄워 알리면 무엇을
+   고쳐야 하는지 보이지 않는 채로 화면이 닫힙니다. */
+.iv-form-error {
+  margin: 0;
+  font-size: 0.8125em;
+  line-height: 1.5;
+  color: #b3261e;
+}
 .iv-field {
   display: grid;
   gap: 0.45em;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdminGate } from "@/components/admin/admin-gate";
 import { TemplateBuilder } from "@/components/admin/template-builder";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -21,27 +22,19 @@ function PublishedInvitations() {
 
   return (
     <section className="mt-block">
-      <h2 className="font-serif text-h2 text-ink">발행된 청첩장</h2>
+      <h2 className="font-serif text-h2 text-ink">손으로 발행한 청첩장</h2>
       <p className="mt-3 max-w-narrow text-body text-ink-soft">
-        하객에게 보내는 실제 주소입니다. 카카오톡에 링크를 붙여넣으면 신랑·신부
-        이름과 사진이 미리보기로 뜹니다.
+        코드에 담겨 배포되는 청첩장입니다. 사용자가 발행한 것은 여기 나오지
+        않습니다 — 그쪽은 각자의 카드함에 있습니다.
       </p>
 
       <div className="mt-6 rounded-lg border border-line bg-white p-5 sm:p-6">
         <p className="text-[0.8125rem] leading-relaxed text-ink-soft">
-          <b className="text-ink">새 청첩장 발행 순서</b>
+          <b className="text-ink">발행은 이제 사용자가 직접 합니다.</b> 편집기에서
+          &lsquo;링크 발행하기&rsquo;를 누르면 그 자리에서 주소가 만들어지고,
+          카카오톡 미리보기용 HTML 은 1~2분 뒤 자동 배포로 따라옵니다. 아래
+          목록은 그 방식이 생기기 전에 손으로 발행해 둔 것들입니다.
         </p>
-        <ol className="mt-3 grid list-decimal gap-1.5 pl-5 text-[0.8125rem] leading-relaxed text-ink-soft">
-          <li>편집기에서 내용을 채우고 &lsquo;발행용 파일 내보내기&rsquo;를 누릅니다.</li>
-          <li>
-            터미널에서{" "}
-            <code className="rounded bg-cream px-1.5 py-0.5 text-[0.75rem]">
-              npm run invite:add -- &lt;내려받은 파일&gt;
-            </code>{" "}
-            을 실행합니다.
-          </li>
-          <li>커밋하고 푸시하면 약 1분 뒤 주소가 열립니다.</li>
-        </ol>
       </div>
 
       {list.length === 0 ? (
@@ -122,10 +115,13 @@ export default function AdminPage() {
             </ol>
           </div>
 
-          <PublishedInvitations />
-
           <div className="mt-block">
-            <TemplateBuilder />
+            <AdminGate>
+              <PublishedInvitations />
+              <div className="mt-block">
+                <TemplateBuilder />
+              </div>
+            </AdminGate>
           </div>
         </div>
       </main>

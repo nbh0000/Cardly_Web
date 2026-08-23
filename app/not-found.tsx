@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SlugFallback } from "@/components/publish/slug-fallback";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
@@ -8,9 +9,17 @@ const TOOLS = [
   { href: "/templates", label: "모바일 청첩장", note: "템플릿 고르고 편집" },
 ];
 
+/**
+ * 없는 주소.
+ *
+ * 다만 /w/… /i/… 는 «아직 굽지 않은 청첩장·초대장» 일 수 있습니다. 발행
+ * 직후 몇 분 동안은 그 주소의 HTML 이 아직 없기 때문입니다. 그때는 404
+ * 대신 그 문서를 받아 그려 줍니다 — 링크를 받은 하객은 아무것도 눈치채지
+ * 못해야 합니다.
+ */
 export default function NotFound() {
   return (
-    <>
+    <SlugFallback>
       <SiteHeader />
       <main
         id="main"
@@ -45,6 +54,6 @@ export default function NotFound() {
         </div>
       </main>
       <SiteFooter />
-    </>
+    </SlugFallback>
   );
 }

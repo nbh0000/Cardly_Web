@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SampleLinks } from "@/components/publish/sample-links";
 import { asset } from "@/lib/asset";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { ClosedCard } from "@/components/occasion/fold";
@@ -143,7 +144,31 @@ function InvitationCardPreview() {
   );
 }
 
-const TOOLS = [
+/* 앞에 서는 둘 — 링크를 만들어 보내는 물건입니다. 값을 받는 곳도 여기고,
+   하객 수백 명이 보는 것도 여기입니다. */
+const INVITES = [
+  {
+    href: "/templates",
+    eyebrow: "Wedding",
+    title: "모바일 청첩장",
+    body: "사진과 인사말을 넣고 링크를 발행하면, 하객은 그 주소만 눌러 봅니다. 참석 여부와 방명록이 그대로 모입니다.",
+    meta: `템플릿 ${TEMPLATES.length}종 · 링크 발행 · 참석 집계`,
+    badge: "무료로 발행",
+    preview: <InvitationPreview />,
+  },
+  {
+    href: "/invitation-card",
+    eyebrow: "Invitation",
+    title: "초대장",
+    body: "받는 사람이 표지를 넘겨 여는 접힌 카드입니다. 돌잔치·생일·집들이·개업·파티·연말.",
+    meta: `디자인 ${DESIGNS.length}종 · 링크 발행 · 참석 집계`,
+    badge: "무료로 발행",
+    preview: <InvitationCardPreview />,
+  },
+];
+
+/* 뒤에 서는 둘 — 브라우저 안에서 끝나는 서류입니다. 계정도 값도 없습니다. */
+const DOCS = [
   {
     href: "/resume",
     eyebrow: "Resume",
@@ -162,99 +187,112 @@ const TOOLS = [
     badge: "무료",
     preview: <CardPreview />,
   },
-  {
-    href: "/templates",
-    eyebrow: "Wedding",
-    title: "모바일 청첩장",
-    // 예전에는 "링크 하나로 카카오톡에 보냅니다" 라고 적혀 있었지만
-    // 발행이 아직 열리지 않아 지킬 수 없는 약속이었습니다.
-    body: "사진과 인사말을 넣으면 결과가 바로 보입니다. 지금은 만들고 미리 보는 것까지 됩니다.",
-    meta: `템플릿 ${TEMPLATES.length}종 · 링크 공유는 준비 중`,
-    badge: "미리 만들기",
-    preview: <InvitationPreview />,
-  },
-  {
-    href: "/invitation-card",
-    eyebrow: "Invitation",
-    title: "초대장",
-    body: "받는 사람이 표지를 넘겨 여는 접힌 카드입니다. 결혼·돌잔치·생일·집들이·개업·파티·연말.",
-    meta: `디자인 ${DESIGNS.length}종 · 링크로 바로 보내기`,
-    badge: "무료",
-    preview: <InvitationCardPreview />,
-  },
 ];
+
+/** 도구 한 칸. 앞의 둘은 크게, 뒤의 둘은 작게 그립니다. */
+function ToolCard({
+  tool,
+  big,
+}: {
+  tool: (typeof INVITES)[number];
+  big?: boolean;
+}) {
+  return (
+    <Link
+      href={tool.href}
+      className="oc-fold group flex flex-col rounded-lg border border-line bg-white p-6 transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1.5 hover:border-rose hover:shadow-lift"
+    >
+      <div className="flex items-center justify-between">
+        <span className="eyebrow">{tool.eyebrow}</span>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-[0.6875rem] tracking-[0.1em] ${
+            tool.badge.startsWith("무료")
+              ? "bg-rose-veil text-rose-deep"
+              : "bg-sand text-ink-soft"
+          }`}
+        >
+          {tool.badge}
+        </span>
+      </div>
+
+      {/* 뒤에 깔린 종이가 오른쪽·아래로 밀려 나므로,
+          묶음 전체를 그만큼 되돌려 광학적으로 가운데 맞춥니다. */}
+      <div
+        className={`mt-6 grid place-items-center overflow-hidden rounded-md bg-cream/70 px-5 ${
+          big ? "h-64" : "h-52"
+        }`}
+      >
+        <div className="translate-x-[-7px] translate-y-[-5px]">{tool.preview}</div>
+      </div>
+
+      <h2 className={`mt-6 font-serif text-ink ${big ? "text-h1" : "text-h2"}`}>
+        {tool.title}
+      </h2>
+      <p className="mt-2.5 text-caption text-ink-soft">{tool.body}</p>
+      <p className="mt-auto pt-5 text-[0.6875rem] text-muted">{tool.meta}</p>
+      <span className="mt-3 text-caption text-rose-deep">
+        만들기 시작
+        <span
+          aria-hidden
+          className="ml-1 inline-block transition-transform group-hover:translate-x-1"
+        >
+          →
+        </span>
+      </span>
+    </Link>
+  );
+}
 
 export function Hero() {
   return (
-    /* 도구 칸이 놓이는 띠.
+    <>
+      {/* ── 앞자리 : 링크로 보내는 것 ──────────────────────────
 
-       머리 아래로 옅게 물든 바탕을 한 겹 깔고 그 위에 흰 카드를 올립니다.
-       카드가 바탕에서 떠 보여야 «고르는 자리» 로 읽히고, 띠가 아래에서
-       한 번 더 선으로 끊기므로 머리 · 고르는 자리 · 그 밖이 눈으로 나뉩니다.
-       예전에는 위에서 아래로 사라지는 방사형 그러데이션이라 어디서 끝나는지
-       알 수 없었습니다. */
-    <section className="relative border-b border-line-soft bg-rose-veil/45 pt-28 pb-section md:pt-32">
+          홈은 물건이어야 하고, 물건에 대한 설명이어서는 안 됩니다. 그래서
+          머리글은 한 줄로 끝내고 곧바로 카드를 세웁니다. 다만 이 사이트가
+          이제 «초대장을 발행하는 곳» 이라는 사실만은 첫 줄에 적습니다 —
+          이력서와 명함까지 네 장이 나란히 있으면 무엇을 파는 곳인지
+          읽히지 않습니다. */}
+      <section className="relative border-b border-line-soft bg-rose-veil/45 pt-28 pb-section md:pt-32">
+        <div className="shell">
+          <header className="max-w-narrow">
+            <h1 className="font-serif text-h1 text-ink">모든 순간의 초대장</h1>
+            <p className="mt-4 text-body text-ink-soft">
+              결혼, 돌잔치, 생일, 집들이. 링크 하나로 보내고 참석 여부까지
+              받습니다. 만들어 보는 것은 값이 없고, 발행도 무료로 됩니다.
+            </p>
+          </header>
 
-      <div className="shell">
-        {/* 머리글은 화면에 두지 않습니다.
-
-            «필요한 서류와 카드를 브라우저에서 바로» 같은 문장은 바로 아래
-            네 장의 카드가 이미 하는 말을 한 번 더 하는 것뿐입니다. 홈은
-            물건이어야 하고, 물건에 대한 설명이어서는 안 됩니다.
-
-            다만 문서에 h1 이 하나도 없으면 스크린리더가 «이 페이지가 무엇인지»
-            읽어 줄 것이 없고 검색엔진도 제목을 잃습니다. 그래서 눈에는 안
-            보이고 읽어 주기만 하는 한 줄만 남깁니다. */}
-        <h1 className="sr-only">Cardly — 이력서 · 명함 · 모바일 청첩장 · 초대장</h1>
-
-        {/* 도구가 먼저 보여야 합니다 — 무엇을 하는 곳인지 스크롤 없이
-            읽히도록 네 가지를 한 줄에 나란히 둡니다. */}
-        <div className="rise grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {TOOLS.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="oc-fold group flex flex-col rounded-lg border border-line bg-white p-6 transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1.5 hover:border-rose hover:shadow-lift"
-            >
-              <div className="flex items-center justify-between">
-                <span className="eyebrow">{tool.eyebrow}</span>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 text-[0.6875rem] tracking-[0.1em] ${
-                    tool.badge.startsWith("무료")
-                      ? "bg-rose-veil text-rose-deep"
-                      : "bg-sand text-ink-soft"
-                  }`}
-                >
-                  {tool.badge}
-                </span>
-              </div>
-
-              {/* 뒤에 깔린 종이가 오른쪽·아래로 밀려 나므로,
-                  묶음 전체를 그만큼 되돌려 광학적으로 가운데 맞춥니다. */}
-              <div className="mt-6 grid h-52 place-items-center overflow-hidden rounded-md bg-cream/70 px-5">
-                <div className="translate-x-[-7px] translate-y-[-5px]">
-                  {tool.preview}
-                </div>
-              </div>
-
-              <h2 className="mt-6 font-serif text-h2 text-ink">{tool.title}</h2>
-              <p className="mt-2.5 text-caption text-ink-soft">{tool.body}</p>
-              <p className="mt-auto pt-5 text-[0.6875rem] text-muted">
-                {tool.meta}
-              </p>
-              <span className="mt-3 text-caption text-rose-deep">
-                만들기 시작
-                <span
-                  aria-hidden
-                  className="ml-1 inline-block transition-transform group-hover:translate-x-1"
-                >
-                  →
-                </span>
-              </span>
-            </Link>
-          ))}
+          <div className="rise mt-block grid gap-5 md:grid-cols-2">
+            {INVITES.map((tool) => (
+              <ToolCard key={tool.href} tool={tool} big />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* ── 샘플 : 하객이 받는 화면 그대로 ── */}
+      <section className="border-b border-line-soft py-section">
+        <SampleLinks />
+      </section>
+
+      {/* ── 뒷자리 : 브라우저 안에서 끝나는 서류 ── */}
+      <section className="py-section">
+        <div className="shell">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <h2 className="font-serif text-h2 text-ink">이력서와 명함</h2>
+            <p className="text-caption text-muted">
+              로그인도 결제도 없이, 브라우저 안에서 끝납니다.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            {DOCS.map((tool) => (
+              <ToolCard key={tool.href} tool={tool} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { SampleLinks } from "@/components/publish/sample-links";
 import { TemplateGrid } from "@/components/template-grid";
 import { TEMPLATES } from "@/lib/invitation";
 
-const DESCRIPTION = `모바일 청첩장 템플릿 ${TEMPLATES.length}종을 가입 없이 무료로 만들어 보세요. 미니멀·플라워·모던·클래식·포토 스타일에 3D 오프닝과 화면 효과까지 그대로 씁니다.`;
+const DESCRIPTION = `모바일 청첩장 템플릿 ${TEMPLATES.length}종. 만들어 링크를 발행하면 하객이 주소만 눌러 봅니다. 무료 발행은 7일, 결제하면 예식 뒤까지 열립니다. 참석 여부와 방명록도 그대로 모입니다.`;
 
 export const metadata: Metadata = {
   title: "모바일 청첩장 무료 제작 — 템플릿 " + TEMPLATES.length + "종",
@@ -41,13 +42,18 @@ export default function TemplatesPage() {
             <h1 className="mt-5 font-serif text-h1 text-ink">청첩장 템플릿</h1>
             <p className="mt-5 text-body text-ink-soft">
               템플릿을 누르면 바로 편집기가 열립니다. 만들어 보는 데는 비용이
-              들지 않습니다.
+              들지 않고, 링크 발행도 무료로 됩니다.
             </p>
           </header>
 
           <div className="mt-block">
             <TemplateGrid />
           </div>
+        </div>
+
+        {/* 고르기 전에 «받는 화면» 을 볼 수 있어야 합니다. */}
+        <div className="mt-section border-t border-line-soft pt-section">
+          <SampleLinks />
         </div>
       </main>
       <SiteFooter />

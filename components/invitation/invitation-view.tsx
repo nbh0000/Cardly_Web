@@ -12,7 +12,10 @@ import {
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
+import { GuestContext } from "@/components/invitation/guest-runtime";
 import { SamplePhoto } from "@/components/invitation/sample-photo";
+import { listGuestbook, submitGuestbook, submitRsvp } from "@/lib/backend/guests";
+import { isPremiumSection } from "@/lib/plan";
 import { asset } from "@/lib/asset";
 import { fontStack } from "@/lib/fonts";
 import {
@@ -174,6 +177,9 @@ function RestOfInvitation({
   live: boolean;
   flash: string | null;
 }) {
+  /* 하객이 실제 링크로 보고 있는지 — 유료 칸을 그릴지 여기서 갈립니다. */
+  const guest = use(GuestContext);
+
   /* 섹션끼리 붙어 있으면 어디서 끊기는지 보이지 않아, 한 칸 걸러 옅은 면을
      깔아 경계를 만듭니다. 숨긴 섹션은 아예 그리지 않으므로 실제로 그려진
      것만 세야 면이 두 번 이어지지 않습니다.
@@ -202,6 +208,12 @@ function RestOfInvitation({
   };
 
   const renderSection = (key: SectionKey) => {
+    /* 무료로 발행한 청첩장에서는 유료 칸이 통째로 빠집니다.
+       편집기에서는 켜 두고 만들 수 있지만(만들어 보고 나서 결제할지
+       정하는 것이 순서입니다), 하객이 받는 링크에는 나오지 않습니다.
+       잠긴 자물쇠 그림을 하객에게 보여 주는 것이 가장 나쁜 답입니다. */
+    if (guest && !guest.premium && isPremiumSection(key)) return null;
+
     switch (key) {
       case "invitation":
         return (
@@ -1589,8 +1601,42 @@ function AccountRow({ account }: { account: Account }) {
 function Rsvp({ data, live }: { data: InvitationData; live: boolean }) {
   const [sent, setSent] = useState(false);
   const [popup, setPopup] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
   // 오프닝 연출이 도는 동안에는 팝업을 띄우지 않습니다.
   const openingActive = use(OpeningContext);
+  /* 하객이 실제로 보고 있는 링크에서만 서버로 갑니다.
+     편집기 미리보기에서는 null 이라 «전달되었습니다» 만 보여 줍니다. */
+  const guest = use(GuestContext);
+
+  const send = async (formData: FormData) => {
+    const name = String(formData.get("name") ?? "").trim();
+    if (!name) return;
+
+    if (!guest || guest.demo) {
+      setSent(true);
+      setPopup(false);
+      return;
+    }
+
+    setSending(true);
+    setError(null);
+    try {
+      await submitRsvp(guest.slug, {
+        name,
+        attending: formData.get("att") !== "no",
+        party: Number(formData.get("count") ?? 1) || 1,
+        side: formData.get("side") === "bride" ? "신부측" : "신랑측",
+        message: formData.get("meal") === "no" ? "식사 안 함" : "",
+      });
+      setSent(true);
+      setPopup(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "전달하지 못했습니다.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   useEffect(() => {
     if (live && data.rsvpPopup && !openingActive) {
@@ -1599,23 +1645,30 @@ function Rsvp({ data, live }: { data: InvitationData; live: boolean }) {
     }
   }, [live, data.rsvpPopup, openingActive]);
 
+  /* 무료로 발행한 청첩장에는 이 칸이 아예 나오지 않습니다. 눌리지 않는
+     칸을 보여 주고 «프리미엄에서 열립니다» 라고 적는 것은 하객에게 우리
+     사정을 설명하는 일이라, 하객 화면에서는 그냥 없는 편이 낫습니다. */
+  if (guest && !guest.premium) return null;
+
+
   const form = (compact?: boolean) => (
+    /* 라디오 이름이 같아도 폼이 다르면 서로 다른 무리가 됩니다 —
+       그래서 본문과 팝업에 같은 이름을 그대로 씁니다. */
     <form
-      className="iv-rsvp-form"
+      className={compact ? "iv-rsvp-form iv-rsvp-compact" : "iv-rsvp-form"}
       onSubmit={(e) => {
         e.preventDefault();
-        setSent(true);
-        setPopup(false);
+        void send(new FormData(e.currentTarget));
       }}
     >
       <fieldset className="iv-field">
         <legend>참석 여부</legend>
         <div className="iv-radio-row">
           <label>
-            <input type="radio" name={`att${compact ? "-p" : ""}`} defaultChecked /> 참석
+            <input type="radio" name="att" value="yes" defaultChecked /> 참석
           </label>
           <label>
-            <input type="radio" name={`att${compact ? "-p" : ""}`} /> 불참
+            <input type="radio" name="att" value="no" /> 불참
           </label>
         </div>
       </fieldset>
@@ -1624,23 +1677,23 @@ function Rsvp({ data, live }: { data: InvitationData; live: boolean }) {
         <legend>구분</legend>
         <div className="iv-radio-row">
           <label>
-            <input type="radio" name={`side${compact ? "-p" : ""}`} defaultChecked /> 신랑측
+            <input type="radio" name="side" value="groom" defaultChecked /> 신랑측
           </label>
           <label>
-            <input type="radio" name={`side${compact ? "-p" : ""}`} /> 신부측
+            <input type="radio" name="side" value="bride" /> 신부측
           </label>
         </div>
       </fieldset>
 
       <label className="iv-field">
         <span>성함</span>
-        <input type="text" placeholder="성함을 입력해 주세요" required />
+        <input type="text" name="name" placeholder="성함을 입력해 주세요" required />
       </label>
 
       {data.rsvpAskCount && (
         <label className="iv-field">
           <span>참석 인원</span>
-          <input type="number" min={1} defaultValue={1} />
+          <input type="number" name="count" min={1} max={20} defaultValue={1} />
         </label>
       )}
 
@@ -1649,17 +1702,19 @@ function Rsvp({ data, live }: { data: InvitationData; live: boolean }) {
           <legend>식사 여부</legend>
           <div className="iv-radio-row">
             <label>
-              <input type="radio" name={`meal${compact ? "-p" : ""}`} defaultChecked /> 예정
+              <input type="radio" name="meal" value="yes" defaultChecked /> 예정
             </label>
             <label>
-              <input type="radio" name={`meal${compact ? "-p" : ""}`} /> 안 함
+              <input type="radio" name="meal" value="no" /> 안 함
             </label>
           </div>
         </fieldset>
       )}
 
-      <button type="submit" className="iv-btn-primary">
-        {sent ? "전달되었습니다" : "참석 의사 전달하기"}
+      {error && <p className="iv-form-error">{error}</p>}
+
+      <button type="submit" className="iv-btn-primary" disabled={sending || sent}>
+        {sent ? "전달되었습니다" : sending ? "보내는 중…" : "참석 의사 전달하기"}
       </button>
     </form>
   );
@@ -1697,23 +1752,85 @@ interface Note {
   body: string;
 }
 
+/** 편집기·템플릿 구경에서 보여 주는 견본 글. 발행된 링크에서는 쓰지 않습니다. */
+const SAMPLE_NOTES: Note[] = [
+  { id: 1, name: "박민수", body: "두 분 결혼 진심으로 축하드려요! 행복하게 사세요 :)" },
+  { id: 2, name: "정하영", body: "너무 잘 어울리는 두 사람. 꽃길만 걷기를 바랍니다." },
+];
+
 function Guestbook({ data }: { data: InvitationData }) {
-  const [notes, setNotes] = useState<Note[]>([
-    { id: 1, name: "박민수", body: "두 분 결혼 진심으로 축하드려요! 행복하게 사세요 :)" },
-    { id: 2, name: "정하영", body: "너무 잘 어울리는 두 사람. 꽃길만 걷기를 바랍니다." },
-  ]);
-  const seq = useRef(2);
+  const guest = use(GuestContext);
+  const live = Boolean(guest && !guest.demo);
+
+  const [notes, setNotes] = useState<Note[]>(live ? [] : SAMPLE_NOTES);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const seq = useRef(SAMPLE_NOTES.length);
+
+  /* 발행된 링크에서는 실제로 남은 글을 읽어 옵니다. 하객이 새로고침하지
+     않아도 서로의 글이 보여야 «방명록» 이지, 내가 쓴 것만 보이면 메모장입니다. */
+  useEffect(() => {
+    if (!live || !guest) return;
+    let alive = true;
+    listGuestbook(guest.slug)
+      .then((rows) => {
+        if (!alive) return;
+        setNotes(
+          rows.map((r, i) => ({ id: i + 1, name: r.name, body: r.message })),
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [live, guest]);
+
+  if (guest && !guest.premium) return null;
+
+  const submit = async (form: HTMLFormElement) => {
+    const fd = new FormData(form);
+    const name = String(fd.get("name") ?? "").trim();
+    const body = String(fd.get("body") ?? "").trim();
+    if (!name || !body) return;
+
+    if (!live || !guest) {
+      seq.current += 1;
+      setNotes((prev) => [...prev, { id: seq.current, name, body }]);
+      form.reset();
+      return;
+    }
+
+    setSending(true);
+    setError(null);
+    try {
+      await submitGuestbook(guest.slug, name, body);
+      const rows = await listGuestbook(guest.slug);
+      setNotes(rows.map((r, i) => ({ id: i + 1, name: r.name, body: r.message })));
+      form.reset();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "남기지 못했습니다.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <Section>
       <SectionTitle en="Guestbook">{data.guestbookTitle}</SectionTitle>
+
+      {notes.length === 0 && live && (
+        <p className="iv-body">첫 번째 글을 남겨 주세요.</p>
+      )}
 
       <ul className="iv-notes">
         {notes.map((n) => (
           <li key={n.id}>
             <div className="iv-note-head">
               <p className="iv-note-name">{n.name}</p>
-              {data.guestbookPassword && (
+              {/* 발행된 링크에서 글을 지우는 것은 «만든 사람» 입니다.
+                  하객이 비밀번호로 지우는 방식은 남의 글을 지우려는
+                  시도를 부르기만 해서 관리 화면으로 옮겼습니다. */}
+              {!live && data.guestbookPassword && (
                 <button
                   type="button"
                   className="iv-note-del"
@@ -1740,25 +1857,26 @@ function Guestbook({ data }: { data: InvitationData }) {
         className="iv-rsvp-form"
         onSubmit={(e) => {
           e.preventDefault();
-          const fd = new FormData(e.currentTarget);
-          const name = String(fd.get("name") ?? "").trim();
-          const body = String(fd.get("body") ?? "").trim();
-          if (!name || !body) return;
-          seq.current += 1;
-          setNotes((prev) => [...prev, { id: seq.current, name, body }]);
-          e.currentTarget.reset();
+          void submit(e.currentTarget);
         }}
       >
         <label className="iv-field">
           <span>이름</span>
-          <input name="name" type="text" placeholder="성함" required />
+          <input name="name" type="text" placeholder="성함" maxLength={20} required />
         </label>
         <label className="iv-field">
           <span>메시지</span>
-          <textarea name="body" rows={3} placeholder="축하 메시지를 남겨주세요" required />
+          <textarea
+            name="body"
+            rows={3}
+            maxLength={500}
+            placeholder="축하 메시지를 남겨주세요"
+            required
+          />
         </label>
-        <button type="submit" className="iv-btn-primary">
-          메시지 남기기
+        {error && <p className="iv-form-error">{error}</p>}
+        <button type="submit" className="iv-btn-primary" disabled={sending}>
+          {sending ? "남기는 중…" : "메시지 남기기"}
         </button>
       </form>
     </Section>
@@ -2508,7 +2626,7 @@ function Sheet({
     <>
       <div className="sheet-scrim" onClick={onClose} aria-hidden />
       <div
-        className={`sheet ${closing ? "is-closing" : ""}`}
+        className={`iv-sheet ${closing ? "is-closing" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}

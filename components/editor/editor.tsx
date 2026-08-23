@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   useSyncExternalStore,
@@ -10,15 +12,16 @@ import {
 import { SectionPanel } from "@/components/editor/panels";
 import { Rail, type SectionId } from "@/components/editor/rail";
 import { InvitationView } from "@/components/invitation/invitation-view";
-import {
-  buildExport,
-  downloadExport,
-  suggestSlug,
-} from "@/lib/export-invitation";
+import { SharePanel } from "@/components/publish/share-panel";
+import { useSession } from "@/lib/backend/auth";
+import { backendEnabled } from "@/lib/backend/client";
+import { docUrl } from "@/lib/backend/docs";
+import { useDocStore } from "@/lib/backend/use-doc";
 import { buildQrSvg } from "@/lib/qr";
 import {
   TEMPLATES,
   createDefaultData,
+  fullName,
   getTemplate,
   type InvitationData,
   type SectionKey,
@@ -74,6 +77,7 @@ const PRODUCT_NAV = [
 ];
 
 export function Editor({ templateId }: { templateId: string }) {
+  const router = useRouter();
   const [data, setData] = useState<InvitationData>(() =>
     createDefaultData(templateId),
   );
@@ -97,10 +101,16 @@ export function Editor({ templateId }: { templateId: string }) {
     () => null,
   );
 
+  /* 이 브라우저에 남아 있던 초안을 되살립니다. 로그인해 있으면 되살린
+     다음 곧바로 계정으로 옮깁니다 — 옮기지 않으면 브라우저를 청소하는
+     순간 사라지는 자리에 계속 머물게 됩니다. */
+  const pendingMigrate = useRef(false);
+
   const restore = () => {
     try {
       const parsed = JSON.parse(draftRaw ?? "") as InvitationData;
       setData(stripPhotos(parsed));
+      pendingMigrate.current = true;
     } catch {
       /* 손상된 초안은 무시 */
     }
@@ -179,41 +189,64 @@ export function Editor({ templateId }: { templateId: string }) {
     setTimeout(() => URL.revokeObjectURL(href), 10_000);
   };
 
-  /**
-   * 발행용 파일 내보내기.
-   * 사진은 blob: URL 이라 그대로는 남길 수 없어, 실제 픽셀을 읽어 파일에
-   * 담습니다. 사진이 많으면 몇 초 걸리므로 진행 상태를 표시합니다.
-   */
+  /* ── 계정에 저장하고 발행하기 ────────────────────────────────
+
+     로그인해 있으면 계정에 저장되고 «발행» 이 열립니다. 로그인하지 않았으면
+     예전처럼 이 브라우저에만 저장됩니다 — 사진은 남지 않고, 다른 기기에서는
+     보이지 않습니다. 그 차이를 단추 옆에 적어 둡니다.                     */
+
+  const session = useSession();
+  const store = useDocStore<InvitationData>({
+    kind: "wedding",
+    data,
+    title: (d) => `${fullName(d.groom)} · ${fullName(d.bride)}`.trim(),
+    design: (d) => d.templateId,
+    eventDate: (d) => d.date || null,
+    onNormalized: setData,
+  });
+
+  /* 계정에 저장해 둔 문서를 열었을 때 그 내용으로 갈아탑니다. */
+  const [adopted, setAdopted] = useState<string | null>(null);
+  const loadedDoc = store.loaded;
+  if (loadedDoc && adopted !== loadedDoc.doc.id) {
+    setAdopted(loadedDoc.doc.id);
+    setData({ ...createDefaultData(loadedDoc.doc.design_id), ...loadedDoc.data });
+  }
+
+  /* 되살린 초안을 계정으로 옮기는 것은 «다음 그림» 에서 합니다.
+     setData 직후에 저장하면 아직 옛 값이 넘어갑니다. */
+  useEffect(() => {
+    if (!pendingMigrate.current) return;
+    pendingMigrate.current = false;
+    if (!store.online) return;
+    void store.save();
+    // 계정으로 옮겼으니 브라우저 사본은 지웁니다. 두 벌이 남아 있으면
+    // 다음에 들어왔을 때 어느 쪽이 최신인지 알 수 없습니다.
+    localStorage.removeItem(storageKey);
+  });
+
   const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState<{ slug: string } | null>(null);
 
   const publish = async () => {
-    const suggested = suggestSlug(data);
-    const slug = window
-      .prompt(
-        "청첩장 주소를 정해주세요. /i/<주소> 로 열립니다.\n영문 소문자·숫자·하이픈만 쓸 수 있습니다.",
-        suggested,
-      )
-      ?.trim();
-    if (!slug) return;
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      window.alert("영문 소문자·숫자·하이픈만 쓸 수 있습니다.");
+    if (!store.online) {
+      router.push(`/login?next=${encodeURIComponent(`/editor/${templateId}/`)}`);
       return;
     }
-
     setPublishing(true);
     try {
-      downloadExport(await buildExport(data, slug));
-      window.alert(
-        `${slug}.json 을 받았습니다.\n\n터미널에서 아래를 실행한 뒤 커밋·푸시하면 배포됩니다.\n\nnpm run invite:add -- <내려받은 파일 경로>\n\n배포 후 주소: /i/${slug}`,
-      );
-    } catch {
-      window.alert("사진을 읽지 못했습니다. 사진을 다시 올린 뒤 시도해 주세요.");
+      const result = await store.publish();
+      if (result) setPublished({ slug: result.slug });
     } finally {
       setPublishing(false);
     }
   };
 
   const save = () => {
+    if (store.online) {
+      void store.save();
+      return;
+    }
     // blob: URL 은 세션이 끝나면 죽으므로 저장 대상에서 모두 제외합니다.
     const rest = stripPhotos(data);
     localStorage.setItem(storageKey, JSON.stringify(rest));
@@ -254,6 +287,18 @@ export function Editor({ templateId }: { templateId: string }) {
           >
             요금 안내
           </Link>
+          {backendEnabled && (
+            <Link
+              href={
+                session
+                  ? "/account"
+                  : `/login?next=${encodeURIComponent(`/editor/${templateId}/`)}`
+              }
+              className="hidden shrink-0 text-[0.6875rem] whitespace-nowrap text-ink-soft transition-colors hover:text-ink sm:inline"
+            >
+              {session ? "내 카드함" : "로그인"}
+            </Link>
+          )}
           {/* "+ 새로 만들기" 가 네 줄로 접히면서 높이가 105px 이 돼
               헤더(h-14 = 56px) 밖으로 삐져나가 잘리던 자리입니다.
 
@@ -293,12 +338,14 @@ export function Editor({ templateId }: { templateId: string }) {
       {draftRaw && !dismissed && (
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-rose-veil px-4 py-2.5 lg:px-6">
           <p className="text-[0.75rem] text-ink">
-            저장해 둔 초안이 있습니다. 이어서 편집할까요?
+            {store.online
+              ? "이 브라우저에 저장해 둔 초안이 있습니다. 계정으로 가져올까요?"
+              : "저장해 둔 초안이 있습니다. 이어서 편집할까요?"}
             <span className="ml-1.5 text-muted">(사진은 다시 등록해 주세요)</span>
           </p>
           <span className="flex shrink-0 gap-2">
             <button onClick={restore} className="press rounded-full bg-ink px-3 py-1.5 text-[0.6875rem] text-ivory">
-              이어서 편집
+              {store.online ? "계정으로 가져오기" : "이어서 편집"}
             </button>
             <button onClick={() => setDismissed(true)} className="press rounded-full border border-line bg-white px-3 py-1.5 text-[0.6875rem] text-ink-soft">
               새로 시작
@@ -322,6 +369,7 @@ export function Editor({ templateId }: { templateId: string }) {
           <div key={section} className="panel-enter px-5 py-6 lg:px-7">
             <SectionPanel
               section={section}
+              plan={store.doc?.plan ?? "free"}
               data={data}
               set={set}
               setData={setData}
@@ -356,21 +404,35 @@ export function Editor({ templateId }: { templateId: string }) {
               <span className="font-serif text-[0.9375rem] text-ink">청첩장 미리보기</span>
             </p>
             <div className="flex items-center gap-2">
-              {saved && <span className="hidden text-[0.6875rem] text-muted sm:inline">{saved} 저장됨</span>}
+              <span className="hidden text-[0.6875rem] text-muted sm:inline">
+                {store.state === "saving"
+                  ? "저장하는 중…"
+                  : store.savedAt
+                    ? `${store.savedAt} 계정에 저장됨`
+                    : saved
+                      ? `${saved} 이 브라우저에 저장됨`
+                      : store.online
+                        ? "적는 대로 계정에 저장됩니다"
+                        : ""}
+              </span>
               <button type="button" onClick={downloadQr} className="press hidden items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink sm:flex">
                 {/* 이 QR 은 내 청첩장이 아니라 템플릿 샘플 화면을 가리킵니다. */}
                 <QrGlyph /> 템플릿 QR
               </button>
+              <button onClick={save} className="press rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink">
+                저장
+              </button>
               <button
                 type="button"
                 onClick={publish}
-                disabled={publishing}
-                className="press rounded-md border border-line bg-white px-3 py-2 text-[0.75rem] text-ink disabled:opacity-50"
+                disabled={publishing || !backendEnabled}
+                className="press rounded-md bg-ink px-4 py-2 text-[0.75rem] text-ivory disabled:opacity-50"
               >
-                {publishing ? "만드는 중…" : "발행용 파일 내보내기"}
-              </button>
-              <button onClick={save} className="press rounded-md bg-ink px-4 py-2 text-[0.75rem] text-ivory">
-                청첩장 저장하기
+                {publishing
+                  ? "발행하는 중…"
+                  : store.doc?.status === "published"
+                    ? "링크 갱신"
+                    : "링크 발행하기"}
               </button>
             </div>
           </div>
@@ -396,6 +458,57 @@ export function Editor({ templateId }: { templateId: string }) {
           </div>
         </div>
       </div>
+
+      {/* ── 발행을 마친 뒤 ──
+          주소가 생겼다는 말로 끝내지 않고, 그 자리에서 보내게 합니다. */}
+      {published && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+          <button
+            type="button"
+            aria-label="닫기"
+            className="absolute inset-0 bg-ink/40"
+            onClick={() => setPublished(null)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="청첩장 발행"
+            className="relative max-h-[92dvh] w-full max-w-[30rem] overflow-y-auto rounded-t-xl bg-white p-6 shadow-lift sm:rounded-xl"
+          >
+            <h3 className="font-serif text-h2 text-ink">청첩장 주소가 만들어졌습니다</h3>
+            <p className="mt-2 text-caption text-ink-soft">
+              무료 발행은 7일 동안 열려 있습니다. 예식이 더 남았다면 내 카드함에서
+              프리미엄으로 올려 예식일 뒤까지 열어 둘 수 있습니다.
+            </p>
+
+            <div className="mt-6">
+              <SharePanel
+                url={docUrl("wedding", published.slug)}
+                slug={published.slug}
+                title={`${fullName(data.groom)} ♥ ${fullName(data.bride)} 결혼합니다`}
+                description={`${data.date} ${data.time} · ${data.venueName}`}
+                fresh
+              />
+            </div>
+
+            <div className="mt-6 flex gap-2">
+              <Link
+                href={store.doc ? `/account/doc/?id=${store.doc.id}` : "/account"}
+                className="btn btn-ghost flex-1 bg-white"
+              >
+                링크 관리
+              </Link>
+              <button
+                type="button"
+                className="btn btn-ghost flex-1 bg-white"
+                onClick={() => setPublished(null)}
+              >
+                계속 편집
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
