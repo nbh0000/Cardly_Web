@@ -12,11 +12,12 @@
  */
 
 import { fontStack } from "@/lib/fonts";
+import { variantUrl, type ArtVariant } from "@/lib/print/art";
 import type { PrintElement, ShapeElement, TextElement } from "@/lib/print/types";
 
 /** pt → px. 1pt 는 1/72인치이고 1인치는 25.4mm 입니다. */
 export function ptToPx(pt: number, scale: number): number {
-  return (pt / 72) * 25.4 * scale;
+  return Math.round((pt / 72) * 25.4 * scale * 100) / 100;
 }
 
 export function shadowCss(
@@ -32,19 +33,32 @@ export function ElementView({
   scale,
   /** 글자를 고치는 중이면 그 요소는 여기서 그리지 않습니다 */
   editing,
+  /**
+   * 어느 판의 그림을 쓸지.
+   *
+   * 기본은 원본입니다 — 편집 화면에서 본 것이 그대로 PNG 로 나가야 하기
+   * 때문입니다. 목록의 썸네일처럼 작게 그리는 자리에서만 sm·md 를 줍니다.
+   */
+  art = "full",
 }: {
   el: PrintElement;
   scale: number;
   editing?: boolean;
+  art?: ArtVariant;
 }) {
   if (el.hidden) return null;
 
+  /* 소수점을 두 자리로 끊습니다. 0.1px 차이는 화면에서 보이지 않는데,
+     끊지 않으면 «60.750000000000004px» 같은 값이 요소마다 붙어 목록
+     한 장의 HTML 이 수십 KB 씩 불어납니다. */
+  const px = (v: number) => Math.round(v * scale * 100) / 100;
+
   const base: React.CSSProperties = {
     position: "absolute",
-    left: el.x * scale,
-    top: el.y * scale,
-    width: el.w * scale,
-    height: el.h * scale,
+    left: px(el.x),
+    top: px(el.y),
+    width: px(el.w),
+    height: px(el.h),
     opacity: el.opacity,
     transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
     transformOrigin: "center center",
@@ -57,9 +71,11 @@ export function ElementView({
       <div style={{ ...base, overflow: "hidden", borderRadius: (el.radius ?? 0) * scale }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={el.src}
+          src={variantUrl(el.src, art)}
           alt=""
           draggable={false}
+          loading={art === "full" ? undefined : "lazy"}
+          decoding="async"
           style={{
             width: "100%",
             height: "100%",

@@ -48,10 +48,33 @@ export function findArt(id: string): PrintArt | undefined {
  *
  * 템플릿은 이 함수를 거쳐서만 그림을 가리킵니다. 파일 이름을 직접 적으면
  * 그림을 다시 뽑아 이름이 바뀔 때 조용히 깨집니다.
+ *
+ * 여기서 돌려주는 것은 **언제나 원본** 입니다. 문서에 저장되는 값이고,
+ * PDF 로 내보낼 때 그 해상도가 필요하기 때문입니다. 작은 판은 화면에
+ * 그릴 때만 variantUrl 로 갈아 끼웁니다.
  */
 export function artUrl(id: string): string | undefined {
   const art = BY_ID.get(id);
   return art?.file ? asset(`/print-art/${art.file}`) : undefined;
+}
+
+export type ArtVariant = "sm" | "md" | "full";
+
+/**
+ * 화면에 그릴 때 쓰는 작은 판으로 주소를 바꿉니다.
+ *
+ * 목록의 썸네일은 130px 인데 원본은 3584px 입니다. 그대로 두면 갈래 목록
+ * 한 장이 9.5MB, 허브가 18.7MB 를 내려받습니다. 실제로 그랬고, 그래서
+ * «인쇄물 쪽에 들어가면 너무 오래 걸린다» 가 됐습니다.
+ *
+ * 우리가 만든 그림에만 손댑니다. 사용자가 올린 사진(data:·저장소 주소)은
+ * 작은 판이 없으므로 그대로 둡니다.
+ */
+export function variantUrl(src: string, variant: ArtVariant): string {
+  if (variant === "full") return src;
+  const m = /^(.*\/print-art\/)([^/]+)\.(?:jpg|jpeg|png)$/i.exec(src);
+  if (!m) return src;
+  return `${m[1]}${variant}/${m[2]}.webp`;
 }
 
 /** 원본 픽셀 — 해상도 경고 계산에 씁니다 */

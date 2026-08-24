@@ -40,7 +40,7 @@ const DRAFTS: Draft[] = [
     background: { color: "#ffffff" },
     backgroundBack: { color: INK.cream },
     build: ({ w, bleed }) => [
-      image("flyer-cafe-photo", { x: -bleed, y: -bleed, w: w + bleed * 2, h: 168 + bleed }),
+      image("flyer-cafe-photo", { x: -bleed, y: -bleed, w: w + bleed * 2, h: 168 + bleed, focusY: 0.62 }),
 
       text({
         x: 16,
@@ -394,6 +394,7 @@ const DRAFTS: Draft[] = [
         y: 178,
         w: w + bleed * 2,
         h: 119 + bleed,
+        focusY: 0.74,
       }),
 
       /* ── 뒷면 ── */

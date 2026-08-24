@@ -13,6 +13,7 @@
     "print:art": "node scripts/print-art.mjs",
     "print:check": "node scripts/print-check.mjs",
     "print:og": "node scripts/print-og.mjs",
+    "print:variants": "node scripts/print-variants.mjs",
     "og:make": "node scripts/make-og.mjs"
   },
   "dependencies": {

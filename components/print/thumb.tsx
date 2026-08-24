@@ -17,6 +17,7 @@
  */
 
 import { ElementView } from "@/components/print/element-view";
+import { variantUrl, type ArtVariant } from "@/lib/print/art";
 import type { PrintDoc, PrintTemplate } from "@/lib/print/types";
 
 export function DocThumb({
@@ -34,6 +35,10 @@ export function DocThumb({
   const k = Math.min(box.w / doc.width, box.h / doc.height);
   const w = doc.width * k;
   const h = doc.height * k;
+
+  /* 그릴 크기의 두 배쯤이면 화면에서 구분이 안 됩니다. 목록의 130px 짜리
+     썸네일에 3584px 원본을 내려받는 것이 «인쇄물이 느리다» 의 원인이었습니다. */
+  const art: ArtVariant = Math.max(w, h) <= 260 ? "sm" : "md";
   const bg = side === "back" ? (doc.backgroundBack ?? doc.background) : doc.background;
 
   const elements = doc.elements.filter(
@@ -53,10 +58,17 @@ export function DocThumb({
     >
       {bg.image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={bg.image} alt="" className="pt-thumb-bg" style={{ opacity: bg.imageOpacity ?? 1 }} />
+        <img
+          src={variantUrl(bg.image, art)}
+          alt=""
+          className="pt-thumb-bg"
+          loading="lazy"
+          decoding="async"
+          style={{ opacity: bg.imageOpacity ?? 1 }}
+        />
       )}
       {elements.map((el) => (
-        <ElementView key={el.id} el={el} scale={k} />
+        <ElementView key={el.id} el={el} scale={k} art={art} />
       ))}
       {doc.perforation && (
         <span

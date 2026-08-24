@@ -44,9 +44,11 @@ const DRAFTS: Draft[] = [
         y: -bleed,
         w: w + bleed * 2,
         h: h + bleed * 2,
-        opacity: 0.85,
+        brightness: 116,
       }),
-      rect({ x: -bleed, y: 200, w: w + bleed * 2, h: 220 + bleed, fill: "#0b0f14", opacity: 0.72 }),
+      /* 무대가 사진의 60% 지점에 있습니다. 막을 그 위에 씌우면 사진에서
+         가장 좋은 부분이 사라지므로, 객석 쪽에만 깝니다. */
+      rect({ x: -bleed, y: 296, w: w + bleed * 2, h: 124 + bleed, fill: "#0b0f14", opacity: 0.78 }),
 
       text({
         x: 24,
@@ -73,11 +75,11 @@ const DRAFTS: Draft[] = [
         font: "gothic-a1",
       }),
 
-      rule({ x: 24, y: 246, w: w - 48, fill: "#3a4a5c", h: 0.8 }),
+      rule({ x: 24, y: 308, w: w - 48, fill: "#3a4a5c", h: 0.8 }),
 
       text({
         x: 24,
-        y: 262,
+        y: 320,
         w: 150,
         h: 30,
         text: "8월 12일 금요일\n저녁 7시 30분",
@@ -100,7 +102,7 @@ const DRAFTS: Draft[] = [
 
       ...bullets({
         x: 180,
-        y: 264,
+        y: 322,
         w: 92,
         size: 11,
         gap: 9,
@@ -113,10 +115,10 @@ const DRAFTS: Draft[] = [
         ],
       }),
 
-      rule({ x: 24, y: 366, w: w - 48, fill: "#3a4a5c", h: 0.8 }),
+      rule({ x: 24, y: 392, w: w - 48, fill: "#3a4a5c", h: 0.8 }),
       text({
         x: 24,
-        y: 378,
+        y: 400,
         w: w - 48,
         h: 10,
         text: "예매 cardly.kr · 문의 02-330-0000 · 주최 성산문화재단",
@@ -742,6 +744,7 @@ const DRAFTS: Draft[] = [
         y: -bleed,
         w: w + bleed * 2,
         h: 250 + bleed,
+        focusY: 0.72,
         brightness: 88,
       }),
 

@@ -588,7 +588,7 @@ const DRAFTS: Draft[] = [
     tags: ["카페", "신메뉴", "가격"],
     background: { color: "#fffdf9" },
     build: ({ w, bleed }) => [
-      image("flyer-cafe-photo", { x: -bleed, y: -bleed, w: w + bleed * 2, h: 760 + bleed }),
+      image("flyer-cafe-photo", { x: -bleed, y: -bleed, w: w + bleed * 2, h: 760 + bleed, focusY: 0.6 }),
 
       text({
         x: 60,
