@@ -210,6 +210,73 @@ const DARK_CELLS: number[][] = [
   [1, 7, 10, 11, 16],
 ];
 
+/**
+ * 아틀라스의 «진짜» 격자.
+ *
+ * 다섯 장 모두 4열 × 5행으로 그려 달라고 했지만, 실제로 온 그림은 행이
+ * 고르지 않습니다. 위쪽에 여백이 조금 있고 행 높이도 제각각이라(같은 장
+ * 안에서 192px ~ 212px), 이미지를 그냥 5등분해 잘라 쓰면 칸마다 이웃
+ * 디자인이 몇 픽셀씩 끼어 들어옵니다 — 3번(내추럴)은 위쪽에, 4번(테크)은
+ * 아래쪽에.
+ *
+ * rows 는 «행의 경계» 여섯 개입니다(맨 위, 사이 네 곳, 맨 아래). 그림에서
+ * 직접 재서 얻었습니다 — 열 네 칸의 밝기가 동시에 꺾이는 자리를 찾는
+ * 방식입니다. 열 방향은 정확히 4등분이라 손댈 것이 없습니다.
+ *
+ * 아틀라스를 새로 만들면 이 표도 다시 재야 합니다.
+ */
+const ATLAS_GRID: { w: number; h: number; rows: number[] }[] = [
+  { w: 1536, h: 1024, rows: [5, 216, 427, 628, 820, 1024] },
+  { w: 1402, h: 1122, rows: [0, 224, 451, 674, 897, 1122] },
+  { w: 1448, h: 1086, rows: [1, 223, 445, 663, 869, 1086] },
+  { w: 1448, h: 1086, rows: [3, 214, 425, 636, 847, 1058] },
+  { w: 1402, h: 1122, rows: [0, 226, 458, 688, 919, 1122] },
+];
+
+/** 명함 비율 90 : 50 */
+const CARD_RATIO = 90 / 50;
+
+/**
+ * 창을 3.5% 더 좁혀 잡습니다.
+ *
+ * 위 격자는 그림을 재서 얻은 값이라 몇 픽셀의 오차가 남습니다. 그 오차가
+ * 하필 이웃 쪽으로 나면 다시 얇은 띠가 보입니다. 사방을 1.75% 씩 버리면
+ * 그 오차를 덮을 수 있고, 배경 그림이라 가장자리를 조금 잃어도 보이는
+ * 것은 달라지지 않습니다.
+ */
+const INSET = 0.965;
+
+/**
+ * 칸 하나를 명함 화면에 꼭 맞게 잘라 오는 배경 값.
+ *
+ * 칸의 비율은 아틀라스마다 1.57 ~ 1.91 로 제각각인데 명함은 1.8 입니다.
+ * 예전에는 그 차이를 무시하고 늘려 붙였습니다 — 어떤 칸은 가로로 15%
+ * 늘어나 있었습니다. 이제 칸 안에서 1.8 짜리 창을 가운데로 잘라 씁니다.
+ * 늘어남도 없어지고, 가장자리를 함께 버리므로 이웃이 끼어들 여지도
+ * 사라집니다.
+ */
+function atlasArt(atlas: number, column: number, row: number) {
+  const g = ATLAS_GRID[atlas]!;
+  const cw = g.w / 4;
+  const top = g.rows[row]!;
+  const band = g.rows[row + 1]! - top;
+
+  // 칸 안에서 실제로 쓸 창 — 짧은 쪽에 맞춰 가운데를 잡습니다
+  const w = (cw / band > CARD_RATIO ? band * CARD_RATIO : cw) * INSET;
+  const h = w / CARD_RATIO;
+  const x = column * cw + (cw - w) / 2;
+  const y = top + (band - h) / 2;
+
+  const pct = (v: number) => `${Math.round(v * 1000) / 1000}%`;
+  return {
+    url: `card-atlas-clean-${atlas + 1}.png`,
+    // 창이 화면을 채우도록 이미지를 키웁니다
+    size: `${pct((g.w / w) * 100)} ${pct((g.h / h) * 100)}`,
+    // 퍼센트 위치는 «이미지에서 화면을 뺀 나머지» 에 대한 비율입니다
+    position: `${pct((x / (g.w - w)) * 100)} ${pct((y / (g.h - h)) * 100)}`,
+  };
+}
+
 const ART_TEMPLATES: CardTemplate[] = Array.from({ length: 100 }, (_, i) => {
   const atlas = Math.floor(i / 20);
   const cell = i % 20;
@@ -229,10 +296,7 @@ const ART_TEMPLATES: CardTemplate[] = Array.from({ length: 100 }, (_, i) => {
     text: dark ? "#f8f5ed" : "#171724",
     accent,
     placement: ARCHETYPES[i % ARCHETYPES.length]!,
-    art: {
-      url: `card-atlas-clean-${atlas + 1}.png`,
-      position: `${(column * 100) / 3}% ${row * 25}%`,
-    },
+    art: atlasArt(atlas, column, row),
   };
 });
 
