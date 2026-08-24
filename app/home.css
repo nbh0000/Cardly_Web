@@ -114,22 +114,6 @@
   --oc-s-12: 0.375rem;
 }
 
-.hm-foot {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.625rem;
-  margin-top: clamp(2rem, 4vw, 2.75rem);
-  font-size: 0.8125rem;
-  color: var(--color-hint);
-}
-.hm-foot a {
-  color: var(--color-muted);
-}
-.hm-foot a:hover {
-  color: var(--color-ink);
-}
-
 /* 청첩장 목업은 «실제 화면 크기» 로 그려집니다. 그대로 두면 목업 칸을
    넘치므로 갤러리 썸네일과 같은 배율(0.62)로 줄여 담습니다.
    components/home/mockups.tsx 의 WeddingMock 이 이 클래스를 씁니다. */

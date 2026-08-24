@@ -84,7 +84,13 @@ export function CardStudio() {
   const [side, setSide] = useState<"front" | "back">("front");
   const [selected, setSelected] = useState<string | null>(null);
   const [addType, setAddType] = useState("text");
-  const [showSafe, setShowSafe] = useState(true);
+  /* 재단 안전선은 기본으로 꺼 둡니다.
+
+     인쇄를 맡길 때 «이 선 안쪽에 글자를 두라» 는 안내라 실무에서는 필요하지만,
+     처음 편집기를 연 사람에게는 «내 명함에 웬 빨간 점선» 으로 보입니다.
+     저장물에는 원래 안 나가는 선인데도 결과물이 잘못된 줄 알게 됩니다.
+     필요한 사람은 아래 «재단 안전선 보기» 로 켭니다. */
+  const [showSafe, setShowSafe] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);

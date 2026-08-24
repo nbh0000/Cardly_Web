@@ -26,16 +26,10 @@ const ENTRIES = [
     href: "/templates",
     title: "모바일 청첩장",
     body: "링크를 발행해 하객에게 보냅니다",
-    art: (
-      /* 폭으로 크기를 정합니다 — 이 목업은 안쪽을 «폭 기준» 으로 축소하므로
-         높이로 맞추면 그림이 잘립니다(app/home.css 의 .hm-cover). */
-      /* 이 칸에서는 «사진이 꽉 찬» 판이 필요합니다. 가운데 정렬 템플릿은
-         위쪽 여백만 보여 빈 카드처럼 읽힙니다. */
-      <WeddingMock
-        templateId="locket"
-        className="w-[3.6rem] rounded-md shadow-[var(--shadow-card)]"
-      />
-    ),
+    /* 폭으로 크기를 정합니다 — 이 목업은 안쪽을 «폭 기준» 으로 축소하므로
+       높이로 맞추면 그림이 잘립니다(app/home.css 의 .hm-cover).
+       어느 판을 세울지는 mockups.tsx 한 곳이 정합니다. */
+    art: <WeddingMock className="w-[3.6rem] rounded-md shadow-[var(--shadow-card)]" />,
   },
   {
     href: "/invitation-card",
@@ -80,17 +74,6 @@ export function Launcher() {
             </li>
           ))}
         </ul>
-
-        {/* 만들기 전에 «받는 사람 화면» 을 보고 싶은 사람을 위한 한 줄.
-            단추로 만들지 않는 것은, 이 화면에서 눌러야 할 곳은 위의 넷이기
-            때문입니다. */}
-        <p className="hm-foot">
-          <Link href="/w/sample-jiho-suin/">샘플 청첩장</Link>
-          <span aria-hidden>·</span>
-          <Link href="/i/sample-dol-jiwoo/">샘플 초대장</Link>
-          <span aria-hidden>·</span>
-          <Link href="/pricing/">요금</Link>
-        </p>
       </div>
     </section>
   );

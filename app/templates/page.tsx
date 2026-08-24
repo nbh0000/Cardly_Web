@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SampleLinks } from "@/components/publish/sample-links";
 import { TemplateGrid } from "@/components/template-grid";
 import { TEMPLATES } from "@/lib/invitation";
 
@@ -49,11 +48,6 @@ export default function TemplatesPage() {
           <div className="mt-block">
             <TemplateGrid />
           </div>
-        </div>
-
-        {/* 고르기 전에 «받는 화면» 을 볼 수 있어야 합니다. */}
-        <div className="mt-section border-t border-line-soft pt-section">
-          <SampleLinks />
         </div>
       </main>
       <SiteFooter />

@@ -17,11 +17,21 @@ import { findDesign } from "@/lib/occasion/designs";
 import { artThumb, CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
 
-/* 홈에 세우는 대표 한 벌. 바뀌면 여기만 고칩니다. */
-const RESUME_PICK = "banner-navy";
-const CARD_PICK = "sig-1";
-const WEDDING_PICK = "linen";
-const INVITE_PICK = "wedding-floral-arch";
+/* 홈에 세우는 대표 한 벌. 바뀌면 여기만 고칩니다.
+
+   청첩장은 «느와르» — 흑백 사진 한 장이 표지를 가득 채우는 판입니다.
+   명함은 «그래파이트» — 브러시드 메탈 바탕에 흰 글자.
+   이력서는 «클래식 + 뉴트럴» 입니다 — 이름이 가운데 서고 색면 없이
+   헤어라인으로만 나뉘는 판. 예전에 세워 두었던 네이비 배너는 썸네일에서
+   색 덩어리가 먼저 읽혀, 옆 칸의 결과물들과 무게가 맞지 않았습니다.
+
+   초대장은 한복 입은 아기 호랑이입니다. 꽃 아치는 옆의 청첩장과 같은
+   «결혼» 갈래라 둘이 겹쳐 보였습니다. 초대장이 결혼 말고도 돌·생일·
+   집들이를 담는다는 것이 그림 하나로 읽혀야 합니다. */
+const RESUME_PICK = "classic-ink";
+const CARD_PICK = "sig-8";
+const WEDDING_PICK = "noir";
+const INVITE_PICK = "dol-baby-tiger";
 
 /** 이력서 — A4 조판. 안쪽이 전부 % 라 폭만 주면 그대로 줄어듭니다. */
 export function ResumeMock({ className }: { className?: string }) {
