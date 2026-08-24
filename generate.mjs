@@ -162,6 +162,74 @@ const CARDS = [
     prompt:
       "Charming illustration of a small shop front on opening day, striped awning, a bay tree in a pot either side of the open door, a hand-lettered blank sign board and a paper garland, warm sunlight, gouache and ink style, palette of ochre, deep green, brick red and cream",
   },
+
+  /* ── 파티 아홉 장 ────────────────────────────────────────────
+     기존 스무 장은 «축하하는 자리» 라 파스텔과 종이 질감으로 묶여 있습니다.
+     파티는 그 톤으로 그리면 전부 돌잔치처럼 보입니다. 그래서 세 갈래를
+     서로 다른 빛으로 나눴습니다 — 풀파티는 한낮의 물빛, 클럽은 어둠 속의
+     인공조명, 사교 모임은 실내의 촛불과 유리. 갈래 안에서도 시간대와
+     시점을 어긋나게 두어 세 장이 나란히 놓였을 때 고를 이유가 생기게
+     했습니다.                                                            */
+
+  /* 풀파티 — 물과 햇빛 */
+  {
+    id: "21",
+    slug: "pool-float",
+    prompt:
+      "Bright summer illustration looking across a swimming pool at midday, an inflatable ring and a striped beach ball drifting on turquoise water, sharp palm frond shadows falling across the pale terrazzo poolside, gouache with crisp edges, palette of turquoise, sun-bleached coral, white and warm sand",
+  },
+  {
+    id: "22",
+    slug: "pool-overhead",
+    prompt:
+      "Overhead flat-lay illustration of a swimming pool seen from directly above, two sun loungers with folded towels, a striped parasol and a small round table with a glass of iced drink, rippling aquamarine water with caustic light patterns, graphic mid-century poster style, palette of aqua, cream, tangerine and deep teal",
+  },
+  {
+    id: "23",
+    slug: "pool-sunset",
+    prompt:
+      "Dusk illustration of a poolside party, the water glowing pink and violet with reflected sky, silhouetted palms and a string of warm bulbs along the edge, one lounger and a cocktail glass in the foreground, soft airbrushed gradients with grain, palette of sunset coral, magenta, deep indigo and warm gold",
+  },
+
+  /* 클럽 — 어둠 속의 빛 */
+  {
+    id: "24",
+    slug: "club-lights",
+    prompt:
+      "Dark club interior illustration, a mirror ball scattering hundreds of light specks across the ceiling and floor, angled beams of magenta and cyan cutting through haze, empty polished dance floor below, cinematic and moody, painterly digital illustration, palette of near-black, electric magenta, cyan and silver",
+  },
+  {
+    id: "25",
+    slug: "club-neon",
+    prompt:
+      "Abstract neon illustration on a black background, curved glowing tubes in hot pink and electric blue looping across the frame, soft bloom and reflections on a wet dark surface below, faint smoke drifting through, no letters or words of any kind, sleek and graphic, palette of black, hot pink, electric blue and violet",
+  },
+  {
+    id: "26",
+    slug: "club-crowd",
+    prompt:
+      "Illustration of a crowd of dancers seen from behind as dark silhouettes, arms raised, facing a wall of stage light and haze, warm amber and deep purple beams flaring toward the viewer, loose expressive brushwork with strong contrast, palette of black, amber, deep purple and hot white",
+  },
+
+  /* 사교 모임 — 실내의 유리와 촛불 */
+  {
+    id: "27",
+    slug: "social-champagne",
+    prompt:
+      "Elegant illustration of several champagne coupes clustered and touching, golden bubbles rising, soft candlelight glinting on the glass rims, dark green velvet backdrop falling out of focus behind, refined painterly style, palette of deep forest green, champagne gold, warm ivory and amber",
+  },
+  {
+    id: "28",
+    slug: "social-longtable",
+    prompt:
+      "Warm illustration of a long dinner table set for a gathering seen at a low angle, taper candles in brass holders, wine glasses, small vases of anemones and scattered olive branches, linen cloth, evening light and soft shadows, textured gouache, palette of oatmeal linen, olive, burgundy and brass",
+  },
+  {
+    id: "29",
+    slug: "social-lounge",
+    prompt:
+      "Sophisticated illustration of a private lounge corner, deep velvet sofa, a low marble table with two cocktails and a bowl of citrus, an arched floor lamp casting warm light, palm plant in the corner, art-deco geometry in the rug, flat graphic style with fine texture, palette of burgundy velvet, brass, midnight blue and cream",
+  },
 ];
 
 await runBatch(CARDS, {
