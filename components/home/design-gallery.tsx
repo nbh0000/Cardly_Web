@@ -37,11 +37,8 @@ export function DesignGallery() {
   return (
     <section className="hm-section">
       <div className="hm-shell">
-        <h2 className="hm-h2">고르기만 하면 됩니다</h2>
-        <p className="hm-lead mt-4 max-w-[30rem]">
-          청첩장과 초대장 디자인은 전부 값 없이 열려 있습니다.
-        </p>
-        <p className="mt-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+          <h2 className="hm-h2">고르기만 하면 됩니다</h2>
           <Link href="/invitation-card" className="hm-link">
             디자인 전부 보기
             <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" aria-hidden>
@@ -54,7 +51,7 @@ export function DesignGallery() {
               />
             </svg>
           </Link>
-        </p>
+        </div>
       </div>
 
       {/* 무대는 shell 밖에 둡니다 — 오른쪽 끝을 넘어가야 «더 있다» 가 보입니다.
