@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CardMock,
   InviteMock,
+  PrintMock,
   ResumeMock,
   WeddingMock,
 } from "@/components/home/mockups";
@@ -52,6 +53,12 @@ const ENTRIES = [
     title: "명함",
     body: "90 × 50 mm 인쇄용 파일",
     art: <CardMock className="w-full max-w-[11rem] shadow-[var(--shadow-card)]" />,
+  },
+  {
+    href: "/print",
+    title: "인쇄물",
+    body: "전단지·포스터·현수막·메뉴판",
+    art: <PrintMock className="rounded-md shadow-[var(--shadow-card)]" />,
   },
 ];
 

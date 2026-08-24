@@ -889,3 +889,189 @@ begin
 end $$;
 
 grant execute on function public.refresh_expiry(uuid) to authenticated;
+
+-- ------------------------------------------------------------
+-- 9. AI 크레딧 — 인쇄물 편집기
+--
+-- Gemini 호출은 우리 돈입니다. 그래서 «누가 몇 번 불렀는가» 를 세는 자리가
+-- 반드시 서버에 있어야 합니다. 브라우저에서 세면 개발자 도구를 여는 것으로
+-- 무한이 됩니다.
+--
+-- 세 겹으로 막습니다.
+--   ① 잔액   — 가입하면 체험분을 한 번 주고, 부르면 줄어듭니다
+--   ② 하루 한도 — 잔액이 남아 있어도 하루에 이만큼만
+--   ③ 기록   — 언제 무엇을 불렀는지 한 줄씩. 이상한 사용을 나중에 봅니다
+-- ------------------------------------------------------------
+
+/** 처음 로그인한 사람에게 주는 체험분 */
+create or replace function public.ai_free_grant()
+returns int language sql immutable as $$ select 20 $$;
+
+/** 잔액이 남아 있어도 하루에 넘길 수 없는 호출 수 */
+create or replace function public.ai_daily_limit()
+returns int language sql immutable as $$ select 40 $$;
+
+create table if not exists public.ai_credits (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  balance    int not null default 0,
+  granted_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.ai_usage (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  action     text not null check (action in ('text', 'image', 'edit')),
+  cost       int  not null default 0,
+  -- 무엇을 시켰는지 앞부분만. 전문을 남기면 개인정보가 쌓입니다
+  prompt     text,
+  ok         boolean,
+  message    text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists ai_usage_user_day on public.ai_usage (user_id, created_at desc);
+
+alter table public.ai_credits enable row level security;
+alter table public.ai_usage  enable row level security;
+
+-- 자기 것만 읽습니다. 쓰기는 아래 함수(service_role)만 합니다.
+drop policy if exists ai_credits_read on public.ai_credits;
+create policy ai_credits_read on public.ai_credits
+  for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists ai_usage_read on public.ai_usage;
+create policy ai_usage_read on public.ai_usage
+  for select to authenticated using (user_id = auth.uid());
+
+/**
+ * 남은 크레딧. 처음 묻는 사람에게는 이 자리에서 체험분을 만들어 줍니다.
+ * 회원가입 트리거에 얹지 않는 이유는, 이미 가입해 둔 사람에게도 똑같이
+ * 돌아가야 하기 때문입니다.
+ */
+create or replace function public.ai_balance(p_user uuid)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v int;
+begin
+  perform public.assert_service_role();
+
+  insert into public.ai_credits (user_id, balance)
+       values (p_user, public.ai_free_grant())
+  on conflict (user_id) do nothing;
+
+  select balance into v from public.ai_credits where user_id = p_user;
+  return coalesce(v, 0);
+end $$;
+
+/**
+ * 부르기 «전» 에 차감하고 기록을 한 줄 엽니다.
+ *
+ * 나중에 차감하면 실패한 호출을 반복해 공짜로 쓰는 길이 열립니다.
+ * 대신 우리 잘못으로 실패했을 때 ai_refund 가 되돌려 줍니다.
+ *
+ * 돌려주는 모양은 늘 같습니다:
+ *   { ok, message, balance, log_id }
+ * ok 가 false 면 message 를 사용자에게 그대로 보여 줍니다.
+ */
+create or replace function public.ai_spend(
+  p_user   uuid,
+  p_action text,
+  p_cost   int,
+  p_prompt text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_balance int;
+  v_today   int;
+  v_id      uuid;
+begin
+  perform public.assert_service_role();
+
+  v_balance := public.ai_balance(p_user);
+
+  select count(*) into v_today
+    from public.ai_usage
+   where user_id = p_user
+     and created_at > now() - interval '1 day'
+     and coalesce(ok, true);
+
+  if v_today >= public.ai_daily_limit() then
+    return jsonb_build_object(
+      'ok', false, 'balance', v_balance, 'log_id', null,
+      'message', format('하루에 %s번까지 쓸 수 있습니다. 내일 다시 시도해 주세요.',
+                        public.ai_daily_limit()));
+  end if;
+
+  if v_balance < p_cost then
+    return jsonb_build_object(
+      'ok', false, 'balance', v_balance, 'log_id', null,
+      'message', format('크레딧이 모자랍니다. (남은 크레딧 %s, 필요한 크레딧 %s)',
+                        v_balance, p_cost));
+  end if;
+
+  update public.ai_credits
+     set balance = balance - p_cost, updated_at = now()
+   where user_id = p_user
+  returning balance into v_balance;
+
+  insert into public.ai_usage (user_id, action, cost, prompt)
+       values (p_user, p_action, p_cost, left(coalesce(p_prompt, ''), 400))
+    returning id into v_id;
+
+  return jsonb_build_object('ok', true, 'message', null,
+                            'balance', v_balance, 'log_id', v_id);
+end $$;
+
+/** 끝났다고 표시만 합니다 */
+create or replace function public.ai_finish(p_id uuid, p_ok boolean, p_message text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform public.assert_service_role();
+  update public.ai_usage
+     set ok = p_ok, message = left(coalesce(p_message, ''), 300)
+   where id = p_id;
+end $$;
+
+/** 우리 쪽 사정으로 실패했을 때 — 크레딧을 되돌리고 실패로 적습니다 */
+create or replace function public.ai_refund(p_id uuid, p_message text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  u public.ai_usage;
+begin
+  perform public.assert_service_role();
+
+  select * into u from public.ai_usage where id = p_id;
+  if not found or u.ok is not null then
+    return;  -- 이미 마무리된 기록은 건드리지 않습니다
+  end if;
+
+  update public.ai_credits
+     set balance = balance + u.cost, updated_at = now()
+   where user_id = u.user_id;
+
+  update public.ai_usage
+     set ok = false, message = left(coalesce(p_message, ''), 300)
+   where id = p_id;
+end $$;
+
+revoke all on function public.ai_balance(uuid) from anon, authenticated;
+revoke all on function public.ai_spend(uuid, text, int, text) from anon, authenticated;
+revoke all on function public.ai_finish(uuid, boolean, text) from anon, authenticated;
+revoke all on function public.ai_refund(uuid, text) from anon, authenticated;

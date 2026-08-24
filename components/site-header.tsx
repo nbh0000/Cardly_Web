@@ -12,6 +12,7 @@ const NAV = [
   { href: "/invitation-card", label: "초대장" },
   { href: "/resume", label: "이력서" },
   { href: "/business-card", label: "명함" },
+  { href: "/print", label: "인쇄물" },
 ];
 
 export function SiteHeader() {

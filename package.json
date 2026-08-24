@@ -10,12 +10,15 @@
     "invite:add": "node scripts/import-invitation.mjs",
     "art:import": "node scripts/import-artwork.mjs",
     "card:import": "node scripts/import-card-art.mjs",
+    "print:art": "node scripts/print-art.mjs",
     "og:make": "node scripts/make-og.mjs"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "next": "16.3.0",
+    "pdf-lib": "^1.17.1",
     "pretendard": "^1.3.9",
     "react": "19.2.8",
     "react-dom": "19.2.8"

@@ -53,6 +53,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${SITE}/print/`,
+      lastModified: UPDATED,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
       url: `${SITE}/pricing/`,
       lastModified: UPDATED,
       changeFrequency: "monthly",

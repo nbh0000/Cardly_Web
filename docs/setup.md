@@ -119,7 +119,31 @@ npx supabase functions deploy site-refresh
 
 ---
 
-## 5. 사업자 정보 (실제 결제를 받기 전 필수)
+## 5. 인쇄물 편집기의 AI (선택)
+
+`/print` 의 문구 만들기·배경 그림 만들기는 Gemini 를 부릅니다. 키는 브라우저에
+절대 내려가지 않고, 엣지 함수 안에서만 삽니다.
+
+1. [aistudio.google.com](https://aistudio.google.com/apikey) 에서 API 키를 받습니다.
+2. ```bash
+   npx supabase secrets set GEMINI_API_KEY=...
+   npx supabase functions deploy ai-print
+   ```
+
+`--no-verify-jwt` 를 **주지 않습니다.** 로그인한 사람만 쓸 수 있어야 하고,
+누구인지 알아야 크레딧을 뺄 수 있기 때문입니다.
+
+크레딧은 `supabase/schema.sql` 의 9절이 관리합니다. 처음 쓰는 사람에게 체험분
+20개를 한 번 주고, 문구는 1개·그림은 5개를 씁니다. 잔액이 남아 있어도 하루
+40번을 넘길 수 없습니다. 값을 바꾸려면 `ai_free_grant()` 와 `ai_daily_limit()`
+두 함수만 고치면 됩니다.
+
+키가 없으면 `/print` 는 그대로 열리고 AI 단추만 «키가 설정되지 않았습니다» 로
+답합니다. 편집·PDF 내보내기는 키 없이도 전부 동작합니다.
+
+---
+
+## 6. 사업자 정보 (실제 결제를 받기 전 필수)
 
 돈을 받는 순간 전자상거래법 제10조에 따라 상호·대표자·주소·사업자등록번호·
 통신판매업 신고번호를 화면에 표시해야 합니다. `components/site-footer.tsx` 의

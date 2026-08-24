@@ -48,3 +48,18 @@ export function useNow(): number {
     () => 0,
   );
 }
+
+/**
+ * 브라우저에 붙었는지.
+ *
+ * 브라우저 저장소에서 이어 만들던 것을 꺼내야 하는 화면에 씁니다. 렌더
+ * 도중에 localStorage 를 읽으면 서버 그림(빈 문서)과 브라우저 그림(이어
+ * 만들던 문서)이 어긋나므로, 붙은 뒤에 한 번 더 그리게 합니다.
+ */
+export function useMounted(): boolean {
+  return useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+}

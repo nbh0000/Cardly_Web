@@ -16,6 +16,8 @@ import { createDefaultData, getTemplate } from "@/lib/invitation";
 import { findDesign } from "@/lib/occasion/designs";
 import { artThumb, CARD_TEMPLATES } from "@/lib/studio/card-templates";
 import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
+import { ElementView } from "@/components/print/element-view";
+import { findTemplate } from "@/lib/print/templates";
 
 /* 홈에 세우는 대표 한 벌. 바뀌면 여기만 고칩니다.
 
@@ -32,6 +34,8 @@ const RESUME_PICK = "classic-ink";
 const CARD_PICK = "sig-8";
 const WEDDING_PICK = "noir";
 const INVITE_PICK = "dol-baby-tiger";
+/* 인쇄물은 «색면 전단» — 위쪽 색면과 아래 여백이 썸네일에서도 읽힙니다. */
+const PRINT_PICK = "flyer-band";
 
 /** 이력서 — A4 조판. 안쪽이 전부 % 라 폭만 주면 그대로 줄어듭니다. */
 export function ResumeMock({ className }: { className?: string }) {
@@ -116,4 +120,33 @@ export function InviteMock() {
   const design = findDesign(INVITE_PICK);
   if (!design) return null;
   return <ClosedCard design={design} />;
+}
+
+/**
+ * 인쇄물 — 전단지 A4 앞면.
+ *
+ * 다른 목업과 같은 규칙입니다. 따로 그린 그림이 아니라 편집기가 쓰는
+ * 그리개(ElementView)에 실제 템플릿을 그대로 넣었습니다. 템플릿을 고치면
+ * 홈도 같이 바뀝니다.
+ *
+ * 다만 크기를 밖에서 정하지 않고 픽셀로 받습니다. 이력서·명함 목업은 안쪽이
+ * 전부 %로 짜여 있어 폭만 주면 따라 줄어들지만, 이 그리개는 «1mm 를 몇 px 로
+ * 그릴지» 를 인자로 받기 때문입니다. 그래서 폭을 먼저 정하고 배율을 거꾸로
+ * 계산합니다.
+ */
+export function PrintMock({ className, width = 58 }: { className?: string; width?: number }) {
+  const t = findTemplate(PRINT_PICK);
+  if (!t) return null;
+  const { doc } = t;
+  const k = width / doc.width; // px/mm
+  return (
+    <span
+      className={`hm-print ${className ?? ""}`}
+      style={{ width, height: doc.height * k, background: doc.background.color }}
+    >
+      {doc.elements.map((el) => (
+        <ElementView key={el.id} el={el} scale={k} />
+      ))}
+    </span>
+  );
 }
