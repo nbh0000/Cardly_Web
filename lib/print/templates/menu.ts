@@ -386,7 +386,7 @@ const DRAFTS: Draft[] = [
     art: ["menu-linen-texture"],
     tags: ["베이커리", "2단", "빵"],
     size: "a3-2col",
-    background: artBackground("menu-linen-texture", "#f6f1e7", 0.75),
+    background: artBackground("menu-linen-texture", "#f6f1e7", 0.45),
     build: ({ w, h }) => [
       rule({ x: w / 2, y: 16, w: 0.3, h: h - 32, fill: "#ded3c0" }),
 
@@ -561,7 +561,7 @@ const DRAFTS: Draft[] = [
     art: ["menu-wood-texture"],
     tags: ["술집", "3단", "접이식"],
     size: "a4-trifold",
-    background: artBackground("menu-wood-texture", "#2a1d13", 0.9),
+    background: artBackground("menu-wood-texture", "#2a1d13", 0.72),
     build: ({ w, h }) => {
       const panel = w / 3; // 99mm
       const pad = 10;

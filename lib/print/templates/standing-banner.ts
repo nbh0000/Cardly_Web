@@ -316,10 +316,11 @@ const DRAFTS: Draft[] = [
         color: "#6b7280",
       }),
 
+      rect({ x: 60, y: 706, w: w - 120, h: 200, fill: "#ffffff", radius: 10, opacity: 0.9 }),
       ...bullets({
-        x: 60,
-        y: 730,
-        w: w - 120,
+        x: 90,
+        y: 740,
+        w: w - 180,
         size: 40,
         gap: 62,
         color: "#3a3f57",
