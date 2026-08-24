@@ -71,11 +71,13 @@ body:has(.hm) > header .btn-primary:hover {
   background: #0d0d0d;
   opacity: 0.82;
 }
-body:has(.hm) > header a[href="/pricing"] {
+/* 정적 배포는 주소 끝에 슬래시를 붙입니다(trailingSlash). 정확히 일치하는
+   선택자로 적으면 «/pricing/» 을 놓칩니다. */
+body:has(.hm) > header a[href^="/pricing"] {
   background: #f7f7f8;
   color: #5d5d5d;
 }
-body:has(.hm) > header a[href="/pricing"]:hover {
+body:has(.hm) > header a[href^="/pricing"]:hover {
   background: #efeff1;
 }
 body:has(.hm) > header a:hover,
