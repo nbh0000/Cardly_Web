@@ -1,241 +1,138 @@
 /* ============================================================
-   홈 (/) 전용 조판 — 흰 바탕과 회색
+   홈 (/) — 고르는 화면 하나
 
-   이 파일의 규칙은 전부 `.hm` 안에서만 듭니다(머리·꼬리만 :has 로 함께
-   중립색이 됩니다). 여기서 정한 색과 글꼴이 편집기나 청첩장 화면으로
-   새어 나가면 안 됩니다 — 그쪽은 따뜻한 톤이 장식이 아니라 파는 물건
-   그 자체입니다.
+   소개 페이지를 걷어내고 «무엇을 만들지 고르는» 화면만 남겼습니다.
+   그래서 이 파일은 조판 규칙 몇 줄이 전부입니다. 색과 글꼴은 전역
+   토큰(app/globals.css)을 그대로 씁니다 — 이제 사이트 전체가 같은
+   흰색과 회색이라 홈만 따로 정의할 것이 없습니다.
 
-   ── 왜 홈만 흰색인가 ──
-   홈이 할 일은 «무엇을 만들 수 있는지» 를 보여 주는 것뿐입니다. 바탕에
-   색이 있으면 그 색이 청첩장·명함 그림과 섞여 서로를 흐립니다. 바탕을
-   흰색과 회색으로 비우면 화면에서 색을 가진 것은 결과물뿐이 됩니다.
-
-   색은 chatgpt.com 의 값을 그대로 가져왔습니다.
-     바탕 #fff · 면 #f7f7f8 · 글 #0d0d0d / #5d5d5d / #8f8f8f
-     선 rgb(0 0 0 / 0.08) · 단추 검정
-   포인트 색은 두지 않습니다. 눌러야 할 곳이 검정이고 나머지는 회색입니다.
+   한 화면 안에서 끝나야 합니다. 스크롤이 생기는 순간 «고르는 자리» 가
+   다시 «읽는 자리» 가 됩니다.
    ============================================================ */
 
-.hm {
-  --hm-bg: #ffffff;
-  --hm-panel: #f7f7f8;
-  --hm-ink: #0d0d0d;
-  --hm-ink-2: #5d5d5d;
-  --hm-ink-3: #8f8f8f;
-  --hm-line: rgb(0 0 0 / 0.08);
-
-  /* 섹션 상하 여백 */
-  --hm-pad: clamp(4rem, 7.5vw, 7rem);
-  /* 목업 그림자 — 딱 한 단계. 흰 바탕에서는 아주 옅어야 종이로 보이고,
-     진하면 스티커처럼 떠 버립니다. */
-  --hm-lift: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px rgb(0 0 0 / 0.07);
-
-  /* 홈에서만 Pretendard. 제목까지 산세리프 한 벌로 세웁니다. */
-  font-family:
-    var(--f-pretendard), -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-    system-ui, sans-serif;
-
-  background: var(--hm-bg);
-  color: var(--hm-ink);
+.hm-launcher {
+  display: grid;
+  place-items: center;
+  /* 머리띠(64·80px) 아래의 남은 높이. 꼬리말은 그 아래로 밀려납니다. */
+  min-height: calc(100dvh - 4rem);
+  padding-block: clamp(3rem, 8vw, 5rem);
 }
-
-.hm h1,
-.hm h2,
-.hm h3 {
-  font-family: inherit;
-}
-
-/* 머리와 꼬리도 함께 중립으로. 홈만 흰 바탕인데 위아래가 크림색이면
-   «색을 비웠다» 는 인상이 첫 줄에서부터 깨집니다. :has 로 홈에서만 듭니다. */
-body:has(.hm) {
-  background: #ffffff;
-}
-body:has(.hm) > header {
-  background: rgb(255 255 255 / 0.88);
-  border-bottom-color: rgb(0 0 0 / 0.08);
-}
-body:has(.hm) > footer {
-  background: #ffffff;
-  border-top-color: rgb(0 0 0 / 0.08);
-}
-
-/* 머리띠 안의 색까지 중립으로 바꿉니다. 바탕만 희게 하고 단추가 로즈색으로
-   남으면 «흰 화면에 분홍 단추 하나» 가 되어 오히려 더 튑니다.
-   Tailwind 유틸리티보다 선택자가 길어 이 규칙이 이깁니다. */
-body:has(.hm) > header .btn-primary {
-  background: #0d0d0d;
-  color: #fff;
-}
-body:has(.hm) > header .btn-primary:hover {
-  background: #0d0d0d;
-  opacity: 0.82;
-}
-/* 정적 배포는 주소 끝에 슬래시를 붙입니다(trailingSlash). 정확히 일치하는
-   선택자로 적으면 «/pricing/» 을 놓칩니다. */
-body:has(.hm) > header a[href^="/pricing"] {
-  background: #f7f7f8;
-  color: #5d5d5d;
-}
-body:has(.hm) > header a[href^="/pricing"]:hover {
-  background: #efeff1;
-}
-body:has(.hm) > header a:hover,
-body:has(.hm) > footer a:hover {
-  color: #0d0d0d;
-}
-/* 로고의 «KR» 과 꼬리말 글자도 회색 계열로 */
-body:has(.hm) > header span[class*="text-rose-deep"],
-body:has(.hm) > footer span[class*="text-rose-deep"] {
-  color: #8f8f8f;
-}
-body:has(.hm) > footer a {
-  color: #5d5d5d;
-}
-
-.hm-section {
-  padding-top: var(--hm-pad);
-  padding-bottom: var(--hm-pad);
+@media (min-width: 48rem) {
+  .hm-launcher {
+    min-height: calc(100dvh - 5rem);
+  }
 }
 
 .hm-shell {
   width: 100%;
-  max-width: 72rem;
+  max-width: 52rem;
   margin-inline: auto;
   padding-inline: var(--spacing-gutter);
 }
 
-/* ── 글자 ─────────────────────────────────────────────────── */
-
-.hm-display {
-  font-size: clamp(2.5rem, 6vw, 4.25rem);
-  line-height: 1.14;
-  letter-spacing: -0.04em;
-  font-weight: 700;
-  color: var(--hm-ink);
-  text-wrap: balance;
-}
-
-.hm-h2 {
-  font-size: clamp(1.875rem, 3.6vw, 2.75rem);
-  line-height: 1.22;
+.hm-title {
+  text-align: center;
+  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  line-height: 1.2;
   letter-spacing: -0.035em;
   font-weight: 700;
-  color: var(--hm-ink);
-  text-wrap: balance;
+  color: var(--color-ink);
 }
 
-.hm-lead {
-  font-size: clamp(1rem, 1.2vw, 1.125rem);
-  line-height: 1.7;
-  color: var(--hm-ink-2);
-  letter-spacing: -0.01em;
+.hm-grid {
+  display: grid;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+  margin-top: clamp(2rem, 5vw, 3rem);
+  margin-inline: auto;
+  max-width: 46rem;
+}
+@media (min-width: 34rem) {
+  .hm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-/* 단추 아래 한 줄. 걷어낸 «안심 세 줄» 을 여기 한 문장으로 줄였습니다 —
-   눌러야 할 곳 바로 옆이 그 사실이 필요한 유일한 자리입니다. */
-.hm-note {
-  font-size: 0.875rem;
-  line-height: 1.7;
-  /* 세 번째 회색(#8f8f8f)은 흰 바탕에서 3:1 이라 읽는 글자에 쓰면 AA 에
-     못 미칩니다. 그 색은 자리표시자 전용으로 두고 여기는 한 단계 진하게. */
-  color: var(--hm-ink-2);
-  letter-spacing: -0.005em;
-}
-
-/* ── 단추와 링크 ─────────────────────────────────────────────
-   단추는 검정 하나뿐입니다. 색이 있는 단추를 두면 그 색이 곧 브랜드색이
-   되어 «바탕을 비운다» 는 결정과 부딪칩니다. */
-
-.hm-btn {
-  display: inline-flex;
+/* 고르는 칸 하나.
+   그림자 대신 1px 선으로 경계를 만듭니다 — 흰 바탕에 그림자가 넷 뜨면
+   화면이 부산해집니다. 마우스를 얹으면 면이 아주 옅게 찹니다. */
+.hm-entry {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 3.25rem;
-  padding-inline: 2rem;
-  border-radius: var(--radius-full);
-  background: var(--hm-ink);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  transition: opacity 0.2s var(--ease-out-soft);
-}
-.hm-btn:hover {
-  opacity: 0.82;
-}
-
-.hm-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--hm-ink);
-}
-.hm-link svg {
-  transition: transform 0.25s var(--ease-out-soft);
-}
-.hm-link:hover svg {
-  transform: translateX(0.25rem);
-}
-
-/* ── 목업 무대 ───────────────────────────────────────────────
-   결과물 넉 장을 겹쳐 놓습니다. 자리와 크기가 전부 % 라 화면이 좁아져도
-   배치가 그대로 줄어들 뿐 무너지지 않습니다. */
-
-.hm-stage {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 5 / 4;
-}
-
-.hm-piece {
-  position: absolute;
-  border-radius: 4px;
-  box-shadow: var(--hm-lift);
-}
-
-.hm-piece-resume {
-  left: 0;
-  top: 3%;
-  width: 46%;
-  transform: rotate(-7deg);
-}
-
-.hm-piece-phone {
-  left: 26%;
-  top: 0;
-  width: 47%;
-  z-index: 3;
-  border-radius: 1.25rem;
-  overflow: hidden;
+  gap: 1.125rem;
+  height: 100%;
+  padding: 1.125rem 1.25rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
   background: #fff;
-  transform: rotate(-1.5deg);
+  transition:
+    background-color 0.2s var(--ease-out-soft),
+    border-color 0.2s var(--ease-out-soft);
+}
+.hm-entry:hover {
+  background: var(--color-cream);
+  border-color: rgb(0 0 0 / 0.16);
 }
 
-.hm-piece-card {
-  right: -12%;
-  top: 26%;
-  width: 37%;
-  /* 반쯤 열린 카드는 옆의 평평한 조각들보다 앞에 서야 «세워 둔 물건» 으로
-     읽힙니다. */
-  z-index: 5;
-  box-shadow: none; /* 카드는 자기 바닥 그림자를 가지고 있습니다 */
+/* 그림 자리는 높이를 못 박습니다. 넷의 비율이 제각각(A4·명함·폰·카드)이라
+   폭으로 맞추면 줄이 들쭉날쭉해집니다. */
+.hm-entry-art {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+}
+.hm-entry-art > * {
+  max-height: 100%;
 }
 
-.hm-piece-business {
-  left: 6%;
-  bottom: 0;
-  width: 44%;
-  z-index: 4;
-  transform: rotate(-3deg);
+.hm-entry-text {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.hm-entry-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+.hm-entry-body {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-muted);
 }
 
-/* 청첩장 렌더러는 실제 화면 크기로 그린 뒤 축소합니다. 갤러리 썸네일
-   (components/template-card)과 같은 배율이라 홈에서 본 그림이 목록에서도
-   그대로 보입니다. */
+/* 접힌 초대장은 화면과 무관한 절대 크기로 섭니다(.oc-thumb 이 420px 을
+   zoom 으로 줄입니다). 여기서는 그림 자리에 맞춰 다시 정합니다. */
+.hm-invite .oc-thumb {
+  zoom: 1;
+  width: 3.9rem;
+  --oc-card-w: 3.9rem;
+  /* 카드 높이는 «폭 × 1.4 + 바닥 그림자 자리» 입니다. 그 그림자 자리가
+     기본 48px 이라, 이 작은 칸에서는 카드보다 여백이 더 큽니다. */
+  --oc-s-12: 0.375rem;
+}
+
+.hm-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-top: clamp(2rem, 4vw, 2.75rem);
+  font-size: 0.8125rem;
+  color: var(--color-hint);
+}
+.hm-foot a {
+  color: var(--color-muted);
+}
+.hm-foot a:hover {
+  color: var(--color-ink);
+}
+
+/* 청첩장 목업은 «실제 화면 크기» 로 그려집니다. 그대로 두면 목업 칸을
+   넘치므로 갤러리 썸네일과 같은 배율(0.62)로 줄여 담습니다.
+   components/home/mockups.tsx 의 WeddingMock 이 이 클래스를 씁니다. */
 .hm-cover {
   position: absolute;
   inset: 0;
@@ -244,163 +141,4 @@ body:has(.hm) > footer a {
   transform: scale(0.62);
   transform-origin: top left;
   pointer-events: none;
-}
-
-@media (max-width: 47.9rem) {
-  .hm-stage {
-    aspect-ratio: 4 / 3;
-  }
-  .hm-piece-resume {
-    top: 2%;
-    width: 38%;
-  }
-  .hm-piece-phone {
-    left: 30%;
-    width: 42%;
-  }
-  .hm-piece-card {
-    right: -6%;
-    top: 30%;
-    width: 32%;
-  }
-  .hm-piece-business {
-    left: 4%;
-    bottom: 4%;
-    width: 42%;
-  }
-}
-
-/* ── 도구 한 줄 ──────────────────────────────────────────────
-   왼쪽 글 · 오른쪽 그림, 줄마다 좌우가 바뀝니다. 좁은 화면에서는 언제나
-   그림이 먼저 옵니다 — 결과물이 글보다 먼저 눈에 든다는 것이 이 페이지의
-   유일한 규칙입니다. */
-
-.hm-row {
-  display: grid;
-  gap: clamp(2rem, 4vw, 4rem);
-  align-items: center;
-}
-
-.hm-row-art {
-  order: -1;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-xl);
-  background: var(--hm-panel);
-  padding: clamp(1.5rem, 3vw, 2.75rem);
-  min-height: clamp(16rem, 26vw, 23rem);
-}
-
-@media (min-width: 48rem) {
-  .hm-row {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  }
-  .hm-row-art {
-    order: 0;
-  }
-  .hm-row[data-flip="1"] > .hm-row-text {
-    order: 2;
-  }
-}
-
-/* ── 디자인 갤러리 ───────────────────────────────────────────
-
-   그림만 옆으로 흐릅니다. 이름도 값도 붙이지 않습니다 — 고르는 화면이
-   아니라 «이런 것들이 있다» 를 보여 주는 자리라서, 글자가 붙는 순간 눈이
-   그림 대신 글자를 읽습니다.
-
-   오른쪽 화면 밖으로 넘겨 두는 것이 «더 있다» 는 유일한 신호입니다. */
-
-.hm-gallery {
-  display: flex;
-  gap: clamp(0.75rem, 1.4vw, 1.25rem);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  padding-inline: var(--spacing-gutter);
-  padding-block: 0.5rem;
-  /* 스냅이 컨테이너의 «시작» 에 맞으면 왼쪽 여백을 먹어 첫 장이 화면
-     끝에 붙습니다. 스냅에도 같은 여백을 알려 줍니다. */
-  scroll-padding-inline: var(--spacing-gutter);
-  scrollbar-width: none;
-}
-.hm-gallery::-webkit-scrollbar {
-  display: none;
-}
-
-.hm-tile {
-  flex: 0 0 auto;
-  width: clamp(8.5rem, 15vw, 12rem);
-  aspect-ratio: 5 / 7;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: #fff;
-  /* 흰 바탕에서는 그림자보다 얇은 선이 깔끔합니다 */
-  box-shadow: 0 0 0 1px var(--hm-line);
-  scroll-snap-align: start;
-  position: relative;
-}
-.hm-tile img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* ── 접힌 초대장의 크기 ──────────────────────────────────────
-   초대장은 «화면과 무관한 절대 크기» 로 서 있습니다(.oc-thumb 이 420px 을
-   zoom 으로 줄입니다). 홈에서는 옆에 놓인 조각들과 같이 커지고 같이
-   작아져야 하므로 그 자리에서만 카드 폭을 다시 정합니다. 높이가 폭에서
-   계산되므로(--oc-card-w × 1.4) 값은 반드시 px 이어야 합니다. */
-
-.hm .oc-thumb {
-  zoom: 1;
-  width: 100%;
-}
-.hm .hm-piece-card .oc-thumb {
-  --oc-card-w: clamp(4.5rem, 9vw, 9rem);
-}
-.hm .hm-row-art .oc-thumb {
-  --oc-card-w: clamp(10rem, 20vw, 17rem);
-}
-
-/* 히어로의 초대장은 반쯤 열린 채 서 있습니다. 닫힌 카드는 이 크기에서 그냥
-   그림 한 장으로 읽혀 옆의 이력서·명함과 구별되지 않습니다. 각도는 목록에서
-   마우스를 얹었을 때와 같습니다(app/occasion.css) — 한쪽만 고치면 목록과
-   홈이 서로 다른 카드가 됩니다. */
-.hm-piece-card .fc {
-  --fc-tx: -22%;
-  --fc-sx: -14%;
-  --fc-rx: -9deg;
-  --fc-ry: 30deg;
-  --fc-p1: -155deg;
-  --fc-p2: 25deg;
-  --fc-p3: -30deg;
-  --fc-p4: -210deg;
-  --fc-scale: 0.82;
-}
-.hm-piece-card .fc-page-1 .fc-face::after {
-  opacity: 0.5;
-}
-
-@media (max-width: 47.9rem) {
-  /* 좁은 화면에서는 카드를 다시 닫습니다. 반쯤 열린 카드는 폭이 70px 남짓이
-     될 때 «흰 종이 조각» 으로만 보이고, 표지 그림이 전부 뒤로 돌아가
-     무엇을 파는지가 사라집니다. */
-  .hm-piece-card .fc {
-    --fc-tx: -50%;
-    --fc-sx: 0%;
-    --fc-rx: -12deg;
-    --fc-ry: 20deg;
-    --fc-p1: -20deg;
-    --fc-p2: 160deg;
-    --fc-p3: -20deg;
-    --fc-p4: -200deg;
-    --fc-scale: 1;
-  }
-  .hm-piece-card .fc-page-1 .fc-face::after {
-    opacity: 0.14;
-  }
-  .hm .hm-piece-card .oc-thumb {
-    --oc-card-w: clamp(5rem, 22vw, 7.5rem);
-  }
 }

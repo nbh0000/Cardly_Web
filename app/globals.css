@@ -9,74 +9,106 @@
 @import "./home.css";
 
 /* ============================================================
-   DESIGN TOKENS — 감성 미니멀 웨딩 / Ivory base + Dusty Rose
+   DESIGN TOKENS — 흰 바탕과 회색, 검정 하나
+
    모든 값은 Tailwind v4 @theme 으로 등록되어
-   bg-ivory / text-ink / font-serif / py-section 형태로 사용합니다.
+   bg-ivory / text-ink / font-serif / py-section 형태로 씁니다.
+
+   화면은 색을 갖지 않습니다. 색을 가진 것은 사람이 만든 결과물뿐입니다.
+   그 결과물을 그리는 CSS(invitation·cover·studio·occasion)는 이 표를
+   보지 않으므로, 여기를 바꿔도 청첩장과 명함은 그대로입니다.
    ============================================================ */
 
 @theme {
-  /* ---------- 1. COLOR ---------- */
+  /* ---------- 1. COLOR ----------
 
-  /* Base — 아이보리/크림 계열. 페이지의 90%를 차지하는 바탕색 */
-  --color-ivory: #fdfbf7; /* 페이지 기본 배경 */
-  --color-cream: #f6f1e9; /* 교차 섹션 / 카드 배경 */
-  --color-sand: #ede6db; /* 한 단계 진한 면, 비활성 칩 */
-  --color-line: #e4dcd1; /* 헤어라인 보더 */
-  --color-line-soft: #efe9e0; /* 더 옅은 구분선 */
+     화면(도구·목록·안내)은 흰색과 회색만 씁니다. 색을 가진 것은 사람이
+     만든 결과물 — 청첩장·초대장·명함·이력서 — 뿐이어야 합니다. 바탕에
+     색이 있으면 그 색이 결과물의 색과 섞여 서로를 흐립니다.
 
-  /* Point — Dusty Rose 1색 계열.
-     rose 는 장식/큰 글씨 전용, rose-deep 부터 본문 대비(AA) 통과 */
-  --color-rose: #b08d80; /* 액센트 면, 보더, 큰 디스플레이 텍스트 */
-  --color-rose-deep: #8a6558; /* 버튼 배경 / 링크 / 작은 텍스트 (AA ✓) */
-  --color-rose-press: #74544a; /* hover · active */
-  --color-rose-mist: #e8dad3; /* 틴트 배경, 뱃지 */
-  --color-rose-veil: #f4eae5; /* 아주 옅은 틴트 섹션 */
+     그래서 이 표에는 «브랜드색» 이 없습니다. 눌러야 할 곳은 검정이고,
+     나머지는 전부 회색입니다. 값은 chatgpt.com 의 것을 가져왔습니다.
 
-  /* Text — 순수 검정 대신 따뜻한 잉크 톤 */
-  --color-ink: #2e2a27; /* 제목·본문 (ivory 대비 13.9:1) */
-  --color-ink-soft: #57504a; /* 보조 본문 (7.3:1) */
-  --color-muted: #7a716a; /* 캡션·메타 (4.7:1, AA ✓) */
-  /* 장식·플레이스홀더 전용. 이전 값(#a79d94)은 아이보리 위 2.4:1 로
-     본문에 쓰면 AA 에 크게 못 미쳤습니다. 3.3:1 까지 올려 두되,
-     "읽어야 하는 글자"에는 여전히 muted 를 쓰세요. */
-  --color-hint: #938981;
+     ── 이름은 그대로 둡니다 ──
+     ivory·cream·rose 같은 이름이 값과 어긋나지만, 이 이름들이 화면 코드
+     73곳에 박혀 있습니다. 이름을 바꾸면 그 73곳을 함께 고쳐야 하고 그
+     과정에서 반드시 몇 곳을 빠뜨립니다. 이름은 «자리» 를 가리키고 값이
+     «색» 을 정한다고 읽으세요.
+       ivory=바탕 · cream=면 · sand=진한 면 · rose-deep=누를 곳
+     결과물 렌더러(invitation.css·cover.css·studio.css·occasion.css)는
+     이 표를 쓰지 않습니다. 그래서 여기를 바꿔도 청첩장은 그대로입니다. */
 
-  /* ---------- 2. TYPOGRAPHY ---------- */
-  /* 세리프 = 제목·이름·숫자 / 산세리프 = 본문·UI */
+  /* Base — 흰색과 회색 */
+  --color-ivory: #ffffff; /* 페이지 기본 배경 */
+  --color-cream: #f7f7f8; /* 면 / 카드 배경 */
+  --color-sand: #efeff1; /* 한 단계 진한 면, 비활성 칩 */
+  --color-line: rgb(0 0 0 / 0.1); /* 헤어라인 보더 */
+  --color-line-soft: rgb(0 0 0 / 0.06); /* 더 옅은 구분선 */
 
-  --text-display: clamp(2.125rem, 7.5vw, 4rem);
-  --text-display--line-height: 1.22;
-  --text-display--letter-spacing: -0.025em;
-  --text-display--font-weight: 400;
+  /* Point — 색 대신 검정. 이름만 rose 로 남아 있습니다(위 설명 참고) */
+  --color-rose: #d4d4d8; /* 장식 선·비활성 표시 */
+  --color-rose-deep: #0d0d0d; /* 단추 배경 / 링크 (21:1) */
+  --color-rose-press: #383838; /* hover · active */
+  --color-rose-mist: #e9e9ec; /* 틴트 배경, 뱃지 */
+  --color-rose-veil: #f7f7f8; /* 아주 옅은 면 */
 
-  --text-h1: clamp(1.75rem, 5.5vw, 2.75rem);
-  --text-h1--line-height: 1.32;
-  --text-h1--letter-spacing: -0.02em;
-  --text-h1--font-weight: 400;
+  /* Text */
+  --color-ink: #0d0d0d; /* 제목·본문 (흰 바탕 대비 19.6:1) */
+  --color-ink-soft: #5d5d5d; /* 보조 본문 (7.0:1) */
+  --color-muted: #6e6e6e; /* 캡션·메타 (5.4:1, AA ✓) */
+  /* 장식·플레이스홀더 전용. 읽어야 하는 글자에는 muted 를 쓰세요. */
+  --color-hint: #9a9a9a;
 
-  --text-h2: clamp(1.375rem, 4vw, 1.875rem);
-  --text-h2--line-height: 1.42;
-  --text-h2--letter-spacing: -0.015em;
-  --text-h2--font-weight: 500;
+  /* 오류 — 유일하게 색을 쓰는 자리입니다. 검정으로는 «잘못됐다» 를
+     말할 수 없어 이것만 남깁니다. */
+  --color-danger: #b3261e;
+
+  /* ---------- 2. TYPOGRAPHY ----------
+
+     화면은 산세리프 한 벌(Pretendard)로 섭니다. 예전에는 제목이 세리프였고
+     그것이 «청첩장 사이트» 라는 인상을 만들었는데, 이 사이트가 파는 것은
+     청첩장만이 아니고 도구 화면에는 장식이 필요 없습니다.
+
+     세리프가 필요한 곳 — 청첩장 본문, 초대장 속면, 이력서 조판 — 은 각자의
+     CSS 가 자기 글꼴을 직접 정합니다. 이 표를 보지 않습니다.
+
+     산세리프는 세리프보다 획이 굵게 읽히므로 제목 굵기를 한 단계씩
+     올리고(400→600) 자간을 더 좁혔습니다. 같은 크기에서 세리프의 무게를
+     내려면 그래야 합니다. */
+
+  --text-display: clamp(2.25rem, 7.5vw, 4.25rem);
+  --text-display--line-height: 1.14;
+  --text-display--letter-spacing: -0.04em;
+  --text-display--font-weight: 700;
+
+  --text-h1: clamp(1.875rem, 5.5vw, 3rem);
+  --text-h1--line-height: 1.2;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: clamp(1.5rem, 4vw, 2rem);
+  --text-h2--line-height: 1.28;
+  --text-h2--letter-spacing: -0.03em;
+  --text-h2--font-weight: 600;
 
   --text-h3: clamp(1.0625rem, 2.5vw, 1.25rem);
-  --text-h3--line-height: 1.5;
-  --text-h3--letter-spacing: -0.01em;
-  --text-h3--font-weight: 500;
+  --text-h3--line-height: 1.45;
+  --text-h3--letter-spacing: -0.02em;
+  --text-h3--font-weight: 600;
 
   --text-body: 0.9375rem; /* 15px — 모바일 본문 기준 */
-  --text-body--line-height: 1.85; /* 한글 가독성을 위해 넉넉하게 */
+  --text-body--line-height: 1.75;
 
   --text-body-lg: 1.0625rem;
-  --text-body-lg--line-height: 1.8;
+  --text-body-lg--line-height: 1.7;
 
   --text-caption: 0.8125rem;
-  --text-caption--line-height: 1.7;
+  --text-caption--line-height: 1.65;
 
   --text-eyebrow: 0.6875rem; /* 섹션 상단 영문 라벨 */
   --text-eyebrow--line-height: 1.4;
-  --text-eyebrow--letter-spacing: 0.22em;
-  --text-eyebrow--font-weight: 500;
+  --text-eyebrow--letter-spacing: 0.14em;
+  --text-eyebrow--font-weight: 600;
 
   /* ---------- 3. SPACING ---------- */
   /* 기본 스텝은 Tailwind 4px 스케일 그대로.
@@ -106,12 +138,14 @@
   --radius-phone: 2rem; /* 템플릿 썸네일 (폰 목업) */
   --radius-full: 999px;
 
-  /* ---------- 5. ELEVATION ---------- */
-  /* 그림자는 회색이 아니라 잉크 톤에 알파 — 아이보리 위에서 탁해지지 않게 */
-  --shadow-hairline: 0 0 0 1px #e4dcd1;
-  --shadow-soft: 0 1px 2px rgb(46 42 39 / 0.04), 0 6px 16px rgb(46 42 39 / 0.05);
-  --shadow-card: 0 2px 4px rgb(46 42 39 / 0.04), 0 14px 34px rgb(46 42 39 / 0.08);
-  --shadow-lift: 0 4px 8px rgb(46 42 39 / 0.05), 0 24px 56px rgb(46 42 39 / 0.13);
+  /* ---------- 5. ELEVATION ----------
+     흰 바탕에서는 그림자가 조금만 진해도 요소가 종이가 아니라 스티커처럼
+     떠 버립니다. 값을 전부 한 단계씩 옅게 내리고 색조도 중립으로 바꿨습니다.
+     경계를 나눌 때는 그림자보다 1px 선을 먼저 쓰세요. */
+  --shadow-hairline: 0 0 0 1px rgb(0 0 0 / 0.08);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.03), 0 4px 12px rgb(0 0 0 / 0.04);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 26px rgb(0 0 0 / 0.06);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.05), 0 18px 44px rgb(0 0 0 / 0.1);
 
   /* ---------- 6. MOTION ---------- */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -119,12 +153,20 @@
 
 /* 폰트는 next/font 가 런타임에 주입하므로 inline 으로 참조 */
 @theme inline {
+  /* 화면 글꼴은 Pretendard 한 벌입니다.
+     `font-serif` 라는 이름이 산세리프를 가리키는 것이 이상해 보이지만,
+     이 이름이 화면 코드 73곳(제목·이름·숫자)에 박혀 있고 그것들은 전부
+     «제목» 이라는 뜻으로 쓰였습니다. 이름을 바꾸는 대신 값을 바꿔
+     한 곳에서 갈아탑니다.
+
+     진짜 세리프가 필요한 곳은 결과물뿐이고, 그쪽은 각자의 CSS 가
+     자기 글꼴(--ff-*, --iv-font-*, --oc-font-*)을 직접 정합니다. */
   --font-serif:
-    var(--font-noto-serif-kr), "Nanum Myeongjo", "Apple SD Gothic Neo", Georgia,
-    serif;
+    var(--f-pretendard), -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", system-ui, sans-serif;
   --font-sans:
-    var(--font-noto-sans-kr), "Pretendard", "Apple SD Gothic Neo",
-    "Malgun Gothic", system-ui, sans-serif;
+    var(--f-pretendard), -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", var(--font-noto-sans-kr), system-ui, sans-serif;
 
   /* 커버 장식용 라틴 글꼴.
      한글은 포함되지 않으므로 항상 국문 폰트를 뒤에 세워 둡니다. */
@@ -174,7 +216,7 @@
   }
 
   ::selection {
-    background: var(--color-rose-mist);
+    background: var(--color-sand);
     color: var(--color-ink);
   }
 
@@ -215,8 +257,8 @@
   }
   .ipt:focus-visible {
     outline: none;
-    border-color: var(--color-rose);
-    box-shadow: 0 0 0 3px var(--color-rose-veil);
+    border-color: var(--color-ink);
+    box-shadow: 0 0 0 3px var(--color-sand);
   }
 
   .shell {
@@ -226,22 +268,18 @@
     padding-inline: var(--spacing-gutter);
   }
 
-  /* 섹션 상단 영문 라벨 + 로즈 헤어라인 */
+  /* 섹션 상단 영문 라벨. 예전에는 로즈색 헤어라인이 앞에 붙었는데,
+     장식선은 «여기가 중요하다» 를 색으로 말하는 장치라 색을 비운 화면에는
+     맞지 않습니다. 회색 대문자만 남깁니다. */
   .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.625rem;
     font-size: var(--text-eyebrow);
-    letter-spacing: 0.22em;
-    font-weight: 500;
+    letter-spacing: 0.14em;
+    font-weight: 600;
     text-transform: uppercase;
-    color: var(--color-rose-deep);
-  }
-  .eyebrow::before {
-    content: "";
-    width: 1.5rem;
-    height: 1px;
-    background: var(--color-rose);
+    color: var(--color-muted);
   }
   .eyebrow-center::before {
     display: none;
@@ -269,8 +307,10 @@
     transform: translateY(1px);
   }
 
+  /* 누를 곳은 검정 하나. 색이 있는 단추를 두면 그 색이 곧 브랜드색이
+     되어 «바탕을 비운다» 는 결정과 부딪칩니다. */
   .btn-primary {
-    background: var(--color-rose-deep);
+    background: var(--color-ink);
     color: #fff;
   }
   .btn-primary:hover {
@@ -278,13 +318,14 @@
   }
 
   .btn-ghost {
-    background: transparent;
+    background: #fff;
     color: var(--color-ink);
     border: 1px solid var(--color-line);
   }
   .btn-ghost:hover {
-    border-color: var(--color-rose);
-    color: var(--color-rose-deep);
+    background: var(--color-cream);
+    border-color: var(--color-line);
+    color: var(--color-ink);
   }
 
   .btn-sm {

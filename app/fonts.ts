@@ -226,23 +226,26 @@ const cormorant = Cormorant_Garamond({
   preload: false,
 });
 
-/* ---------- 초대장 본문 글꼴 ----------
+/* ---------- 화면 글꼴 ----------
  *
  * Pretendard 는 구글 폰트에 없어 npm 패키지(pretendard, OFL-1.1)로 들여와
  * next/font/local 로 자체 호스팅합니다. 한글 상용 글자만 담긴 subset 판을
- * 쓰면 굵기 하나가 264KB 라, 두 굵기를 실어도 본문 글꼴로 감당할 만합니다.
+ * 쓰면 굵기 하나가 264KB 입니다.
  * (전체 판은 굵기당 748KB, 가변 판은 2MB 입니다)
  *
- * display: swap — 글꼴이 늦게 와도 글을 먼저 읽게 합니다. 초대장은 받은
- * 사람이 링크를 누른 직후에 읽는 물건이라, 빈 화면으로 기다리게 하는 쪽이
- * 글자가 한 번 바뀌는 쪽보다 나쁩니다.
- * preload: false — 초대장 화면에서만 쓰므로 다른 페이지의 첫 화면 비용에
- * 얹지 않습니다.
+ * 이제 초대장 본문뿐 아니라 «화면 전체» 가 이 글꼴로 섭니다(globals.css 의
+ * --font-sans/--font-serif). 그래서 preload 를 켰습니다 — 첫 화면의 제목이
+ * 이 글꼴로 그려지므로, 늦게 오면 글자가 한 번 갈아입는 것이 보입니다.
+ *
+ * 굵기 셋을 싣습니다. 제목이 700 인데 파일에 600 까지만 있으면 브라우저가
+ * 억지로 굵게 그려(faux bold) 획이 뭉갭니다.
+ *
+ * display: swap — 글꼴이 늦게 와도 글을 먼저 읽게 합니다.
  */
 const pretendard = localFont({
   variable: "--f-pretendard",
   display: "swap",
-  preload: false,
+  preload: true,
   src: [
     {
       path: "../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Regular.subset.woff2",
@@ -252,6 +255,11 @@ const pretendard = localFont({
     {
       path: "../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-SemiBold.subset.woff2",
       weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Bold.subset.woff2",
+      weight: "700",
       style: "normal",
     },
   ],
