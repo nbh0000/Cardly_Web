@@ -61,9 +61,12 @@
   text-wrap: balance;
 }
 
+/* 섹션 제목. 레퍼런스(canva)는 64px 까지 갑니다 — 우리 줄은 옆에 그림이
+   나란히 서므로 그만큼은 못 키우지만, 40px 은 히어로와 너무 벌어져
+   «작은 글씨의 목록» 처럼 읽혔습니다. */
 .hm-h2 {
-  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
-  line-height: 1.28;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.24;
   letter-spacing: -0.03em;
   font-weight: 700;
   color: var(--color-ink);
@@ -337,6 +340,15 @@
 .hm-closing {
   background: var(--color-cream);
   text-align: center;
+}
+
+/* 마지막 부름은 옆에 아무것도 없습니다. 그러니 히어로만큼 커도 됩니다 —
+   canva 도 여기서 72px 을 씁니다. */
+.hm-closing .hm-h2 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+}
+.hm-closing.hm-section {
+  padding-block: clamp(5rem, 10vw, 9rem);
 }
 
 /* 접힌 초대장은 «화면과 무관한 절대 크기» 로 서 있습니다(.oc-thumb 이
