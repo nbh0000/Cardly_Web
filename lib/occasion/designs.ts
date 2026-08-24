@@ -140,6 +140,66 @@ const SEEDS: Seed[] = [
     note: "위에서 내려다본 소풍 한 장. 격자무늬가 카드를 가득 채웁니다.",
   },
 
+  /* ── 풀파티 ── */
+  {
+    id: "pool-float",
+    name: "튜브 띄운 물",
+    occasion: "party",
+    note: "한낮의 수영장에 튜브와 공을 띄웠습니다. 여름 낮 모임에 씁니다.",
+  },
+  {
+    id: "pool-overhead",
+    name: "선베드 두 자리",
+    occasion: "party",
+    note: "수영장을 바로 위에서 내려다본 판. 파라솔과 선베드가 그래픽처럼 놓입니다.",
+  },
+  {
+    id: "pool-sunset",
+    name: "해 질 녘 물가",
+    occasion: "party",
+    note: "노을이 수면에 내려앉고 전구가 켜집니다. 저녁으로 이어지는 자리에.",
+  },
+
+  /* ── 클럽 ── */
+  {
+    id: "club-lights",
+    name: "미러볼",
+    occasion: "party",
+    note: "미러볼이 흩뿌린 빛과 조명 빔. 밤에 시작하는 자리에 씁니다.",
+  },
+  {
+    id: "club-neon",
+    name: "네온 라인",
+    occasion: "party",
+    note: "검은 바탕에 휘어진 네온 두 줄. 글자 없이 색만으로 서는 카드입니다.",
+  },
+  {
+    id: "club-crowd",
+    name: "손을 든 사람들",
+    occasion: "party",
+    note: "무대 조명을 향해 손을 든 실루엣. 큰 파티를 알릴 때.",
+  },
+
+  /* ── 사교 모임 ── */
+  {
+    id: "social-champagne",
+    name: "샴페인 잔",
+    occasion: "party",
+    note: "촛불에 반짝이는 잔들을 가까이서. 격을 갖춘 저녁 자리에 씁니다.",
+  },
+  {
+    id: "social-longtable",
+    name: "긴 테이블",
+    occasion: "party",
+    note: "촛대를 세운 긴 상에 둘러앉은 저녁. 여럿을 부르는 식사 자리에.",
+  },
+  {
+    id: "social-lounge",
+    name: "라운지",
+    occasion: "party",
+    note: "벨벳 소파와 칵테일이 놓인 아르데코 방. 조용한 사교 모임에.",
+  },
+
   /* ══════════════════ 연말 · 새해 ══════════════════ */
   {
     id: "christmas-party",

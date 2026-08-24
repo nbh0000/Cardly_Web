@@ -98,5 +98,50 @@
     "bg": "#F9EAD2",
     "ink": "#5D3E26",
     "point": "#74361F"
+  },
+  "pool-float": {
+    "bg": "#FBF5EC",
+    "ink": "#394E43",
+    "point": "#139997"
+  },
+  "pool-overhead": {
+    "bg": "#C5E8E1",
+    "ink": "#0B4449",
+    "point": "#328280"
+  },
+  "pool-sunset": {
+    "bg": "#FCD8D8",
+    "ink": "#22112B",
+    "point": "#22112B"
+  },
+  "club-lights": {
+    "bg": "#D2EBEE",
+    "ink": "#242132",
+    "point": "#7C2C7A"
+  },
+  "club-neon": {
+    "bg": "#8F8C8E",
+    "ink": "#16120E",
+    "point": "#060109"
+  },
+  "club-crowd": {
+    "bg": "#FEFCF8",
+    "ink": "#05020B",
+    "point": "#05020B"
+  },
+  "social-champagne": {
+    "bg": "#FEFCF8",
+    "ink": "#2B2F20",
+    "point": "#030D07"
+  },
+  "social-longtable": {
+    "bg": "#EBE7E3",
+    "ink": "#4E332C",
+    "point": "#4E332C"
+  },
+  "social-lounge": {
+    "bg": "#F8F0E4",
+    "ink": "#262F41",
+    "point": "#490C24"
   }
 }
