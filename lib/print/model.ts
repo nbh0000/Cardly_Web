@@ -32,7 +32,7 @@ export function newText(partial: Partial<TextElement> = {}): TextElement {
     rotation: 0,
     opacity: 1,
     text: "내용을 입력하세요",
-    font: "sans",
+    font: "nanum-gothic",
     size: 14,
     weight: 400,
     color: "#111111",

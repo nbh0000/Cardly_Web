@@ -21,7 +21,8 @@
 import { PDFDocument, degrees, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { mmToPt } from "@/lib/print/specs";
-import { PDF_EMBEDDED_FONT } from "@/lib/print/fonts";
+import { PDF_FALLBACK_FONT, pdfFontFile } from "@/lib/print/fonts";
+import { stampPdf } from "@/lib/print/watermark";
 import type { PrintBackground, PrintDoc, PrintElement, TextElement } from "@/lib/print/types";
 
 export interface PdfOptions {
@@ -29,6 +30,8 @@ export interface PdfOptions {
   bleed: boolean;
   /** 재단 표시(모서리 십자선) */
   cropMarks: boolean;
+  /** 결제 전이면 사선 표시를 깝니다 */
+  watermark?: boolean;
 }
 
 /* CSS 가 첫 줄의 기준선을 놓는 방식을 옮긴 값입니다.
@@ -40,17 +43,21 @@ export async function exportPdf(doc: PrintDoc, options: PdfOptions): Promise<Blo
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
 
-  /* 쓰는 굵기만 심습니다. 한 벌이 1.3MB 라, 굵은 글자가 없는 문서에까지
-     굵은 글꼴을 넣으면 파일이 두 배가 됩니다. */
+  /* 실제로 쓰인 글꼴·굵기만 심습니다.
+     한 벌이 1~3MB 라, 문서에 없는 글꼴까지 넣으면 파일이 금세 10MB 가
+     됩니다. 그래서 먼저 훑어서 «어느 파일이 필요한가» 만 모읍니다. */
   const texts = doc.elements.filter((e): e is TextElement => e.kind === "text" && !e.hidden);
-  const needsBold = texts.some((e) => e.weight >= 600);
-  const needsRegular = texts.some((e) => e.weight < 600) || !needsBold;
+  const needed = new Set<string>();
+  for (const el of texts) needed.add(pdfFontFile(el.font, el.weight));
+  if (needed.size === 0) needed.add(pdfFontFile(PDF_FALLBACK_FONT.id, 400));
 
-  const [regular, bold] = await Promise.all([
-    needsRegular ? embed(pdf, PDF_EMBEDDED_FONT.regular) : Promise.resolve(null),
-    needsBold ? embed(pdf, PDF_EMBEDDED_FONT.bold) : Promise.resolve(null),
-  ]);
-  const pick = (weight: number) => (weight >= 600 ? (bold ?? regular!) : (regular ?? bold!));
+  const embedded = new Map<string, PDFFont>();
+  await Promise.all(
+    [...needed].map(async (url) => embedded.set(url, await embed(pdf, url))),
+  );
+
+  const pick = (fontId: string, weight: number) =>
+    embedded.get(pdfFontFile(fontId, weight)) ?? [...embedded.values()][0]!;
 
   const b = options.bleed ? doc.bleed : 0;
   const sides: ("front" | "back")[] = doc.duplex ? ["front", "back"] : ["front"];
@@ -69,7 +76,11 @@ export async function exportPdf(doc: PrintDoc, options: PdfOptions): Promise<Blo
       else await drawImage(pdf, page, el, map, doc.dpi);
     }
 
+    if (doc.perforation) drawPerforation(page, doc, b);
     if (options.cropMarks && b > 0) drawCropMarks(page, doc, b);
+    if (options.watermark) {
+      stampPdf(page, doc.width, doc.height, b, [...embedded.values()][0]!);
+    }
   }
 
   const bytes = await pdf.save();
@@ -257,9 +268,9 @@ function drawText(
   page: PDFPage,
   el: TextElement,
   map: Mapper,
-  pick: (weight: number) => PDFFont,
+  pick: (fontId: string, weight: number) => PDFFont,
 ) {
-  const font = pick(el.weight);
+  const font = pick(el.font, el.weight);
   const size = el.size; // pt
   const spacing = el.letterSpacing * size;
   const boxW = map.pt(el.w);
@@ -558,6 +569,28 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 async function dataUrlToBytes(url: string): Promise<Uint8Array> {
   const res = await fetch(url);
   return new Uint8Array(await res.arrayBuffer());
+}
+
+/**
+ * 절취선.
+ *
+ * 화면의 안내선과 달리 이건 실제로 찍혀야 합니다. 쿠폰을 받은 사람이
+ * 어디를 뜯을지 알아야 하고, 인쇄소도 그 자리에 미싱을 넣습니다.
+ */
+function drawPerforation(page: PDFPage, doc: PrintDoc, bleedMm: number) {
+  const b = mmToPt(bleedMm);
+  const w = mmToPt(doc.width);
+  const h = mmToPt(doc.height);
+  const at = doc.perforationAt ?? 0.5;
+  const dash = { thickness: 0.6, color: rgb(0.45, 0.45, 0.45), dashArray: [4, 3] };
+
+  if (doc.perforationAxis === "x") {
+    const x = b + w * at;
+    page.drawLine({ start: { x, y: b }, end: { x, y: b + h }, ...dash });
+  } else {
+    const y = b + h * (1 - at);
+    page.drawLine({ start: { x: b, y }, end: { x: b + w, y }, ...dash });
+  }
 }
 
 /* ------------------------------------------------------------

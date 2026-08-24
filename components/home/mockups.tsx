@@ -34,8 +34,8 @@ const RESUME_PICK = "classic-ink";
 const CARD_PICK = "sig-8";
 const WEDDING_PICK = "noir";
 const INVITE_PICK = "dol-baby-tiger";
-/* 인쇄물은 «색면 전단» — 위쪽 색면과 아래 여백이 썸네일에서도 읽힙니다. */
-const PRINT_PICK = "flyer-band";
+/* 인쇄물은 «봄학기 모집» — 위쪽 색면과 아래 여백이 썸네일에서도 읽힙니다. */
+const PRINT_PICK = "flyer-academy-spring";
 
 /** 이력서 — A4 조판. 안쪽이 전부 % 라 폭만 주면 그대로 줄어듭니다. */
 export function ResumeMock({ className }: { className?: string }) {

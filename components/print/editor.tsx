@@ -23,9 +23,9 @@ import { cloneElements, useEditorStore } from "@/lib/print/store";
 import { checkPrint, newShape, newText, uid } from "@/lib/print/model";
 import { loadImageFile } from "@/lib/print/image";
 import { newImage } from "@/lib/print/model";
-import { editorScale, findCategory, MIN_IMAGE_DPI } from "@/lib/print/specs";
+import { editorScale, findCategory, minImageDpi } from "@/lib/print/specs";
 import { blankDoc } from "@/lib/print/doc";
-import { templatesFor } from "@/lib/print/templates";
+import { canSave, persistPrintDoc } from "@/lib/print/save";
 import type { ImageElement, PrintDoc, ShapeKind } from "@/lib/print/types";
 
 /** 96dpi 화면에서 1mm 가 몇 픽셀인가 */
@@ -41,7 +41,19 @@ const SHAPES: { kind: ShapeKind; label: string }[] = [
   { kind: "bubble", label: "말풍선" },
 ];
 
-export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storageKey: string }) {
+export function PrintEditor({
+  initial,
+  storageKey,
+  docId: initialDocId = null,
+  paid = false,
+}: {
+  initial: PrintDoc;
+  storageKey: string;
+  /** 계정에 저장해 둔 문서라면 그 id */
+  docId?: string | null;
+  /** 결제해서 워터마크가 풀렸는지 */
+  paid?: boolean;
+}) {
   const store = useEditorStore(initial);
   const { state, dispatch, elements, selectedElements } = store;
   const doc = state.doc;
@@ -53,6 +65,8 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
   const [exporting, setExporting] = useState(false);
   const [aiEditing, setAiEditing] = useState<ImageElement | null>(null);
   const [saved, setSaved] = useState<string>("");
+  const [docId, setDocId] = useState<string | null>(initialDocId);
+  const [account, setAccount] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const viewRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const replacingRef = useRef<string | null>(null);
@@ -62,7 +76,7 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
   const category = findCategory(doc.category);
 
   const warnings = useMemo(
-    () => checkPrint(doc.elements, doc, MIN_IMAGE_DPI),
+    () => checkPrint(doc.elements, doc, minImageDpi(doc.dpi)),
     [doc],
   );
 
@@ -99,6 +113,28 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
     }, 800);
     return () => clearTimeout(t);
   }, [doc, storageKey]);
+
+  /* ── 계정에 저장 ──────────────────────────────────────────
+     브라우저 저장은 이미 위에서 하고 있습니다. 여기는 «다른 기기에서도
+     열리게» 하는 저장이라, 자동으로 하지 않고 사용자가 누를 때만 합니다.
+     로그인 화면으로 튕기는 일이 편집 도중에 일어나면 안 되기 때문입니다. */
+
+  const keep = useCallback(async () => {
+    setAccount("saving");
+    try {
+      const id = await persistPrintDoc(doc, docId);
+      if (!docId) {
+        setDocId(id);
+        // 주소에 남겨 두면 새로고침해도 같은 문서로 돌아옵니다
+        const url = new URL(window.location.href);
+        url.searchParams.set("doc", id);
+        window.history.replaceState(null, "", url.toString());
+      }
+      setAccount("saved");
+    } catch {
+      setAccount("error");
+    }
+  }, [doc, docId]);
 
   /* ── 단축키 ──────────────────────────────────────────── */
 
@@ -244,8 +280,6 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
     }
   };
 
-  const templates = templatesFor(doc.category);
-
   return (
     <div className="pe-root">
       <header className="pe-bar">
@@ -296,7 +330,24 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
         </div>
 
         <div className="pe-bar-right">
-          <span className="pe-saved">{saved && `자동 저장 ${saved}`}</span>
+          <span className="pe-saved">
+            {account === "saving"
+              ? "저장하는 중…"
+              : account === "saved"
+                ? "계정에 저장됨"
+                : account === "error"
+                  ? "저장하지 못했습니다"
+                  : saved && `자동 저장 ${saved}`}
+          </span>
+          {canSave() ? (
+            <button type="button" className="pe-btn" onClick={() => void keep()}>
+              계정에 저장
+            </button>
+          ) : (
+            <Link href="/login" className="pe-btn">
+              로그인
+            </Link>
+          )}
           {warnings.length > 0 && (
             <span className="pe-warn-badge" title="내보내기에서 자세히 볼 수 있습니다">
               점검 {warnings.length}
@@ -331,36 +382,21 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
             </label>
           </div>
 
-          {templates.length > 0 && (
-            <div className="pe-tool-templates">
-              <h4>템플릿</h4>
-              {templates.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => {
-                    if (
-                      doc.elements.length > 0 &&
-                      !window.confirm("지금 만든 것을 지우고 템플릿을 불러올까요?")
-                    )
-                      return;
-                    dispatch({ type: "setDoc", value: structuredClone(t.doc) });
-                  }}
-                >
-                  {t.name}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={() => {
-                  if (doc.elements.length > 0 && !window.confirm("빈 종이로 시작할까요?")) return;
-                  dispatch({ type: "setDoc", value: blankDoc(doc.category, doc.sizeId) });
-                }}
-              >
-                빈 종이
-              </button>
-            </div>
-          )}
+          <div className="pe-tool-templates">
+            <h4>템플릿</h4>
+            <Link href={`/print/${doc.category}`} className="pe-tool-link">
+              목록에서 고르기
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (doc.elements.length > 0 && !window.confirm("빈 종이로 시작할까요?")) return;
+                dispatch({ type: "setDoc", value: blankDoc(doc.category, doc.sizeId) });
+              }}
+            >
+              빈 종이
+            </button>
+          </div>
         </aside>
 
         <div className="pe-view" ref={viewRef}>
@@ -423,7 +459,14 @@ export function PrintEditor({ initial, storageKey }: { initial: PrintDoc; storag
         }}
       />
 
-      {exporting && <ExportDialog doc={doc} onClose={() => setExporting(false)} />}
+      {exporting && (
+        <ExportDialog
+          doc={doc}
+          paid={paid}
+          docId={docId}
+          onClose={() => setExporting(false)}
+        />
+      )}
     </div>
   );
 }

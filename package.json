@@ -11,6 +11,8 @@
     "art:import": "node scripts/import-artwork.mjs",
     "card:import": "node scripts/import-card-art.mjs",
     "print:art": "node scripts/print-art.mjs",
+    "print:check": "node scripts/print-check.mjs",
+    "print:og": "node scripts/print-og.mjs",
     "og:make": "node scripts/make-og.mjs"
   },
   "dependencies": {

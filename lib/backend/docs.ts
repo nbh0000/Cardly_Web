@@ -22,7 +22,8 @@ import {
   update,
 } from "@/lib/backend/client";
 
-export type DocKind = "wedding" | "occasion";
+/** 'print' 는 발행하지 않는 갈래입니다 — 슬러그도 기한도 없습니다 */
+export type DocKind = "wedding" | "occasion" | "print";
 export type DocStatus = "draft" | "published" | "closed";
 export type DocPlan = "free" | "premium";
 

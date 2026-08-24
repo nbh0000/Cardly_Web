@@ -20,7 +20,7 @@
 import type { SectionKey } from "@/lib/invitation";
 
 export type PlanId = "free" | "premium";
-export type ProductKind = "wedding" | "occasion";
+export type ProductKind = "wedding" | "occasion" | "print";
 
 /**
  * 값. 문서 하나에 한 번 결제하면 끝이고, 매달 빠져나가는 구독은 없습니다.
@@ -32,7 +32,41 @@ export type ProductKind = "wedding" | "occasion";
 export const PRICES: Record<ProductKind, number> = {
   wedding: 14_900,
   occasion: 5_900,
+  /**
+   * 인쇄물은 링크가 아니라 «파일» 을 파는 상품입니다.
+   *
+   * 그래서 기한이 없습니다 — 한 번 결제한 인쇄물은 몇 년 뒤에 다시 열어
+   * 다시 내려받아도 같은 파일이 나옵니다. 값이 초대장보다 싼 것은 저장
+   * 비용이 거의 들지 않기 때문입니다. 하객 수백 명이 여는 링크와 달리
+   * 인쇄물은 만든 사람 혼자 한 번 받아 갑니다.
+   */
+  print: 4_900,
 };
+
+/**
+ * AI 크레딧 묶음.
+ *
+ * 크레딧은 문서에 붙지 않고 계정에 붙습니다. 그래서 주문에 doc_id 가
+ * 없고, 결제가 끝나면 ai_credits 에 숫자를 더합니다.
+ * 값은 데이터베이스의 credit_price() 에도 같은 숫자가 있고 그쪽이 «진짜»
+ * 입니다 — 브라우저에서 온 금액은 승인 전에 그 값과 대조합니다.
+ */
+export interface CreditPack {
+  id: string;
+  credits: number;
+  price: number;
+  note: string;
+}
+
+export const CREDIT_PACKS: CreditPack[] = [
+  { id: "credits-50", credits: 50, price: 3_900, note: "문구 50번 또는 그림 10장" },
+  { id: "credits-150", credits: 150, price: 9_900, note: "그림 30장 — 가장 많이 고릅니다" },
+  { id: "credits-400", credits: 400, price: 19_900, note: "그림 80장" },
+];
+
+export function findCreditPack(id: string): CreditPack | undefined {
+  return CREDIT_PACKS.find((p) => p.id === id);
+}
 
 /** @deprecated 상품별 값을 쓰세요. 남겨 둔 것은 예전 화면 때문입니다. */
 export const PREMIUM_PRICE = PRICES.wedding;
@@ -194,9 +228,49 @@ export const OCCASION_PLANS: PlanSpec[] = [
   },
 ];
 
+/**
+ * 인쇄물 요금표.
+ *
+ * 다른 둘과 «무엇이 유료인가» 가 다릅니다. 청첩장은 링크의 기한과 기능을
+ * 팔지만 인쇄물은 파일 하나를 팝니다. 그래서 무료에서 막는 것이 기능이
+ * 아니라 «결과물에 찍히는 표시» 하나뿐입니다 — 편집도 내보내기도 다 됩니다.
+ */
+export const PRINT_PLANS: PlanSpec[] = [
+  {
+    id: "free",
+    kind: "print",
+    name: "무료",
+    price: "0원",
+    tagline: "만들어 보고, 뽑아 보고, 사장님께 보여 드리는 데까지는 값이 없습니다.",
+    features: [
+      "템플릿 48종 전부 · 무제한 수정",
+      "PDF(벡터) · PNG · JPG 내보내기",
+      "실제 mm 규격 · 재단 여백 · 재단 표시",
+      "결과물에 «Cardly 미리보기» 표시가 옅게 깔립니다",
+      "AI 체험 크레딧 20개",
+    ],
+  },
+  {
+    id: "premium",
+    kind: "print",
+    name: "원본",
+    price: formatPrice(PRICES.print),
+    tagline: "인쇄물 하나에 한 번. 기한이 없어 몇 년 뒤에 다시 받아도 같은 파일입니다.",
+    features: [
+      "무료의 모든 기능",
+      "«Cardly 미리보기» 표시 없는 원본",
+      "인쇄소에 그대로 넘길 수 있는 벡터 PDF",
+      "기한 없음 · 다시 내려받기",
+      "글꼴 여섯 벌을 파일 안에 심어 드립니다",
+    ],
+  },
+];
+
 /** 예전 화면이 쓰던 이름 — 청첩장 요금표를 가리킵니다 */
 export const PLANS = WEDDING_PLANS;
 
 export function plansOf(kind: ProductKind): PlanSpec[] {
-  return kind === "wedding" ? WEDDING_PLANS : OCCASION_PLANS;
+  if (kind === "wedding") return WEDDING_PLANS;
+  if (kind === "print") return PRINT_PLANS;
+  return OCCASION_PLANS;
 }

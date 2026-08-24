@@ -14,6 +14,7 @@ import { useNow } from "@/lib/backend/browser";
 import { deleteDoc, listDocs, type DocRow } from "@/lib/backend/docs";
 import { listOrders, type OrderRow } from "@/lib/backend/payments";
 import { formatPrice } from "@/lib/plan";
+import { findCategory } from "@/lib/print/specs";
 
 export function CardBox() {
   const [docs, setDocs] = useState<DocRow[] | null>(null);
@@ -52,6 +53,9 @@ export function CardBox() {
             </Link>
             <Link href="/invitation-card" className="btn btn-ghost btn-sm bg-white">
               + 초대장
+            </Link>
+            <Link href="/print" className="btn btn-ghost btn-sm bg-white">
+              + 인쇄물
             </Link>
           </div>
         </div>
@@ -115,11 +119,18 @@ export function CardBox() {
 function DocCard({ doc, onChanged }: { doc: DocRow; onChanged: () => void }) {
   const [busy, setBusy] = useState(false);
   const now = useNow();
-  const what = doc.kind === "wedding" ? "모바일 청첩장" : "초대장";
+  const what =
+    doc.kind === "wedding" ? "모바일 청첩장" : doc.kind === "print" ? printLabel(doc) : "초대장";
   const editHref =
     doc.kind === "wedding"
       ? `/editor/${doc.design_id}/?doc=${doc.id}`
-      : `/invitation-card/make/?doc=${doc.id}`;
+      : doc.kind === "print"
+        ? `/print/${doc.design_id}/edit/?doc=${doc.id}`
+        : `/invitation-card/make/?doc=${doc.id}`;
+
+  /* 인쇄물은 발행하지 않습니다 — 팔린 것은 링크가 아니라 파일입니다.
+     그래서 «발행하기» 자리에 아무것도 두지 않습니다. */
+  const isPrint = doc.kind === "print";
 
   return (
     <li className="rounded-lg border border-line bg-white p-5">
@@ -144,9 +155,11 @@ function DocCard({ doc, onChanged }: { doc: DocRow; onChanged: () => void }) {
         <Link href={editHref} className="btn btn-ghost btn-sm bg-white">
           편집
         </Link>
-        <Link href={`/account/doc/?id=${doc.id}`} className="btn btn-ghost btn-sm bg-white">
-          {doc.status === "published" ? "링크·응답 관리" : "발행하기"}
-        </Link>
+        {!isPrint && (
+          <Link href={`/account/doc/?id=${doc.id}`} className="btn btn-ghost btn-sm bg-white">
+            {doc.status === "published" ? "링크·응답 관리" : "발행하기"}
+          </Link>
+        )}
         <button
           type="button"
           disabled={busy}
@@ -166,10 +179,23 @@ function DocCard({ doc, onChanged }: { doc: DocRow; onChanged: () => void }) {
   );
 }
 
+/** 인쇄물은 갈래가 design_id 에 들어 있습니다 */
+function printLabel(doc: DocRow): string {
+  return findCategory(doc.design_id)?.label ?? "인쇄물";
+}
+
 function StatusBadge({ doc }: { doc: DocRow }) {
   const now = useNow();
   const expired =
     doc.expires_at !== null && now > 0 && new Date(doc.expires_at).getTime() < now;
+
+  if (doc.kind === "print") {
+    return (
+      <span className="rounded-full bg-sand px-2.5 py-0.5 text-[0.6875rem] text-ink-soft">
+        {doc.plan === "premium" ? "원본 받기 가능" : "미리보기"}
+      </span>
+    );
+  }
 
   const [label, tone] =
     doc.status === "draft"
@@ -185,6 +211,11 @@ function StatusBadge({ doc }: { doc: DocRow }) {
 
 /** 남은 기간. «지금» 은 브라우저에서만 읽습니다(lib/backend/browser). */
 function expiryLine(doc: DocRow, now: number): string {
+  if (doc.kind === "print") {
+    return doc.plan === "premium"
+      ? "결제 완료 — 워터마크 없이 내려받을 수 있습니다"
+      : "내보내면 미리보기 표시가 함께 찍힙니다";
+  }
   if (doc.status === "draft") return "아직 발행하지 않았습니다";
   if (!doc.expires_at) return "기한 없음";
   if (!now) return "";

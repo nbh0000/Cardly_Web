@@ -23,7 +23,7 @@ import {
   select,
 } from "@/lib/backend/client";
 import type { DocKind, DocRow } from "@/lib/backend/docs";
-import { PRICES } from "@/lib/plan";
+import { PRICES, type CreditPack } from "@/lib/plan";
 
 export const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "";
 
@@ -32,7 +32,11 @@ export const paymentsEnabled = Boolean(backendEnabled && TOSS_CLIENT_KEY);
 
 export interface OrderRow {
   id: string;
-  doc_id: string;
+  /** 크레딧 주문에는 문서가 없습니다 */
+  doc_id: string | null;
+  /** 'doc' 문서 하나 · 'credits' AI 크레딧 묶음 */
+  product?: "doc" | "credits";
+  credits?: number | null;
   order_code: string;
   order_name: string;
   amount: number;
@@ -44,7 +48,7 @@ export interface OrderRow {
 }
 
 const COLUMNS =
-  "id,doc_id,order_code,order_name,amount,status,method,receipt_url,created_at,paid_at";
+  "id,doc_id,product,credits,order_code,order_name,amount,status,method,receipt_url,created_at,paid_at";
 
 export async function listOrders(): Promise<OrderRow[]> {
   if (!backendEnabled) return [];
@@ -61,8 +65,14 @@ function orderCode(kind: DocKind): string {
   return `cardly-${kind}-${stamp}-${rand}`;
 }
 
+const KIND_LABEL: Record<DocKind, string> = {
+  wedding: "모바일 청첩장",
+  occasion: "초대장",
+  print: "인쇄물",
+};
+
 function orderName(doc: DocRow): string {
-  const what = doc.kind === "wedding" ? "모바일 청첩장" : "초대장";
+  const what = KIND_LABEL[doc.kind] ?? "Cardly";
   const who = doc.title.trim();
   return who ? `${what} — ${who}`.slice(0, 100) : `Cardly ${what}`;
 }
@@ -146,6 +156,49 @@ export async function startCheckout(doc: DocRow): Promise<void> {
     amount: { currency: "KRW", value: amount },
     orderId: code,
     orderName: orderName(doc),
+    successUrl: `${siteOrigin()}${base}/pay/complete/`,
+    failUrl: `${siteOrigin()}${base}/pay/fail/`,
+    customerEmail: session.user.email ?? undefined,
+    customerName: session.user.name ?? undefined,
+    card: { useEscrow: false, flowMode: "DEFAULT", useCardPoint: false, useAppCardOnly: false },
+  });
+}
+
+/**
+ * AI 크레딧 사기.
+ *
+ * 문서에 붙지 않는 유일한 주문입니다. 그래서 doc_id 가 비어 있고, 대신
+ * product 와 credits 가 채워집니다. 금액이 맞는지는 데이터베이스가
+ * credit_price() 로 다시 봅니다.
+ */
+export async function startCreditCheckout(pack: CreditPack): Promise<void> {
+  const session = currentSession();
+  if (!session) throw new BackendError("로그인이 필요합니다.", 401);
+  if (!paymentsEnabled) throw new BackendError("결제 준비가 아직 끝나지 않았습니다.", 503);
+
+  const code = `cardly-credits-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const name = `AI 크레딧 ${pack.credits}개`;
+
+  await insert<OrderRow>("orders", {
+    owner: session.user.id,
+    doc_id: null,
+    product: "credits",
+    credits: pack.credits,
+    order_code: code,
+    order_name: name,
+    amount: pack.price,
+    status: "ready",
+  });
+
+  const sdk = await loadSdk();
+  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const payment = sdk.payment({ customerKey: session.user.id });
+
+  await payment.requestPayment({
+    method: "CARD",
+    amount: { currency: "KRW", value: pack.price },
+    orderId: code,
+    orderName: name,
     successUrl: `${siteOrigin()}${base}/pay/complete/`,
     failUrl: `${siteOrigin()}${base}/pay/fail/`,
     customerEmail: session.user.email ?? undefined,

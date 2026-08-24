@@ -1075,3 +1075,173 @@ revoke all on function public.ai_balance(uuid) from anon, authenticated;
 revoke all on function public.ai_spend(uuid, text, int, text) from anon, authenticated;
 revoke all on function public.ai_finish(uuid, boolean, text) from anon, authenticated;
 revoke all on function public.ai_refund(uuid, text) from anon, authenticated;
+
+-- ------------------------------------------------------------
+-- 10. 인쇄물 · AI 크레딧 결제
+--
+-- 인쇄물(kind = 'print')은 앞의 둘과 파는 물건이 다릅니다.
+--   청첩장·초대장  링크를 팝니다 → 슬러그가 있고 기한이 있습니다
+--   인쇄물         파일을 팝니다 → 슬러그도 기한도 없고, 한 번 사면 끝입니다
+--
+-- AI 크레딧은 문서에 붙지 않는 유일한 상품입니다. 그래서 주문의 doc_id 가
+-- 비고, 대신 product 와 credits 가 채워집니다.
+--
+-- 이 절은 앞의 9절까지를 이미 실행한 데이터베이스에 덧대는 것입니다.
+-- 처음부터 실행해도 같은 결과가 나옵니다.
+-- ------------------------------------------------------------
+
+-- 인쇄물 갈래를 허용합니다
+alter table public.docs drop constraint if exists docs_kind_check;
+alter table public.docs
+  add constraint docs_kind_check
+  check (kind in ('wedding', 'occasion', 'print'));
+
+-- 크레딧 주문은 문서가 없습니다
+alter table public.orders alter column doc_id drop not null;
+alter table public.orders add column if not exists product text not null default 'doc';
+alter table public.orders add column if not exists credits int;
+
+alter table public.orders drop constraint if exists orders_product_check;
+alter table public.orders
+  add constraint orders_product_check
+  check (product in ('doc', 'credits'));
+
+/** 상품별 값. 브라우저가 보낸 금액은 언제나 이 값과 대조합니다. */
+create or replace function public.order_price(p_kind text)
+returns int language sql immutable as $$
+  select case p_kind
+           when 'wedding'  then 14900
+           when 'occasion' then 5900
+           when 'print'    then 4900
+         end
+$$;
+
+/** 크레딧 묶음 값. lib/plan.ts 의 CREDIT_PACKS 와 같은 숫자입니다. */
+create or replace function public.credit_price(p_credits int)
+returns int language sql immutable as $$
+  select case p_credits
+           when 50  then 3900
+           when 150 then 9900
+           when 400 then 19900
+         end
+$$;
+
+/**
+ * 금액 검사 — 이제 두 갈래를 봅니다.
+ *
+ * 문서 주문이면 그 문서의 갈래로, 크레딧 주문이면 묶음 크기로 값을
+ * 찾습니다. 어느 쪽도 아니면 통과시키지 않습니다. «값을 못 찾았으니
+ * 그냥 넣자» 가 되면 0원짜리 주문이 만들어집니다.
+ */
+create or replace function public.guard_order()
+returns trigger language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  k     text;
+  want  int;
+begin
+  if new.product = 'credits' then
+    if new.doc_id is not null then
+      raise exception '크레딧 주문에는 문서를 붙이지 않습니다.';
+    end if;
+    want := public.credit_price(new.credits);
+    if want is null then
+      raise exception '없는 크레딧 묶음입니다.';
+    end if;
+  else
+    if new.doc_id is null then
+      raise exception '문서가 없는 주문입니다.';
+    end if;
+    select kind into k from public.docs where id = new.doc_id;
+    if k is null then
+      raise exception '없는 문서입니다.';
+    end if;
+    want := public.order_price(k);
+    if want is null then
+      raise exception '값이 정해지지 않은 상품입니다.';
+    end if;
+  end if;
+
+  if new.amount is distinct from want then
+    raise exception '금액이 요금표와 다릅니다.';
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists orders_guard on public.orders;
+create trigger orders_guard
+  before insert on public.orders
+  for each row execute function public.guard_order();
+
+/**
+ * 결제 확정 — 상품마다 켜 주는 것이 다릅니다.
+ *
+ *   문서   plan 을 premium 으로. 인쇄물은 기한을 두지 않습니다
+ *   크레딧 ai_credits 에 숫자를 더합니다
+ */
+create or replace function public.mark_order_paid(
+  p_order_code  text,
+  p_payment_key text,
+  p_amount      int,
+  p_method      text default '',
+  p_receipt_url text default ''
+) returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  o public.orders;
+  d public.docs;
+begin
+  perform public.assert_service_role();
+
+  select * into o from public.orders where order_code = p_order_code;
+  if not found then
+    raise exception '없는 주문입니다.';
+  end if;
+
+  -- 같은 승인이 두 번 들어와도(콜백 + 웹훅) 한 번만 처리합니다.
+  if o.status = 'paid' then
+    return jsonb_build_object('ok', true, 'already', true);
+  end if;
+
+  if o.amount is distinct from p_amount then
+    raise exception '결제 금액이 주문과 다릅니다.';
+  end if;
+
+  update public.orders
+     set status = 'paid',
+         payment_key = p_payment_key,
+         method = coalesce(p_method, ''),
+         receipt_url = coalesce(p_receipt_url, ''),
+         paid_at = now()
+   where id = o.id;
+
+  if o.product = 'credits' then
+    perform public.ai_balance(o.owner);   -- 없으면 만들어 둡니다
+    update public.ai_credits
+       set balance = balance + o.credits, updated_at = now()
+     where user_id = o.owner;
+    return jsonb_build_object('ok', true, 'credits', o.credits);
+  end if;
+
+  select * into d from public.docs where id = o.doc_id;
+
+  update public.docs
+     set plan = 'premium',
+         /* 인쇄물은 파일을 파는 것이라 기한이 없습니다. 몇 년 뒤에 열어도
+            같은 파일이 나와야 합니다. */
+         expires_at = case
+           when d.kind = 'print' then null
+           else public.compute_expiry('premium', d.event_date,
+                                      coalesce(d.published_at, now()))
+         end
+   where id = d.id;
+
+  return jsonb_build_object('ok', true, 'doc_id', d.id);
+end $$;
+
+revoke all on function public.mark_order_paid(text, text, int, text, text) from anon, authenticated;

@@ -187,3 +187,15 @@ export function editorScale(widthMm: number, heightMm: number): number {
 
 /** 저해상도 경고 기준 — 이 값보다 낮으면 인쇄에서 흐려집니다 */
 export const MIN_IMAGE_DPI = 150;
+
+/**
+ * 이 인쇄물에서 사진이 몇 dpi 는 되어야 하는가.
+ *
+ * 하나로 정할 수 없습니다. A4 전단지는 손에 쥐고 30cm 앞에서 보지만
+ * 현수막은 5m 짜리를 20m 밖에서 봅니다. 실제로 대형 인쇄소도 실물 크기
+ * 기준 72~100dpi 면 받아 줍니다. 그래서 «그 인쇄물의 인쇄 해상도 절반» 을
+ * 바닥으로 잡되, 72 아래로는 내려가지 않게 했습니다.
+ */
+export function minImageDpi(dpi: number): number {
+  return Math.max(72, Math.round(dpi / 2));
+}

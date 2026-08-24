@@ -15,6 +15,8 @@ import { useEffect, useState } from "react";
 import { AI_COST, AiError, aiEditImage, aiImage, aiReady, aiText, aiBalance, type AiTask } from "@/lib/print/ai";
 import { newImage, newText } from "@/lib/print/model";
 import type { EditorStore } from "@/lib/print/store";
+import { startCreditCheckout } from "@/lib/backend/payments";
+import { CREDIT_PACKS, formatPrice, type CreditPack } from "@/lib/plan";
 import type { ImageElement, TextElement } from "@/lib/print/types";
 
 type Mode = "write" | "fix" | "art" | "photo";
@@ -50,6 +52,8 @@ export function AiPanel({
   const [lines, setLines] = useState<string[]>([]);
   const [image, setImage] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [outOfCredit, setOutOfCredit] = useState(false);
+  const [buying, setBuying] = useState<string | null>(null);
 
   const selectedText = selectedElements.find((e): e is TextElement => e.kind === "text") ?? null;
 
@@ -98,8 +102,27 @@ export function AiPanel({
       }
     } catch (e) {
       setError(e instanceof AiError ? e.message : "요청이 실패했습니다.");
+      if (e instanceof AiError && e.outOfCredit) setOutOfCredit(true);
     } finally {
       setBusy(false);
+    }
+  };
+
+  /**
+   * 크레딧 사기.
+   *
+   * 결제창까지만 엽니다. 실제로 크레딧이 올라가는 것은 결제가 승인된 뒤
+   * 서버가 하는 일입니다(mark_order_paid). 브라우저가 «샀다» 고 말하는
+   * 것만으로는 아무 일도 일어나지 않습니다.
+   */
+  const buyCredits = async (pack: CreditPack) => {
+    setBuying(pack.id);
+    setError(null);
+    try {
+      await startCreditCheckout(pack);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "결제창을 열지 못했습니다.");
+      setBuying(null);
     }
   };
 
@@ -205,6 +228,30 @@ export function AiPanel({
       </div>
 
       {error && <p className="pe-error">{error}</p>}
+
+      {(outOfCredit || (balance !== null && balance < AI_COST.image)) && (
+        <section className="pe-credits">
+          <p className="pe-credits-title">크레딧 채우기</p>
+          {CREDIT_PACKS.map((pack) => (
+            <button
+              key={pack.id}
+              type="button"
+              className="pe-credit-pack"
+              disabled={buying !== null}
+              onClick={() => void buyCredits(pack)}
+            >
+              <span>
+                <em>{pack.credits}개</em>
+                {pack.note}
+              </span>
+              <b>{buying === pack.id ? "여는 중…" : formatPrice(pack.price)}</b>
+            </button>
+          ))}
+          <p className="pe-credits-foot">
+            크레딧은 계정에 쌓이고 기한이 없습니다. 잔액이 남아 있어도 하루 40번까지 씁니다.
+          </p>
+        </section>
+      )}
 
       {lines.length > 0 && (
         <ul className="pe-ai-results">

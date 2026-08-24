@@ -12,6 +12,7 @@
  */
 
 import { pxAt } from "@/lib/print/specs";
+import { stampCanvas } from "@/lib/print/watermark";
 import type { PrintDoc } from "@/lib/print/types";
 
 /**
@@ -35,7 +36,7 @@ export async function exportImage(
   doc: PrintDoc,
   node: HTMLElement,
   format: "png" | "jpg",
-  options: { bleed: boolean } = { bleed: false },
+  options: { bleed: boolean; watermark?: boolean } = { bleed: false },
 ): Promise<ImageExportResult> {
   const { default: html2canvas } = await import("html2canvas");
 
@@ -56,6 +57,8 @@ export async function exportImage(
     // 안내선·손잡이는 결과물에 들어가면 안 됩니다
     ignoreElements: (el) => el.hasAttribute?.("data-no-export"),
   });
+
+  if (options.watermark) stampCanvas(canvas);
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

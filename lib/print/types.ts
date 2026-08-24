@@ -17,6 +17,7 @@
  */
 
 import type { PrintCategoryId } from "@/lib/print/specs";
+import type { IndustryId, PaletteId, StyleId } from "@/lib/print/taxonomy";
 
 export type ElementId = string;
 
@@ -126,8 +127,12 @@ export interface PrintDoc {
   safe: number;
   dpi: number;
   duplex: boolean;
-  /** 절취선 그리기 */
+  /** 절취선 그리기 — 쿠폰처럼 잘라 쓰는 인쇄물에서만 */
   perforation?: boolean;
+  /** 절취선 방향. y = 가로줄(위아래로 나눔), x = 세로줄(좌우로 나눔) */
+  perforationAxis?: "x" | "y";
+  /** 절취선 위치. 0~1, 기본 0.5 */
+  perforationAt?: number;
   background: PrintBackground;
   backgroundBack?: PrintBackground;
   elements: PrintElement[];
@@ -135,13 +140,30 @@ export interface PrintDoc {
   title: string;
 }
 
-/** 템플릿 — 2차에서 이 모양으로 만들어 lib/print/templates 에 넣습니다 */
+/**
+ * 템플릿 한 장.
+ *
+ * 알맹이는 `doc` 하나이고 나머지는 «어떻게 찾아지는가» 를 위한 딱지입니다.
+ * 딱지를 문자열로 아무렇게나 적지 않고 taxonomy.ts 의 id 로 받는 이유는,
+ * «cafe» 와 «Cafe» 가 섞이는 순간 거르기가 조용히 새기 때문입니다.
+ *
+ * `art` 는 이 템플릿이 쓰는 생성 그림의 id 입니다. 실제 프롬프트는
+ * art.json 에 있고, 그래서 «이 배경을 다시 뽑으려면 뭐라고 해야 하나» 가
+ * 언제든 답이 나옵니다.
+ */
 export interface PrintTemplate {
   id: string;
   name: string;
   category: PrintCategoryId;
   /** 목록 카드 아래 한 줄 */
   note: string;
+  industry: IndustryId;
+  style: StyleId;
+  palette: PaletteId[];
+  /** lib/print/art.json 의 id */
+  art?: string[];
+  /** 검색에만 쓰는 자유 낱말 */
+  tags?: string[];
   doc: PrintDoc;
 }
 

@@ -289,34 +289,39 @@ export function PrintCanvas({
         onDropImage(file, p.x, p.y);
       }}
     >
+      {/* 종이 = 재단선 + 재단 여백. 배경과 잘림은 여기서 다룹니다 —
+          재단선까지만 그리면 배경이 여백에 닿지 않아, 잘린 뒤 흰 테두리가
+          남습니다. 그게 재단 여백을 두는 이유 자체입니다. */}
       <div
         id="pe-paper"
         className="pe-paper"
         style={{
           width: (doc.width + bleed * 2) * scale,
           height: (doc.height + bleed * 2) * scale,
-          padding: bleed * scale,
+          ...backgroundStyle(background),
         }}
       >
+        {background.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={background.image}
+            alt=""
+            className="pe-bg-image"
+            style={{ opacity: background.imageOpacity ?? 1 }}
+          />
+        )}
+
         <div
           ref={pageRef}
           id="pe-page"
           className="pe-page"
           style={{
+            left: bleed * scale,
+            top: bleed * scale,
             width: doc.width * scale,
             height: doc.height * scale,
-            ...backgroundStyle(background),
           }}
         >
-          {background.image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={background.image}
-              alt=""
-              className="pe-bg-image"
-              style={{ opacity: background.imageOpacity ?? 1 }}
-            />
-          )}
 
           {elements.map((el) => (
             <div
@@ -342,18 +347,28 @@ export function PrintCanvas({
               return <TextEditor key={el.id} el={el} scale={scale} store={store} />;
             })()}
 
+          {bleed > 0 && <div className="pe-trim" data-no-export="" />}
+
           {/* 재단선 안쪽 안전선 */}
           {showSafe && doc.safe > 0 && (
             <div className="pe-safe" data-no-export="" style={{ inset: doc.safe * scale }} />
           )}
 
-          {doc.perforation && (
-            <div
-              className="pe-perforation"
-              data-no-export=""
-              style={{ top: doc.height * scale * 0.5 }}
-            />
-          )}
+          {/* 절취선은 안내선이 아니라 «인쇄되는 선» 입니다. 자르는 자리를
+              인쇄소가 알아야 하고, 쿠폰을 받은 사람도 여기를 뜯습니다.
+              그래서 data-no-export 를 붙이지 않습니다. */}
+          {doc.perforation &&
+            (doc.perforationAxis === "x" ? (
+              <div
+                className="pe-perforation-v"
+                style={{ left: doc.width * scale * (doc.perforationAt ?? 0.5) }}
+              />
+            ) : (
+              <div
+                className="pe-perforation"
+                style={{ top: doc.height * scale * (doc.perforationAt ?? 0.5) }}
+              />
+            ))}
 
           {/* 스마트 가이드 */}
           {guides.map((g, i) => (

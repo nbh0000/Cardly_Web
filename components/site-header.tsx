@@ -4,15 +4,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/backend/auth";
 import { backendEnabled } from "@/lib/backend/client";
+import { PRINT_CATEGORIES } from "@/lib/print/specs";
 
 /* 무엇을 파는 곳인지가 차례에 드러나야 합니다. 링크를 발행하는 둘이
    앞에 서고, 브라우저 안에서 끝나는 서류가 뒤에 섭니다. */
-const NAV = [
+const NAV: { href: string; label: string; children?: { href: string; label: string }[] }[] = [
   { href: "/templates", label: "모바일 청첩장" },
   { href: "/invitation-card", label: "초대장" },
   { href: "/resume", label: "이력서" },
   { href: "/business-card", label: "명함" },
-  { href: "/print", label: "인쇄물" },
+  {
+    href: "/print",
+    label: "인쇄물",
+    /* 갈래가 여섯이라 차례에 다 세우면 머리가 두 줄이 됩니다. 그래서
+       하나만 세우고 나머지는 그 아래로 접어 두었습니다. */
+    children: PRINT_CATEGORIES.map((c) => ({ href: `/print/${c.id}`, label: c.label })),
+  },
 ];
 
 export function SiteHeader() {
@@ -59,15 +66,33 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-9 md:flex">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-caption text-ink-soft transition-colors hover:text-rose-deep"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV.map((item) =>
+            item.children ? (
+              <span key={item.href} className="sh-drop">
+                <Link
+                  href={item.href}
+                  className="text-caption text-ink-soft transition-colors hover:text-rose-deep"
+                >
+                  {item.label}
+                </Link>
+                <span className="sh-drop-menu">
+                  {item.children.map((child) => (
+                    <Link key={child.href} href={child.href}>
+                      {child.label}
+                    </Link>
+                  ))}
+                </span>
+              </span>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-caption text-ink-soft transition-colors hover:text-rose-deep"
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -120,14 +145,29 @@ export function SiteHeader() {
       >
         <nav className="shell flex flex-col py-2">
           {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="border-b border-line-soft py-4 font-serif text-h3 text-ink last:border-0"
-            >
-              {item.label}
-            </Link>
+            <div key={item.href} className="border-b border-line-soft last:border-0">
+              <Link
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="block py-4 font-serif text-h3 text-ink"
+              >
+                {item.label}
+              </Link>
+              {item.children && (
+                <div className="-mt-1 flex flex-wrap gap-2 pb-4">
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.href}
+                      href={child.href}
+                      onClick={() => setOpen(false)}
+                      className="rounded-full border border-line px-3 py-1 text-caption text-ink-soft"
+                    >
+                      {child.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
           <div className="py-6">
             <Link

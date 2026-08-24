@@ -64,13 +64,39 @@ export function Inspector({
             <NumberBox value={doc.safe} onChange={(v) => dispatch({ type: "doc", value: { safe: Math.max(0, v) } })} suffix="mm" />
           </Row>
           {category?.perforation && (
-            <Row label="절취선">
-              <input
-                type="checkbox"
-                checked={Boolean(doc.perforation)}
-                onChange={(e) => dispatch({ type: "doc", value: { perforation: e.target.checked } })}
-              />
-            </Row>
+            <>
+              <Row label="절취선">
+                <input
+                  type="checkbox"
+                  checked={Boolean(doc.perforation)}
+                  onChange={(e) =>
+                    dispatch({ type: "doc", value: { perforation: e.target.checked } })
+                  }
+                />
+              </Row>
+              {doc.perforation && (
+                <>
+                  <Row label="방향">
+                    <Segmented
+                      value={doc.perforationAxis ?? "y"}
+                      options={[
+                        { value: "y", label: "가로" },
+                        { value: "x", label: "세로" },
+                      ]}
+                      onChange={(v) => dispatch({ type: "doc", value: { perforationAxis: v } })}
+                    />
+                  </Row>
+                  <Row label="위치">
+                    <Slider
+                      min={10}
+                      max={90}
+                      value={(doc.perforationAt ?? 0.5) * 100}
+                      onChange={(v) => dispatch({ type: "doc", value: { perforationAt: v / 100 } })}
+                    />
+                  </Row>
+                </>
+              )}
+            </>
           )}
         </Group>
 
