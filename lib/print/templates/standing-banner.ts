@@ -247,17 +247,13 @@ const DRAFTS: Draft[] = [
     industry: "fitness",
     style: "minimal",
     palette: ["navy", "mono"],
-    art: ["sb-fitness-minimal"],
     tags: ["헬스", "등록", "가격"],
     background: { color: "#eceef2" },
     build: ({ w, h, bleed }) => [
-      image("sb-fitness-minimal", {
-        x: -bleed,
-        y: -bleed,
-        w: w + bleed * 2,
-        h: h + bleed * 2,
-        opacity: 0.95,
-      }),
+      /* 아래 3분의 1을 색면으로 눌러 연락처를 반전시킵니다. 도형이라
+         파일이 늘지 않고, 색을 바꾸면 그 자리가 그대로 따라옵니다. */
+      rect({ x: -bleed, y: 1180, w: w + bleed * 2, h: h - 1180 + bleed, fill: "#1c2340" }),
+      rect({ x: -bleed, y: 1168, w: w + bleed * 2, h: 12, fill: "#4b5aa8" }),
 
       text({
         x: 60,
@@ -316,11 +312,10 @@ const DRAFTS: Draft[] = [
         color: "#6b7280",
       }),
 
-      rect({ x: 60, y: 706, w: w - 120, h: 200, fill: "#ffffff", radius: 10, opacity: 0.9 }),
       ...bullets({
-        x: 90,
-        y: 740,
-        w: w - 180,
+        x: 60,
+        y: 730,
+        w: w - 120,
         size: 40,
         gap: 62,
         color: "#3a3f57",
@@ -333,23 +328,33 @@ const DRAFTS: Draft[] = [
 
       text({
         x: 60,
-        y: 1520,
+        y: 1290,
         w: w - 120,
-        h: 60,
-        text: "02-541-0000",
-        size: 76,
+        h: 40,
+        text: "지금 등록하세요",
+        size: 44,
         weight: 700,
-        color: "#1c2340",
+        color: "#9aa6d8",
+      }),
+      text({
+        x: 60,
+        y: 1360,
+        w: w - 120,
+        h: 70,
+        text: "02-541-0000",
+        size: 92,
+        weight: 700,
+        color: "#ffffff",
         font: "gothic-a1",
       }),
       text({
         x: 60,
-        y: 1600,
+        y: 1470,
         w: w - 120,
         h: 40,
-        text: "마포구 성미산로 50, 지하 1층",
+        text: "마포구 성미산로 50, 지하 1층 · 24시간",
         size: 34,
-        color: "#6b7280",
+        color: "#9aa6d8",
       }),
     ],
   },
@@ -762,19 +767,12 @@ const DRAFTS: Draft[] = [
     industry: "community",
     style: "type",
     palette: ["green", "mono"],
-    art: ["mark-leaf-minimal"],
     tags: ["단체", "모집", "봉사"],
     background: { color: "#f7f9f5" },
     build: ({ w, bleed }) => [
       rect({ x: -bleed, y: -bleed, w: w + bleed * 2, h: 24 + bleed, fill: INK.green }),
-      image("mark-leaf-minimal", {
-        x: w / 2 - 130,
-        y: 620,
-        w: 260,
-        h: 260,
-        fit: "contain",
-        opacity: 0.9,
-      }),
+      rect({ x: w / 2 - 1, y: 620, w: 2, h: 150, fill: "#c9d6c2" }),
+      ellipse({ x: w / 2 - 9, y: 790, w: 18, h: 18, fill: "#4d7c0f" }),
 
       text({
         x: 56,

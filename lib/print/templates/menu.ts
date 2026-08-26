@@ -21,6 +21,7 @@ import {
   artBackground,
   bullets,
   composeAll,
+  ellipse,
   image,
   priceRow,
   rect,
@@ -955,20 +956,12 @@ const DRAFTS: Draft[] = [
     industry: "cafe",
     style: "minimal",
     palette: ["green", "warm"],
-    art: ["mark-leaf-minimal"],
     tags: ["찻집", "2단", "차"],
     size: "a3-2col",
     background: { color: "#f7f9f4" },
     build: ({ w, h }) => [
       rule({ x: w / 2, y: 16, w: 0.3, h: h - 32, fill: "#d8e0d0" }),
-      image("mark-leaf-minimal", {
-        x: w / 2 - 22,
-        y: 118,
-        w: 44,
-        h: 44,
-        fit: "contain",
-        opacity: 0.5,
-      }),
+      ellipse({ x: w / 2 - 3, y: 132, w: 6, h: 6, fill: "#c2cfb8" }),
 
       text({
         x: 24,

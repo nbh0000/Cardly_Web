@@ -251,10 +251,12 @@ const DRAFTS: Draft[] = [
     industry: "beauty",
     style: "minimal",
     palette: ["pastel", "ink"],
-    art: ["coupon-beauty-minimal"],
     tags: ["할인율", "미용실", "첫방문"],
-    background: artBackground("coupon-beauty-minimal", "#faf6f4", 0.95),
+    background: { color: "#faf6f4" },
     build: ({ h }) => [
+      ellipse({ x: -16, y: -16, w: 102, h: 102, fill: "#e7d3dc" }),
+      ellipse({ x: -26, y: -8, w: 86, h: 86, fill: "#d3adbf" }),
+
       text({
         x: 12,
         y: 12,

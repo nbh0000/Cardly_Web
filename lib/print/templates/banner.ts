@@ -149,16 +149,15 @@ const DRAFTS: Draft[] = [
     industry: "sale",
     style: "bold",
     palette: ["warm", "ink"],
-    art: ["banner-sale-minimal"],
     tags: ["세일", "할인", "행사"],
     background: { color: "#1a1a1a" },
-    build: ({ h, bleed }) => [
-      image("banner-sale-minimal", {
-        x: -bleed,
-        y: -bleed,
-        w: 1400 + bleed,
-        h: h + bleed * 2,
-      }),
+    build: () => [
+      /* 사선 띠 셋. 회전한 사각형이라 아무리 키워도 가장자리가 깨지지 않고,
+         사용자가 색을 바꾸면 그대로 따라옵니다. 이걸 그림으로 받아 두면
+         파일만 무겁고 «만들다 만 것» 처럼 보입니다. */
+      rect({ x: 150, y: -420, w: 170, h: 1740, rotation: 24, fill: "#f5c518" }),
+      rect({ x: 400, y: -420, w: 90, h: 1740, rotation: 24, fill: "#ffffff" }),
+      rect({ x: 570, y: -420, w: 170, h: 1740, rotation: 24, fill: "#f5c518" }),
 
       text({
         x: 1520,

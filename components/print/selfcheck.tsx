@@ -162,7 +162,7 @@ export function PrintSelfCheck() {
         doc = edited.doc;
         if (edited.done) steps.push("글자 수정");
 
-        const swapped = swapFirstImage(doc, "/print-art/mark-leaf-minimal.jpg");
+        const swapped = swapFirstImage(doc, "/print-art/menu-linen-texture.jpg");
         doc = swapped.doc;
         if (swapped.done) steps.push("사진 교체");
 

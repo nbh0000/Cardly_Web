@@ -426,10 +426,12 @@ const DRAFTS: Draft[] = [
     industry: "clinic",
     style: "minimal",
     palette: ["pastel", "green"],
-    art: ["poster-clinic-minimal"],
     tags: ["병원", "안내", "접종"],
-    background: artBackground("poster-clinic-minimal", "#ffffff", 0.9),
-    build: ({ w }) => [
+    background: { color: "#ffffff" },
+    build: ({ w, h, bleed }) => [
+      ellipse({ x: 186, y: 150, w: 190, h: 190, fill: "#dbe9f0" }),
+      rect({ x: -bleed, y: h - 18, w: w + bleed * 2, h: 18 + bleed, fill: "#cfe8e3" }),
+
       text({
         x: 28,
         y: 52,

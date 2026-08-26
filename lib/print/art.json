@@ -78,21 +78,6 @@
       "model": "gemini-3.1-flash-image"
     },
     {
-      "id": "coupon-beauty-minimal",
-      "category": "coupon",
-      "style": "minimal",
-      "aspect": "21:9",
-      "size": "2K",
-      "note": "뷰티 — 파스텔 곡선 도형",
-      "prompt": "Minimal composition of two overlapping soft arcs in dusty pink and pale sand on an off-white field, matte finish, no gradient banding, shapes confined to the left third, rest empty.",
-      "file": "coupon-beauty-minimal.jpg",
-      "width": 3168,
-      "height": 1344,
-      "bytes": 357557,
-      "upscaled": false,
-      "model": "gemini-3-pro-image"
-    },
-    {
       "id": "poster-concert-photo",
       "category": "poster",
       "style": "photo",
@@ -119,21 +104,6 @@
       "width": 3584,
       "height": 4800,
       "bytes": 809202,
-      "upscaled": false,
-      "model": "gemini-3-pro-image"
-    },
-    {
-      "id": "poster-clinic-minimal",
-      "category": "poster",
-      "style": "minimal",
-      "aspect": "3:4",
-      "size": "4K",
-      "note": "병원·약국 — 차분한 기하 도형",
-      "prompt": "Flat graphic filling the entire frame: one large pale blue circle placed low and to the right, one thin horizontal band of soft mint crossing beneath it, plain white everywhere else, matte flat colour, no gradient. Edge to edge artwork, no frame, no mockup, no shadow, no paper sheet, no border.",
-      "file": "poster-clinic-minimal.jpg",
-      "width": 3584,
-      "height": 4800,
-      "bytes": 430425,
       "upscaled": false,
       "model": "gemini-3-pro-image"
     },
@@ -198,21 +168,6 @@
       "model": "gemini-3-pro-image"
     },
     {
-      "id": "banner-sale-minimal",
-      "category": "banner",
-      "style": "minimal",
-      "aspect": "21:9",
-      "size": "4K",
-      "note": "세일 — 강한 대비의 사선 띠",
-      "prompt": "Bold minimal composition: three thick diagonal bands in saffron yellow, off-black and white sweeping across the left quarter of a wide field, hard flat edges, high contrast, remainder a single flat off-black plane.",
-      "file": "banner-sale-minimal.jpg",
-      "width": 6336,
-      "height": 2688,
-      "bytes": 673802,
-      "upscaled": false,
-      "model": "gemini-3-pro-image"
-    },
-    {
       "id": "sb-realestate-photo",
       "category": "standing-banner",
       "style": "photo",
@@ -239,21 +194,6 @@
       "width": 3072,
       "height": 5504,
       "bytes": 1511486,
-      "upscaled": false,
-      "model": "gemini-3-pro-image"
-    },
-    {
-      "id": "sb-fitness-minimal",
-      "category": "standing-banner",
-      "style": "minimal",
-      "aspect": "9:16",
-      "size": "4K",
-      "note": "헬스 — 굵은 세로 도형",
-      "prompt": "Vertical minimal composition: one enormous soft arc of deep indigo rising from the bottom edge over a pale grey field, matte flat colour, no gradient banding, upper half completely empty.",
-      "file": "sb-fitness-minimal.jpg",
-      "width": 3072,
-      "height": 5504,
-      "bytes": 719039,
       "upscaled": false,
       "model": "gemini-3-pro-image"
     },
@@ -344,21 +284,6 @@
       "width": 3584,
       "height": 4800,
       "bytes": 1596828,
-      "upscaled": false,
-      "model": "gemini-3-pro-image"
-    },
-    {
-      "id": "mark-leaf-minimal",
-      "category": "shared",
-      "style": "minimal",
-      "aspect": "1:1",
-      "size": "2K",
-      "note": "공용 장식 — 가는 잎 한 줄기",
-      "prompt": "A single slender olive branch drawn in one continuous thin black ink line, centred on plain white that fills the entire frame, generous margin around the branch. Edge to edge white, no frame, no border, no paper sheet, no shadow.",
-      "file": "mark-leaf-minimal.jpg",
-      "width": 2048,
-      "height": 2048,
-      "bytes": 85042,
       "upscaled": false,
       "model": "gemini-3-pro-image"
     }

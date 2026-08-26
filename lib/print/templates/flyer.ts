@@ -593,10 +593,14 @@ const DRAFTS: Draft[] = [
     industry: "clinic",
     style: "minimal",
     palette: ["pastel", "navy"],
-    art: ["poster-clinic-minimal"],
     tags: ["병원", "개원", "진료시간"],
-    background: artBackground("poster-clinic-minimal", "#ffffff", 0.85),
-    build: ({ w }) => [
+    background: { color: "#ffffff" },
+    build: ({ w, h, bleed }) => [
+      /* 색면은 그림이 아니라 도형입니다. 원 하나를 이미지로 받아 두면
+         파일도 무겁고 사용자가 색을 못 바꿉니다. */
+      ellipse({ x: 132, y: 26, w: 128, h: 128, fill: "#e3eef4" }),
+      rect({ x: -bleed, y: h - 16, w: w + bleed * 2, h: 16 + bleed, fill: "#cfe8e3" }),
+
       text({
         x: 20,
         y: 32,
