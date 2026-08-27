@@ -41,7 +41,6 @@ const registry = JSON.parse(await readFile(path.join(ROOT, "lib", "print", "art.
 for (const { dir } of SIZES) await mkdir(path.join(ART, dir), { recursive: true });
 
 let made = 0;
-let saved = 0;
 
 for (const art of registry.art) {
   if (!art.file) continue;
@@ -59,8 +58,6 @@ for (const art of registry.art) {
       .toBuffer();
     await writeFile(out, bytes);
 
-    const before = (await sharp(src).metadata()).size ?? 0;
-    saved += Math.max(0, before - bytes.length);
     made++;
     console.log(
       `${dir}/${base}.webp`.padEnd(46) + `${(bytes.length / 1024).toFixed(0)}KB`,
