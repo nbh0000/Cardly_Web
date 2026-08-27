@@ -138,3 +138,56 @@
 }
 
 
+
+/* 이력서·명함 목업.
+
+   둘 다 편집기가 쓰는 그리개를 그대로 줄인 것입니다. 예전에는 회색 막대
+   몇 개로 «이력서처럼 생긴 무늬» 를 그렸는데, 줄 자리는 맞아도 글이 없어
+   빈 양식으로 읽혔습니다.
+
+   여기서는 zoom 이 아니라 transform: scale 을 씁니다. 청첩장 표지는 판마다
+   높이가 달라 «자리까지 줄이는» zoom 이 필요했지만, 이력서(A4)와 명함
+   (90 × 50 mm)은 비율이 못 박혀 있어 담을 상자를 미리 알 수 있습니다.
+   그리고 zoom 은 글자 크기 자체를 줄이므로, 이 배율에서는 브라우저의
+   «최소 글꼴 크기» 설정에 걸려 조판이 무너질 수 있습니다. scale 은 다
+   그린 뒤에 줄이므로 그런 일이 없습니다. */
+.hm-resume,
+.hm-card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: #fff;
+  pointer-events: none;
+}
+.hm-resume > .sheet,
+.hm-card > .card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: top left;
+}
+
+/* A4 210 × 297mm(793.7 × 1122.5px)를 그림 자리 높이(10rem)에 맞춥니다.
+   160 / 1122.5 ≈ 0.1425, 그러면 폭이 113px 입니다. */
+.hm-resume {
+  width: 113px;
+  height: 160px;
+}
+.hm-resume > .sheet {
+  transform: scale(0.1425);
+}
+/* 쪽이 나뉘는 자리에 그어 두는 안내선은 편집 중에만 필요합니다. */
+.hm-resume .sheet::before {
+  display: none;
+}
+
+/* 90 × 50mm(340.2 × 188.9px)를 그림 자리 폭(9rem = 144px)에 맞춥니다.
+   144 / 340.2 ≈ 0.4233. */
+.hm-card {
+  width: 144px;
+  height: 80px;
+  border-radius: 2px;
+}
+.hm-card > .card {
+  transform: scale(0.4233);
+}

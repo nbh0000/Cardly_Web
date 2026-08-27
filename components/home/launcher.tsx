@@ -26,9 +26,9 @@ const ENTRIES = [
     href: "/templates",
     title: "모바일 청첩장",
     body: "링크를 발행해 하객에게 보냅니다",
-    /* 폭으로 크기를 정합니다 — 이 목업은 안쪽을 «폭 기준» 으로 축소하므로
-       높이로 맞추면 그림이 잘립니다(app/home.css 의 .hm-cover).
-       어느 판을 세울지는 mockups.tsx 한 곳이 정합니다. */
+    /* 넷 다 크기를 스스로 정합니다(app/home.css 의 .hm-invitation·.hm-resume·
+       .hm-card). 여기서 폭이나 높이를 겹쳐 지정하면 안쪽 배율과 어긋나
+       잘립니다. 어느 판을 세울지는 mockups.tsx 한 곳이 정합니다. */
     art: <WeddingMock className="rounded-md shadow-[var(--shadow-card)]" />,
   },
   {
@@ -45,13 +45,13 @@ const ENTRIES = [
     href: "/resume",
     title: "이력서",
     body: "PDF·Word 로 바로 저장",
-    art: <ResumeMock className="h-full w-auto shadow-[var(--shadow-card)]" />,
+    art: <ResumeMock className="shadow-[var(--shadow-card)]" />,
   },
   {
     href: "/business-card",
     title: "명함",
     body: "90 × 50 mm 인쇄용 파일",
-    art: <CardMock className="w-full shadow-[var(--shadow-card)]" />,
+    art: <CardMock className="shadow-[var(--shadow-card)]" />,
   },
 ];
 

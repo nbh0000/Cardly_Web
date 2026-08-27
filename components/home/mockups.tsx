@@ -11,11 +11,17 @@
 
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { ClosedCard } from "@/components/occasion/fold";
-import { asset } from "@/lib/asset";
+import { CardFace } from "@/components/studio/card-face";
+import { ResumeSheet } from "@/components/studio/resume-sheet";
 import { createDefaultData, getTemplate } from "@/lib/invitation";
 import { findDesign } from "@/lib/occasion/designs";
-import { artThumb, CARD_TEMPLATES } from "@/lib/studio/card-templates";
-import { RESUME_TEMPLATES } from "@/lib/studio/resume-templates";
+import {
+  artThumb,
+  CARD_TEMPLATES,
+  placeItems,
+  SAMPLE_ITEMS,
+} from "@/lib/studio/card-templates";
+import { RESUME_TEMPLATES, SAMPLE_RESUME } from "@/lib/studio/resume-templates";
 
 /* 홈에 세우는 대표 한 벌. 바뀌면 여기만 고칩니다.
 
@@ -33,51 +39,41 @@ const CARD_PICK = "sig-9";
 const WEDDING_PICK = "polaroid-day";
 const INVITE_PICK = "dol-baby-tiger";
 
-/** 이력서 — A4 조판. 안쪽이 전부 % 라 폭만 주면 그대로 줄어듭니다. */
+/**
+ * 이력서 — 실제 A4 조판을 그대로 줄인 것.
+ *
+ * 예전에는 회색 막대 몇 개로 «이력서처럼 생긴 무늬» 를 그렸습니다. 줄
+ * 굵기와 자리는 맞았지만 글이 없으니 빈 양식으로 읽혔고, 홈에서 파는 것이
+ * «채워진 이력서» 라는 사실이 그림에서 사라졌습니다. 이제 편집기가 여는
+ * 것과 같은 시트를 예시 내용(SAMPLE_RESUME)째로 그립니다.
+ */
 export function ResumeMock({ className }: { className?: string }) {
   const t = RESUME_TEMPLATES.find((x) => x.id === RESUME_PICK);
   if (!t) return null;
   return (
-    <span
-      className={`rthumb ${className ?? ""}`}
-      data-l={t.layout}
-      style={
-        {
-          "--ac": t.accent,
-          "--sf": t.soft,
-          "--pp": t.paper,
-        } as React.CSSProperties
-      }
-    >
-      <i />
-      <em />
+    <span className={`hm-resume ${className ?? ""}`}>
+      <ResumeSheet template={t} data={SAMPLE_RESUME} />
     </span>
   );
 }
 
-/** 명함 — 90 × 50 mm 앞면 */
+/**
+ * 명함 — 90 × 50 mm 앞면.
+ *
+ * 이력서와 같은 이유로 실물 면을 씁니다. 배경 그림만 가벼운 판(thumb)으로
+ * 바꿔 넣습니다 — 홈에서 그려지는 크기가 150px 남짓이라 2800px 원본을
+ * 내려받을 이유가 없습니다.
+ */
 export function CardMock({ className }: { className?: string }) {
   const t = CARD_TEMPLATES.find((x) => x.id === CARD_PICK);
   if (!t) return null;
   return (
-    <span
-      className={`cthumb ${className ?? ""}`}
-      data-deco={t.deco}
-      data-align={t.placement.align}
-      style={
-        {
-          "--ac": t.accent,
-          "--bg": t.bg,
-          "--tx": t.text,
-          backgroundImage: t.art ? `url(${asset("/" + artThumb(t.art))})` : undefined,
-          backgroundPosition: t.art?.position,
-          backgroundSize: t.art?.size,
-        } as React.CSSProperties
-      }
-    >
-      <em />
-      <b />
-      <i />
+    <span className={`hm-card ${className ?? ""}`}>
+      <CardFace
+        template={t}
+        items={placeItems(t, SAMPLE_ITEMS)}
+        artUrl={t.art ? artThumb(t.art) : undefined}
+      />
     </span>
   );
 }

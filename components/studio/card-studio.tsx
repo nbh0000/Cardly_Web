@@ -15,9 +15,9 @@ import {
   CORNER_LABEL,
   DEFAULT_CARD_TEMPLATE,
   PAPER_LABEL,
+  placeItems,
   SAMPLE_ITEMS,
   SHAPE_TYPES,
-  type Slot,
 } from "@/lib/studio/card-templates";
 import {
   canvasToBlob,
@@ -127,30 +127,9 @@ export function CardStudio() {
     setColors({ bg: t.bg, text: t.text, accent: t.accent });
     setPaper(t.paper);
     setCorner(t.corner);
-    // 앞면 기본 요소만 템플릿이 정한 자리로 옮깁니다. 직접 추가한
-    // 요소와 뒷면은 그대로 둡니다. 배치에는 글자 크기도 들어 있어,
-    // 이름을 크게 앉히는 템플릿과 절제된 템플릿이 서로 다르게 읽힙니다.
-    const spots: Record<string, Slot> = {
-      company: t.placement.company,
-      name: t.placement.name,
-      role: t.placement.role,
-      email: t.placement.contacts[0],
-      phone: t.placement.contacts[1],
-      website: t.placement.contacts[2],
-    };
-    setItems((list) =>
-      list.map((item) => {
-        const spot = item.side === "front" ? spots[item.id] : undefined;
-        if (!spot) return item;
-        return {
-          ...item,
-          x: spot[0],
-          y: spot[1],
-          size: spot[2] ?? 100,
-          align: t.placement.align,
-        };
-      }),
-    );
+    // 앞면 기본 요소만 템플릿이 정한 자리로 옮깁니다(placeItems). 홈 목업도
+    // 같은 함수를 쓰므로, 홈에서 본 배치가 편집기에서 그대로 열립니다.
+    setItems((list) => placeItems(t, list));
   };
 
   /* -------------------- 요소 -------------------- */

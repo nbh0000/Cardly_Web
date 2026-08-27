@@ -6,6 +6,7 @@ import {
   type ResumeData,
   type ResumeEntry,
   type ResumeTemplate,
+  RESUME_BLOCKS,
   SECTION_HEADING,
 } from "@/lib/studio/resume-templates";
 
@@ -14,16 +15,26 @@ export type ResumeLayout = Record<ResumeBlockId, BlockLayout>;
 
 export const EMPTY_BLOCK: BlockLayout = { x: 0, y: 0, size: 100, hidden: false };
 
+/** 아무 것도 옮기지 않은 상태. 홈 목업처럼 «읽기만» 하는 자리에서 씁니다. */
+export const FLAT_LAYOUT: ResumeLayout = Object.fromEntries(
+  RESUME_BLOCKS.map((id) => [id, EMPTY_BLOCK]),
+) as ResumeLayout;
+
+const noop = () => {};
+
 type SheetProps = {
   ref?: Ref<HTMLElement>;
   template: ResumeTemplate;
   data: ResumeData;
-  photo: string;
-  font: string;
-  layout: ResumeLayout;
-  selected: ResumeBlockId | null;
-  onBlockPointerDown: (e: React.PointerEvent, id: ResumeBlockId) => void;
-  onBlockSelect: (id: ResumeBlockId | null) => void;
+  /* 아래 다섯은 편집기에서만 씁니다. 홈 목업은 «그리기» 만 필요하고,
+     서버 컴포넌트는 함수를 넘길 수 없습니다 — 직렬화되지 않기 때문입니다.
+     그래서 전부 선택으로 두고 기본값을 여기서 정합니다. */
+  photo?: string;
+  font?: string;
+  layout?: ResumeLayout;
+  selected?: ResumeBlockId | null;
+  onBlockPointerDown?: (e: React.PointerEvent, id: ResumeBlockId) => void;
+  onBlockSelect?: (id: ResumeBlockId | null) => void;
 };
 
 /** 내용이 하나도 없는 섹션은 아예 그리지 않습니다. */
@@ -35,12 +46,12 @@ export function ResumeSheet({
   ref,
   template,
   data,
-  photo,
-  font,
-  layout,
-  selected,
-  onBlockPointerDown,
-  onBlockSelect,
+  photo = "",
+  font = "sans",
+  layout = FLAT_LAYOUT,
+  selected = null,
+  onBlockPointerDown = noop,
+  onBlockSelect = noop,
 }: SheetProps) {
   const heading = (key: string) =>
     SECTION_HEADING[key][template.english ? 1 : 0];
