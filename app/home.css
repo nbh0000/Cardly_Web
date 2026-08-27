@@ -25,14 +25,14 @@
 
 .hm-shell {
   width: 100%;
-  max-width: 52rem;
+  max-width: 58rem;
   margin-inline: auto;
   padding-inline: var(--spacing-gutter);
 }
 
 .hm-title {
   text-align: center;
-  font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
   line-height: 1.2;
   letter-spacing: -0.035em;
   font-weight: 700;
@@ -41,10 +41,10 @@
 
 .hm-grid {
   display: grid;
-  gap: clamp(0.75rem, 1.5vw, 1rem);
-  margin-top: clamp(2rem, 5vw, 3rem);
+  gap: clamp(0.875rem, 1.8vw, 1.25rem);
+  margin-top: clamp(2.25rem, 5vw, 3.25rem);
   margin-inline: auto;
-  max-width: 46rem;
+  max-width: 54rem;
 }
 @media (min-width: 34rem) {
   .hm-grid {
@@ -58,9 +58,9 @@
 .hm-entry {
   display: flex;
   align-items: center;
-  gap: 1.125rem;
+  gap: 1.375rem;
   height: 100%;
-  padding: 1.125rem 1.25rem;
+  padding: 1.5rem 1.625rem;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   background: #fff;
@@ -79,11 +79,17 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 9rem;
+  height: 10rem;
 }
 .hm-entry-art > * {
   max-height: 100%;
+}
+/* 청첩장 표지는 zoom 으로 이미 자리까지 줄어 있습니다. 여기에 max-height 를
+   한 번 더 걸면 그 순간 아래가 잘립니다 — 잘리지 않게 하려고 zoom 을 쓴 것이니
+   되돌리는 셈입니다. */
+.hm-entry-art > .hm-invitation {
+  max-height: none;
 }
 
 .hm-entry-text {
@@ -107,38 +113,28 @@
    zoom 으로 줄입니다). 여기서는 그림 자리에 맞춰 다시 정합니다. */
 .hm-invite .oc-thumb {
   zoom: 1;
-  width: 3.9rem;
-  --oc-card-w: 3.9rem;
+  width: 6.4rem;
+  --oc-card-w: 6.4rem;
   /* 카드 높이는 «폭 × 1.4 + 바닥 그림자 자리» 입니다. 그 그림자 자리가
      기본 48px 이라, 이 작은 칸에서는 카드보다 여백이 더 큽니다. */
-  --oc-s-12: 0.375rem;
+  --oc-s-12: 0.6rem;
 }
 
-/* 청첩장 목업은 «실제 화면 크기» 로 그려집니다. 그대로 두면 목업 칸을
-   넘치므로 갤러리 썸네일과 같은 배율(0.62)로 줄여 담습니다.
-   components/home/mockups.tsx 의 WeddingMock 이 이 클래스를 씁니다. */
-.hm-cover {
-  position: absolute;
-  inset: 0;
-  width: 161%;
-  height: 161%;
-  transform: scale(0.62);
-  transform-origin: top left;
+/* 청첩장 목업.
+   transform: scale() 로 줄이면 «자리» 는 원래 크기 그대로 남아서, 부모에
+   비율을 못 박고 넘치는 부분을 잘라야 했습니다. 그러면 폴라로이드처럼
+   표지가 긴 판에서 사진 아래가 잘립니다. zoom 은 자리까지 함께 줄이므로
+   표지가 얼마나 길든 통째로 들어옵니다. */
+.hm-invitation {
+  display: block;
+  width: 300px;
+  /* 표지를 폭 300px 로 그린 뒤 그림 자리 높이(10rem = 160px)에 맞춰 줄입니다.
+     폴라로이드 표지는 그 폭에서 자연 높이가 472px 이라 160 / 472 ≈ 0.34.
+     다른 판으로 바꾸면 이 값도 다시 재야 합니다 — 브라우저에서
+     .hm-invitation 의 zoom 을 1 로 두고 높이를 재면 됩니다. */
+  zoom: 0.34;
+  background: #fff;
   pointer-events: none;
 }
 
-/* 인쇄물 목업 — 편집기와 같은 그리개를 쓰므로 픽셀로 그려집니다.
-   크기는 컴포넌트가 인자로 받고, 여기서는 테두리 밖으로 넘치지 않게만 막습니다. */
-.hm-print {
-  display: block;
-  position: relative;
-  overflow: hidden;
-}
 
-/* 칸이 다섯이라 마지막 하나가 홀로 남습니다. 남는 자리를 비워 두면
-   실수처럼 보이므로 두 칸을 다 씁니다. */
-@media (min-width: 34rem) {
-  .hm-grid > li:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-  }
-}

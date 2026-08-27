@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   CardMock,
   InviteMock,
-  PrintMock,
   ResumeMock,
   WeddingMock,
 } from "@/components/home/mockups";
@@ -30,7 +29,7 @@ const ENTRIES = [
     /* 폭으로 크기를 정합니다 — 이 목업은 안쪽을 «폭 기준» 으로 축소하므로
        높이로 맞추면 그림이 잘립니다(app/home.css 의 .hm-cover).
        어느 판을 세울지는 mockups.tsx 한 곳이 정합니다. */
-    art: <WeddingMock className="w-[3.6rem] rounded-md shadow-[var(--shadow-card)]" />,
+    art: <WeddingMock className="rounded-md shadow-[var(--shadow-card)]" />,
   },
   {
     href: "/invitation-card",
@@ -52,13 +51,7 @@ const ENTRIES = [
     href: "/business-card",
     title: "명함",
     body: "90 × 50 mm 인쇄용 파일",
-    art: <CardMock className="w-full max-w-[11rem] shadow-[var(--shadow-card)]" />,
-  },
-  {
-    href: "/print",
-    title: "인쇄물",
-    body: "전단지·포스터·현수막·메뉴판",
-    art: <PrintMock className="rounded-md shadow-[var(--shadow-card)]" />,
+    art: <CardMock className="w-full shadow-[var(--shadow-card)]" />,
   },
 ];
 

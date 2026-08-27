@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/backend/auth";
 import { backendEnabled } from "@/lib/backend/client";
-import { PRINT_CATEGORIES } from "@/lib/print/specs";
 
 /* 무엇을 파는 곳인지가 차례에 드러나야 합니다. 링크를 발행하는 둘이
    앞에 서고, 브라우저 안에서 끝나는 서류가 뒤에 섭니다. */
@@ -13,13 +12,6 @@ const NAV: { href: string; label: string; children?: { href: string; label: stri
   { href: "/invitation-card", label: "초대장" },
   { href: "/resume", label: "이력서" },
   { href: "/business-card", label: "명함" },
-  {
-    href: "/print",
-    label: "인쇄물",
-    /* 갈래가 여섯이라 차례에 다 세우면 머리가 두 줄이 됩니다. 그래서
-       하나만 세우고 나머지는 그 아래로 접어 두었습니다. */
-    children: PRINT_CATEGORIES.map((c) => ({ href: `/print/${c.id}`, label: c.label })),
-  },
 ];
 
 export function SiteHeader() {

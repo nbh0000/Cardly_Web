@@ -9,8 +9,6 @@ import {
   OCCASION_PLANS,
   PAID_GRACE_DAYS,
   PRICES,
-  PRINT_PLANS,
-  CREDIT_PACKS,
   WEDDING_PLANS,
   type PlanSpec,
   type ProductKind,
@@ -46,14 +44,6 @@ const GROUPS: {
       "돌잔치·생일·집들이·개업·모임. 며칠 안에 끝나는 카드 한 장이라 값도 그만큼입니다.",
     href: "/invitation-card",
     plans: OCCASION_PLANS,
-  },
-  {
-    kind: "print",
-    title: "인쇄물",
-    blurb:
-      "전단지·쿠폰·포스터·현수막·배너·메뉴판. 링크가 아니라 파일을 파는 상품이라 기한이 없습니다.",
-    href: "/print",
-    plans: PRINT_PLANS,
   },
 ];
 
@@ -173,36 +163,6 @@ export default function PricingPage() {
             </section>
           ))}
 
-          <section className="mt-section">
-            <div className="mx-auto max-w-narrow text-center">
-              <h2 className="font-serif text-h2 text-ink">AI 크레딧</h2>
-              <p className="mt-3 text-caption text-ink-soft">
-                인쇄물 편집기의 문구 만들기와 배경 그림 만들기에 씁니다. 처음 로그인하면
-                체험용 20개를 드리고, 문구는 1개 · 그림은 5개를 씁니다.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {CREDIT_PACKS.map((pack) => (
-                <div
-                  key={pack.id}
-                  className="rounded-lg border border-line bg-white p-6 shadow-soft"
-                >
-                  <p className="font-serif text-h3 text-ink">크레딧 {pack.credits}개</p>
-                  <p className="mt-1 text-caption text-muted">{pack.note}</p>
-                  <p className="mt-4 font-serif text-h2 text-ink">{formatPrice(pack.price)}</p>
-                  <p className="mt-1 text-[0.75rem] text-muted">
-                    개당 {Math.round(pack.price / pack.credits)}원 · 기한 없음
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="mx-auto mt-5 max-w-narrow text-center text-[0.75rem] text-muted">
-              크레딧은 인쇄물 편집기의 AI 패널에서 삽니다. 잔액이 남아 있어도 하루 40번까지만
-              쓸 수 있습니다.
-            </p>
-          </section>
-
           <section className="mx-auto mt-section max-w-narrow">
             <h2 className="font-serif text-h3 text-ink">자주 묻는 것</h2>
             <dl className="mt-6 grid gap-6">
@@ -230,14 +190,6 @@ export default function PricingPage() {
                 {
                   q: "환불되나요?",
                   a: "결제 후 7일 안에, 링크를 하객에게 보내기 전이라면 전액 환불해 드립니다. help@cardly.kr 로 주문번호와 함께 알려 주세요. 이미 링크를 돌린 뒤에는 제공이 끝난 것으로 봅니다.",
-                },
-                {
-                  q: "인쇄물은 왜 기한이 없나요?",
-                  a: `청첩장과 초대장은 «링크» 를 팝니다. 링크가 살아 있는 동안 사진과 글을 저희가 보관하니 그 비용이 계속 듭니다. 인쇄물은 «파일» 을 팝니다 — 한 번 내려받으면 끝이라 보관 비용이 없습니다. 그래서 ${formatPrice(PRICES.print)}에 기한을 두지 않았습니다.`,
-                },
-                {
-                  q: "인쇄물을 결제하지 않으면 무엇이 다른가요?",
-                  a: "편집도 되고 PDF·PNG 로 내려받을 수도 있습니다. 다만 결과물에 «Cardly 미리보기» 표시가 옅게 깔립니다. 시안으로 돌려 보는 데는 문제가 없고, 인쇄소에 넘길 원본만 결제가 필요합니다.",
                 },
                 {
                   q: "이력서와 명함도 나중에 유료가 되나요?",

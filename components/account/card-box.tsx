@@ -54,9 +54,6 @@ export function CardBox() {
             <Link href="/invitation-card" className="btn btn-ghost btn-sm bg-white">
               + 초대장
             </Link>
-            <Link href="/print" className="btn btn-ghost btn-sm bg-white">
-              + 인쇄물
-            </Link>
           </div>
         </div>
 

@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
 import { TEMPLATES } from "@/lib/invitation";
 import { DESIGNS } from "@/lib/occasion/designs";
-import { PRINT_CATEGORIES } from "@/lib/print/specs";
-import { PRINT_TEMPLATES } from "@/lib/print/templates";
 
 const SITE = "https://cardly.kr";
 
@@ -55,18 +53,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
-      url: `${SITE}/print/`,
-      lastModified: UPDATED,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    ...PRINT_CATEGORIES.map((c) => ({
-      url: `${SITE}/print/${c.id}/`,
-      lastModified: UPDATED,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    })),
-    {
       url: `${SITE}/pricing/`,
       lastModified: UPDATED,
       changeFrequency: "monthly",
@@ -86,15 +72,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  /* 템플릿 한 장마다 페이지가 있습니다. «전단지 템플릿» 으로 검색해서
-     들어오는 길이 이 마흔여덟 장이라, 사이트맵에 전부 올립니다. */
-  const prints: MetadataRoute.Sitemap = PRINT_TEMPLATES.map((t) => ({
-    url: `${SITE}/print/t/${t.id}/`,
-    lastModified: UPDATED,
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-
   const previews: MetadataRoute.Sitemap = TEMPLATES.map((template) => ({
     url: `${SITE}/preview/${template.id}/`,
     lastModified: UPDATED,
@@ -112,5 +89,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // 발행된 청첩장(/w/<slug>)·초대장(/i/<slug>)과 링크로 받은 초대장
   // (/invitation-card/v/)은 링크를 받은 사람만 보는 주소라 넣지 않습니다.
   // 로그인·카드함·결제 화면도 색인할 이유가 없어 빠집니다.
-  return [...core, ...prints, ...previews, ...cards];
+  return [...core, ...previews, ...cards];
 }
