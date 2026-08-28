@@ -17,6 +17,7 @@ import { useSession } from "@/lib/backend/auth";
 import { backendEnabled } from "@/lib/backend/client";
 import { docUrl } from "@/lib/backend/docs";
 import { useDocStore } from "@/lib/backend/use-doc";
+import { linkLifetimeNote } from "@/lib/plan";
 import { buildQrSvg } from "@/lib/qr";
 import {
   TEMPLATES,
@@ -477,8 +478,8 @@ export function Editor({ templateId }: { templateId: string }) {
           >
             <h3 className="font-serif text-h2 text-ink">청첩장 주소가 만들어졌습니다</h3>
             <p className="mt-2 text-caption text-ink-soft">
-              무료 발행은 7일 동안 열려 있습니다. 예식이 더 남았다면 내 카드함에서
-              프리미엄으로 올려 예식일 뒤까지 열어 둘 수 있습니다.
+              {linkLifetimeNote()} 아래 «카카오톡으로 보내기» 를 누르면 그대로
+              하객에게 갑니다.
             </p>
 
             <div className="mt-6">

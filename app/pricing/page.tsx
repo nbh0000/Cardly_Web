@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import {
   FREE_LINK_DAYS,
+  FREE_PERIOD,
   formatPrice,
   OCCASION_PLANS,
   PAID_GRACE_DAYS,
@@ -16,9 +17,11 @@ import {
 
 export const metadata: Metadata = {
   title: "요금 안내",
-  description: `모바일 청첩장 ${formatPrice(PRICES.wedding)}, 초대장 ${formatPrice(
-    PRICES.occasion,
-  )}. 하나에 한 번만 결제하는 방식이고 구독이 아닙니다. 무료로도 ${FREE_LINK_DAYS}일짜리 링크를 바로 발행할 수 있습니다.`,
+  description: FREE_PERIOD
+    ? "여는 기간이라 청첩장과 초대장 모두 링크 발행까지 무료입니다. 참석 여부·방명록·사진 장수 제한 없이 전부 열려 있고, 결제를 받지 않습니다."
+    : `모바일 청첩장 ${formatPrice(PRICES.wedding)}, 초대장 ${formatPrice(
+        PRICES.occasion,
+      )}. 하나에 한 번만 결제하는 방식이고 구독이 아닙니다. 무료로도 ${FREE_LINK_DAYS}일짜리 링크를 바로 발행할 수 있습니다.`,
   alternates: { canonical: "/pricing/" },
 };
 
@@ -56,11 +59,19 @@ export default function PricingPage() {
           <header className="mx-auto max-w-narrow text-center">
             <span className="eyebrow eyebrow-center">Pricing</span>
             <h1 className="mt-5 font-serif text-h1 text-ink">요금 안내</h1>
-            <p className="mt-5 text-body text-ink-soft">
-              만들어 보는 것은 값이 없습니다. 링크를 발행하는 것도 무료로
-              됩니다 — {FREE_LINK_DAYS}일 동안 열려 있습니다. 결제는 그 기한을
-              늘리고 하단 표기를 지울 때 한 번만 합니다.
-            </p>
+            {FREE_PERIOD ? (
+              <p className="mt-5 text-body text-ink-soft">
+                지금은 여는 기간이라 <strong className="text-ink">청첩장과 초대장 모두 무료</strong>입니다.
+                링크 발행까지 그대로 되고, 참석 여부·방명록·사진 장수도 열려
+                있습니다. 결제는 아직 받지 않습니다.
+              </p>
+            ) : (
+              <p className="mt-5 text-body text-ink-soft">
+                만들어 보는 것은 값이 없습니다. 링크를 발행하는 것도 무료로
+                됩니다 — {FREE_LINK_DAYS}일 동안 열려 있습니다. 결제는 그 기한을
+                늘리고 하단 표기를 지울 때 한 번만 합니다.
+              </p>
+            )}
             <p className="mt-3 text-caption text-muted">
               이력서와 명함은 전부 무료입니다. 로그인도 필요 없습니다.
             </p>
@@ -97,7 +108,7 @@ export default function PricingPage() {
                         </h3>
                         {premium && (
                           <span className="rounded-full bg-ivory/15 px-2.5 py-1 text-[0.6875rem] tracking-[0.1em] text-ivory">
-                            한 번만 결제
+                            {FREE_PERIOD ? "여는 기간 무료" : "한 번만 결제"}
                           </span>
                         )}
                       </div>
@@ -107,7 +118,7 @@ export default function PricingPage() {
                           premium ? "text-ivory" : "text-ink"
                         }`}
                       >
-                        {plan.price}
+                        {premium && FREE_PERIOD ? "지금은 0원" : plan.price}
                       </p>
                       <p
                         className={`mt-1.5 text-[0.75rem] ${
@@ -115,7 +126,9 @@ export default function PricingPage() {
                         }`}
                       >
                         {premium
-                          ? `${group.title} 하나당 한 번 · 구독이 아닙니다`
+                          ? FREE_PERIOD
+                            ? `나중에 ${formatPrice(PRICES[group.kind])} · 지금 만든 것은 그대로 열려 있습니다`
+                            : `${group.title} 하나당 한 번 · 구독이 아닙니다`
                           : "카드 등록도, 결제 정보 입력도 없습니다"}
                       </p>
 
@@ -124,7 +137,9 @@ export default function PricingPage() {
                           premium ? "text-ivory/70" : "text-ink-soft"
                         }`}
                       >
-                        {plan.tagline}
+                        {premium && FREE_PERIOD
+                          ? "여는 기간이라 결제 없이 다 열려 있습니다. 나중에 값을 받더라도 그때 이미 발행한 링크는 그대로 둡니다."
+                          : plan.tagline}
                       </p>
 
                       <ul className="mt-6 mb-7 grid gap-2.5">
@@ -154,7 +169,7 @@ export default function PricingPage() {
                             : "border border-line text-ink hover:border-rose"
                         }`}
                       >
-                        {premium ? "만들고 결제하기" : "무료로 시작하기"}
+                        {premium && !FREE_PERIOD ? "만들고 결제하기" : "무료로 시작하기"}
                       </Link>
                     </div>
                   );
@@ -167,30 +182,51 @@ export default function PricingPage() {
             <h2 className="font-serif text-h3 text-ink">자주 묻는 것</h2>
             <dl className="mt-6 grid gap-6">
               {[
-                {
-                  q: "결제하지 않아도 하객에게 보낼 수 있나요?",
-                  a: `보낼 수 있습니다. 로그인해서 «링크 발행» 을 누르면 그 자리에서 주소가 만들어지고, ${FREE_LINK_DAYS}일 동안 열려 있습니다. 하단에 «Cardly로 만들었어요» 표기가 붙고, 참석 여부와 방명록은 잠깁니다.`,
-                },
-                {
-                  q: "결제하면 무엇이 달라지나요?",
-                  a: `링크가 예식일(초대장은 행사일)에서 ${PAID_GRACE_DAYS}일 뒤까지 열려 있고, 하단 표기가 사라집니다. 참석 여부 집계와 방명록이 열리고, 청첩장은 갤러리 사진 장수 제한도 없어집니다.`,
-                },
-                {
-                  q: "왜 무료 링크는 기한이 있나요?",
-                  a: `링크가 살아 있는 동안은 사진과 글을 저희가 보관합니다. 그 비용이 무한정 쌓이지 않으려면 어딘가에서 끊어야 합니다. 다만 «보내 보는 것» 까지는 값 없이 되어야 한다고 생각해서, 막는 대신 ${FREE_LINK_DAYS}일이라는 기한을 두었습니다.`,
-                },
+                ...(FREE_PERIOD
+                  ? [
+                      {
+                        q: "정말 아무것도 결제하지 않나요?",
+                        a: "네. 여는 기간 동안은 결제창 자체를 열지 않습니다. 로그인하고 «링크 발행» 을 누르면 그 자리에서 주소가 만들어지고, 참석 여부·방명록·갤러리 장수까지 전부 열려 있습니다. 하단의 «Cardly로 만들었어요» 표기만 남습니다.",
+                      },
+                      {
+                        q: "무료 기간이 끝나면 지금 만든 링크는 닫히나요?",
+                        a: `닫히지 않습니다. 기한은 발행하는 순간 한 번 정해져 그대로 남습니다. 지금 발행한 링크는 예식일·행사일에서 ${PAID_GRACE_DAYS}일 뒤까지(행사일을 안 적었으면 발행일에서 1년) 열려 있습니다.`,
+                      },
+                      {
+                        q: "나중에는 얼마가 되나요?",
+                        a: `모바일 청첩장 ${formatPrice(PRICES.wedding)}, 초대장 ${formatPrice(PRICES.occasion)} 을 생각하고 있습니다. 문서 하나에 한 번 내는 단건이고 구독은 없습니다. 받기 시작하는 날은 미리 알려 드립니다.`,
+                      },
+                    ]
+                  : [
+                      {
+                        q: "결제하지 않아도 하객에게 보낼 수 있나요?",
+                        a: `보낼 수 있습니다. 로그인해서 «링크 발행» 을 누르면 그 자리에서 주소가 만들어지고, ${FREE_LINK_DAYS}일 동안 열려 있습니다. 하단에 «Cardly로 만들었어요» 표기가 붙고, 참석 여부와 방명록은 잠깁니다.`,
+                      },
+                      {
+                        q: "결제하면 무엇이 달라지나요?",
+                        a: `링크가 예식일(초대장은 행사일)에서 ${PAID_GRACE_DAYS}일 뒤까지 열려 있고, 하단 표기가 사라집니다. 참석 여부 집계와 방명록이 열리고, 청첩장은 갤러리 사진 장수 제한도 없어집니다.`,
+                      },
+                      {
+                        q: "왜 무료 링크는 기한이 있나요?",
+                        a: `링크가 살아 있는 동안은 사진과 글을 저희가 보관합니다. 그 비용이 무한정 쌓이지 않으려면 어딘가에서 끊어야 합니다. 다만 «보내 보는 것» 까지는 값 없이 되어야 한다고 생각해서, 막는 대신 ${FREE_LINK_DAYS}일이라는 기한을 두었습니다.`,
+                      },
+                    ]),
                 {
                   q: "하객도 가입해야 하나요?",
                   a: "아닙니다. 링크를 받은 사람은 아무것도 하지 않고 바로 봅니다. 참석 여부를 남길 때도 이름만 적으면 됩니다. 계정은 만드는 사람에게만 필요합니다.",
                 },
                 {
                   q: "기한이 지나면 어떻게 되나요?",
-                  a: "링크가 «기간이 지나 닫혔어요» 안내로 바뀝니다. 내용은 내 카드함에 그대로 남아 있어서, 다시 결제하거나 다시 발행하면 같은 주소로 열립니다.",
+                  a: "링크가 «기간이 지나 닫혔어요» 안내로 바뀝니다. 내용은 내 카드함에 그대로 남아 있어서, 다시 발행하면 같은 주소로 열립니다.",
                 },
-                {
-                  q: "환불되나요?",
-                  a: "결제 후 7일 안에, 링크를 하객에게 보내기 전이라면 전액 환불해 드립니다. help@cardly.kr 로 주문번호와 함께 알려 주세요. 이미 링크를 돌린 뒤에는 제공이 끝난 것으로 봅니다.",
-                },
+                ...(FREE_PERIOD
+                  ? []
+                  : [
+                      {
+                        q: "환불되나요?",
+                        a: "결제 후 7일 안에, 링크를 하객에게 보내기 전이라면 전액 환불해 드립니다. help@cardly.kr 로 주문번호와 함께 알려 주세요. 이미 링크를 돌린 뒤에는 제공이 끝난 것으로 봅니다.",
+                      },
+                    ]),
                 {
                   q: "이력서와 명함도 나중에 유료가 되나요?",
                   a: "아닙니다. 이력서와 명함은 브라우저 안에서 끝나 서버 비용이 들지 않습니다. 계속 무료로 둘 생각입니다.",

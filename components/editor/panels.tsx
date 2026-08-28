@@ -15,7 +15,7 @@ import {
   Toggle,
 } from "@/components/editor/controls";
 import { samplePhoto } from "@/components/invitation/sample-photo";
-import { FREE_GALLERY_PHOTOS } from "@/lib/plan";
+import { FREE_GALLERY_PHOTOS, galleryLimit, unlocked } from "@/lib/plan";
 import type { SectionId } from "@/components/editor/rail";
 import { fontGroupsFor } from "@/lib/fonts";
 import {
@@ -929,9 +929,9 @@ function Gallery({ data, set, onGoOrder, onReveal, plan }: Props) {
               label="사진 업로드"
               values={data.gallery}
               onChange={(v) => set("gallery", v)}
-              max={plan === "premium" ? 60 : FREE_GALLERY_PHOTOS}
+              max={galleryLimit(plan)}
             />
-            {plan !== "premium" && (
+            {!unlocked(plan) && (
               <p className="text-[0.75rem] leading-relaxed text-muted">
                 무료로 발행하면 사진 {FREE_GALLERY_PHOTOS}장까지 올라갑니다.
                 결제하면 장수 제한이 없어집니다.

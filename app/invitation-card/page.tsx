@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { DESIGNS } from "@/lib/occasion/designs";
 import { OCCASIONS } from "@/lib/occasion/occasions";
 
-const DESCRIPTION = `결혼·돌잔치·생일·집들이·개업·파티·연말 초대장을 ${DESIGNS.length}가지 디자인으로 만듭니다. 카드에 마우스를 얹으면 그 자리에서 열리고, 링크를 발행해 카카오톡으로 보냅니다. 무료 발행은 7일 동안 열립니다.`;
+const DESCRIPTION = `결혼·돌잔치·생일·집들이·개업·파티·연말 초대장을 ${DESIGNS.length}가지 디자인으로 만듭니다. 카드에 마우스를 얹으면 그 자리에서 열리고, 링크를 발행해 카카오톡으로 보냅니다. 지금은 여는 기간이라 링크 발행까지 무료입니다.`;
 
 export const metadata: Metadata = {
   title: `초대장 만들기 — 열리는 카드 ${DESIGNS.length}종`,

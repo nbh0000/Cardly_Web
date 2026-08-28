@@ -18,7 +18,9 @@ import { useDocStore } from "@/lib/backend/use-doc";
 import { FoldedCard } from "@/components/occasion/folded-card";
 import { DESIGNS, findDesign } from "@/lib/occasion/designs";
 import { OCCASIONS } from "@/lib/occasion/occasions";
+import { shareAnyhow } from "@/lib/kakao";
 import { encodeInvite } from "@/lib/occasion/share";
+import { linkLifetimeNote } from "@/lib/plan";
 import { LIMITS, type InviteData } from "@/lib/occasion/types";
 
 /* ════════════════════════════════════════════════════════════
@@ -41,6 +43,12 @@ import { LIMITS, type InviteData } from "@/lib/occasion/types";
    ════════════════════════════════════════════════════════════ */
 
 const DRAFT_KEY = "cardly:occasion:draft";
+
+/** 제목은 두 줄로 적히지만, 공유 카드 한 줄에는 이어 붙여 넣습니다. */
+function oneLine(value: string): string {
+  return value.split(/\s*\n+\s*/).filter(Boolean).join(" ");
+}
+
 const subscribeNever = () => () => {};
 
 function useOrigin(): string {
@@ -225,6 +233,28 @@ export function Maker({ initial }: { initial: InviteData }) {
       })
       .catch(() => {});
   }, [data.title, link]);
+
+  /* 가입 없이 보내는 길에서도 카카오톡이 첫 단추여야 합니다 — 한국에서
+     초대장을 보내는 곳은 사실상 거기 하나입니다. 카카오 앱 키가 있으면
+     표지 그림이 붙은 카드로 나가고, 없으면 기본 공유 시트나 링크 복사로
+     조용히 물러납니다(lib/kakao). 어느 쪽이든 받는 사람이 여는 주소의
+     <meta> 에 표지 그림이 박혀 있어 미리보기는 뜹니다. */
+  const [shareState, setShareState] = useState<"idle" | "copy">("idle");
+  const kakao = useCallback(() => {
+    void shareAnyhow({
+      title: oneLine(data.title) || "초대합니다",
+      description:
+        [data.date, data.time, data.place].filter(Boolean).join(" · ") ||
+        "표지를 넘기면 카드가 열립니다.",
+      url: link,
+      imageUrl: `${origin}/og/invitation-card/${data.d}.jpg`,
+    }).then((how) => {
+      if (how === "copy") {
+        setShareState("copy");
+        window.setTimeout(() => setShareState("idle"), 2400);
+      }
+    });
+  }, [data.title, data.date, data.time, data.place, data.d, link, origin]);
 
   /* 걸음을 옮기면 맨 위로 — 아래에 머문 채 바뀌면 무엇이 바뀌었는지
      보이지 않습니다. */
@@ -529,7 +559,7 @@ export function Maker({ initial }: { initial: InviteData }) {
                   초대장 주소가 만들어졌습니다
                 </h3>
                 <p className="mt-2 mb-6 text-center text-caption text-ink-soft">
-                  무료 발행은 7일 동안 열려 있습니다.
+                  {linkLifetimeNote()}
                 </p>
                 <SharePanel
                   url={docUrl("occasion", published)}
@@ -551,28 +581,57 @@ export function Maker({ initial }: { initial: InviteData }) {
               </>
             ) : (
               <div className="grid gap-2">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  disabled={publishing || !backendEnabled}
-                  onClick={publish}
-                >
-                  {publishing
-                    ? "발행하는 중…"
-                    : store.online
-                      ? "링크 발행하고 보내기"
-                      : "로그인하고 발행하기"}
-                </button>
-                <p className="text-center text-[0.75rem] leading-relaxed text-muted">
-                  발행하면 짧은 주소가 생기고, 카카오톡에 붙였을 때 표지 그림이
-                  함께 보입니다. 무료로 7일, 결제하면 행사일 뒤까지 열립니다.
-                </p>
+                {/* 계정 서버가 아직 붙지 않은 배포에서는 짧은 주소를 내줄
+                    수가 없습니다. 그때 죽은 단추를 맨 위에 세워 두면 여기서
+                    끝나는 사람이 생기므로, 주소에 내용을 싣는 길을 그대로
+                    첫 단추로 올립니다 — 그 길은 서버가 없어도 됩니다. */}
+                {backendEnabled ? (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={publishing}
+                      onClick={publish}
+                    >
+                      {publishing
+                        ? "발행하는 중…"
+                        : store.online
+                          ? "링크 발행하고 보내기"
+                          : "로그인하고 발행하기"}
+                    </button>
+                    <p className="text-center text-[0.75rem] leading-relaxed text-muted">
+                      발행하면 짧은 주소가 생기고, 카카오톡에 붙였을 때 표지
+                      그림이 함께 보입니다. {linkLifetimeNote()}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" className="btn btn-primary" onClick={kakao}>
+                      {shareState === "copy"
+                        ? "링크를 복사했습니다 — 붙여넣어 보내세요"
+                        : "카카오톡으로 보내기"}
+                    </button>
+                    <button type="button" className="btn btn-ghost bg-white" onClick={copy}>
+                      {copied ? "복사했습니다" : "링크 복사"}
+                    </button>
+                    <p className="text-center text-[0.75rem] leading-relaxed text-muted">
+                      가입도 결제도 없이 지금 바로 보냅니다. 내용을 주소 안에
+                      담아 보내기 때문에 주소가 조금 깁니다.
+                    </p>
+                    <p className="mt-2 break-all rounded-md bg-cream px-3 py-2.5 text-center font-mono text-[0.6875rem] leading-relaxed text-muted">
+                      {link}
+                    </p>
+                  </>
+                )}
 
                 {/* 가입하기 싫은 사람을 위한 옛 길 — 내용을 주소에 통째로
                     싣습니다. 그대로 두는 이유는 이미 이 방식으로 보낸 초대장이
                     돌아다니고 있고, 계정 없이 한 장 보내고 끝내려는 사람에게는
                     이쪽이 더 빠르기 때문입니다. */}
-                <details className="mt-4 rounded-md border border-line bg-white px-4 py-3">
+                <details
+                  hidden={!backendEnabled}
+                  className="mt-4 rounded-md border border-line bg-white px-4 py-3"
+                >
                   <summary className="cursor-pointer text-[0.8125rem] text-ink-soft">
                     가입 없이 지금 바로 보내기
                   </summary>
@@ -581,6 +640,11 @@ export function Maker({ initial }: { initial: InviteData }) {
                     주소가 길고 참석 회신·방명록은 쓸 수 없습니다.
                   </p>
                   <div className="mt-4 grid gap-2">
+                    <button type="button" className="btn btn-primary" onClick={kakao}>
+                      {shareState === "copy"
+                        ? "링크를 복사했습니다 — 붙여넣어 보내세요"
+                        : "카카오톡으로 보내기"}
+                    </button>
                     {canShare && (
                       <button type="button" className="btn btn-ghost bg-white" onClick={share}>
                         메시지로 보내기

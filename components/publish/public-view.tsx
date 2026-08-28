@@ -25,6 +25,7 @@ import { FoldedCard } from "@/components/occasion/folded-card";
 import { GuestExtras } from "@/components/publish/guest-extras";
 import { ShareBar } from "@/components/invitation/share-bar";
 import { backendEnabled } from "@/lib/backend/client";
+import { unlocked } from "@/lib/plan";
 import { fetchPublicDoc, type DocKind, type DocPlan } from "@/lib/backend/docs";
 import { createDefaultData, getTemplate, type InvitationData } from "@/lib/invitation";
 import { findDesign } from "@/lib/occasion/designs";
@@ -115,7 +116,11 @@ export function PublicView({
   if (screen.kind === "closed") return <Closed kind={kind} />;
   if (screen.kind === "missing") return <Missing kind={kind} />;
 
-  const premium = screen.plan === "premium";
+  /* 기능이 열려 있는지와 «결제했는지» 는 무료 기간에 갈라집니다.
+     기능은 전부 열지만 하단 표기는 그대로 둡니다 — 그 표기가 지금
+     사람이 들어오는 거의 유일한 길이기 때문입니다. */
+  const premium = unlocked(screen.plan);
+  const paid = screen.plan === "premium";
 
   if (screen.docKind === "wedding") {
     const template = getTemplate(screen.designId);
@@ -136,7 +141,7 @@ export function PublicView({
             </div>
 
             <ShareBar slug={slug} />
-            {!premium && <Watermark />}
+            {!paid && <Watermark />}
           </div>
         </div>
       </GuestContext>
@@ -151,7 +156,7 @@ export function PublicView({
       <FoldedCard data={data} design={design} />
 
       {premium && <GuestExtras slug={slug} demo={screen.demo} askRsvp={data.rsvp} />}
-      {!premium && <Watermark />}
+      {!paid && <Watermark />}
     </div>
   );
 }

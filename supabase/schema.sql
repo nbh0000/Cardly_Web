@@ -469,7 +469,7 @@ begin
   if not found or not public.doc_is_open(d) then
     raise exception '닫힌 초대장입니다.';
   end if;
-  if d.plan <> 'premium' then
+  if d.plan <> 'premium' and not public.free_period() then
     raise exception '참석 여부는 프리미엄에서 받습니다.';
   end if;
   if length(coalesce(p_name, '')) = 0 then
@@ -536,7 +536,7 @@ begin
   if not found or not public.doc_is_open(d) then
     raise exception '닫힌 청첩장입니다.';
   end if;
-  if d.plan <> 'premium' then
+  if d.plan <> 'premium' and not public.free_period() then
     raise exception '방명록은 프리미엄에서 열립니다.';
   end if;
   if length(coalesce(p_name, '')) = 0 or length(coalesce(p_message, '')) = 0 then
@@ -566,6 +566,24 @@ create or replace function public.free_link_days()  returns int language sql imm
 create or replace function public.paid_grace_days() returns int language sql immutable as $$ select 30 $$;
 
 /**
+ * 여는 기간 — 지금은 전부 무료.
+ *
+ * 결제를 아직 받지 않는 동안에는 무료 문서도 프리미엄과 똑같이 다룹니다.
+ * 기한은 행사일 기준으로 넉넉히 잡고, 참석 회신과 방명록도 열어 둡니다.
+ * plan 열은 그대로 'free' 로 남습니다 — «실제로 돈을 낸 문서» 와 «지금
+ * 열어 준 문서» 를 뒤섞으면, 값을 받기 시작하는 날 누가 무엇을 샀는지
+ * 구분할 수 없게 됩니다. 하단 Cardly 표기가 무료 문서에 그대로 붙는
+ * 것도 그 구분 덕분입니다.
+ *
+ * 브라우저 쪽 같은 스위치는 lib/plan.ts 의 FREE_PERIOD 입니다. 둘을
+ * 같이 바꾸세요. 값을 받기 시작하면 여기를 false 로 되돌리면 되고,
+ * 이미 발행된 링크의 기한은 발행 시점에 한 번 적힌 값이라 그대로
+ * 남습니다.
+ */
+create or replace function public.free_period() returns boolean
+language sql immutable as $$ select true $$;
+
+/**
  * 기한 계산 — 한 곳에서만 합니다.
  *
  * 무료는 «발행한 때» 부터 7 일입니다. 예식일 기준으로 재면 일 년 전에
@@ -577,7 +595,7 @@ create or replace function public.paid_grace_days() returns int language sql imm
 create or replace function public.compute_expiry(p_plan text, p_event date, p_from timestamptz)
 returns timestamptz language sql stable as $$
   select case
-    when p_plan = 'premium' then
+    when p_plan = 'premium' or public.free_period() then
       /* 이미 지난 날짜로 잡히지 않게 바닥을 둡니다. 예식이 끝난 뒤에
          결제하는 사람이 있습니다 — 사진과 방명록을 남겨 두려고요. 그때
          계산대로 하면 결제하자마자 닫힌 링크가 됩니다. */

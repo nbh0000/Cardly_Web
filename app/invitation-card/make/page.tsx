@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
   title: "초대장 만들기",
   description:
-    "생일·돌잔치·집들이·개업·파티·기념일 초대장을 만들어 카카오톡·문자로 보냅니다. 링크 발행은 무료로 7일, 결제하면 행사 뒤까지 열리고 참석 회신을 받습니다.",
+    "생일·돌잔치·집들이·개업·파티·기념일 초대장을 만들어 카카오톡·문자로 보냅니다. 지금은 여는 기간이라 링크 발행과 참석 회신까지 전부 무료입니다.",
   alternates: { canonical: "/invitation-card/make/" },
 };
 

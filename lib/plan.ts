@@ -22,6 +22,48 @@ import type { SectionKey } from "@/lib/invitation";
 export type PlanId = "free" | "premium";
 export type ProductKind = "wedding" | "occasion" | "print";
 
+/* ------------------------------------------------------------
+   지금은 전부 무료 — 여는 기간
+   ------------------------------------------------------------ */
+
+/**
+ * 오픈 기간 스위치.
+ *
+ * 값이 정해진 뒤에도 «아직은 받지 않는» 때가 있습니다. 만드는 사람이
+ * 적고, 링크가 도는 것 자체가 유일한 광고이고, 결제 심사가 아직 끝나지
+ * 않았을 때입니다. 그동안은 링크 발행과 기능을 전부 열어 둡니다.
+ *
+ * 스위치를 여기 하나만 두는 이유는, 끄는 날 화면마다 흩어진 조건을
+ * 찾아다니지 않기 위해서입니다. false 로 바꾸면 아래 요금표와 결제
+ * 단추가 그대로 되살아납니다. 이미 그 시절에 발행된 링크는 그때 정해진
+ * 기한을 그대로 들고 갑니다 — 데이터베이스가 발행 시점에 한 번만
+ * 계산해 적어 두기 때문입니다.
+ *
+ * 데이터베이스에도 같은 스위치가 public.free_period() 로 한 번 더 있고,
+ * 그쪽이 «진짜» 입니다. 브라우저에서 무엇을 보여 주든 참석 회신·방명록을
+ * 실제로 받아 주는 것은 그 함수입니다. 둘을 같이 바꾸세요.
+ */
+export const FREE_PERIOD = true;
+
+/** 무료 기간 동안 링크가 열려 있는 기간(행사일이 없을 때) */
+export const FREE_PERIOD_DAYS = 365;
+
+/** 화면 여기저기에 같은 문장으로 적기 위한 한 줄 */
+export const FREE_PERIOD_NOTE =
+  "지금은 링크 발행과 모든 기능이 무료입니다";
+
+/** 이 문서가 유료 기능까지 열려 있는지 */
+export function unlocked(plan: string | null | undefined): boolean {
+  return FREE_PERIOD || plan === "premium";
+}
+
+/** 링크가 얼마나 열려 있는지 — 발행 화면이 그대로 씁니다 */
+export function linkLifetimeNote(): string {
+  return FREE_PERIOD
+    ? "무료 기간이라 기한을 걸지 않았습니다 — 행사가 끝날 때까지 열려 있습니다."
+    : `무료 발행은 ${FREE_LINK_DAYS}일 동안 열려 있습니다.`;
+}
+
 /**
  * 값. 문서 하나에 한 번 결제하면 끝이고, 매달 빠져나가는 구독은 없습니다.
  *
@@ -139,6 +181,7 @@ export const PREMIUM_SECTIONS: SectionKey[] = [
 ];
 
 export function isPremiumSection(key: SectionKey): boolean {
+  if (FREE_PERIOD) return false;
   return PREMIUM_SECTIONS.includes(key);
 }
 
@@ -149,6 +192,11 @@ export const PREMIUM_EXTRAS = {
   /** 오프닝 애니메이션·화면 효과·배경음악 */
   decoration: true,
 } as const;
+
+/** 이 문서에 올릴 수 있는 갤러리 사진 장수 */
+export function galleryLimit(plan: string | null | undefined): number {
+  return unlocked(plan) ? 60 : FREE_GALLERY_PHOTOS;
+}
 
 /* ------------------------------------------------------------
    안내 문구 — 요금 페이지와 홈이 같은 목록을 씁니다

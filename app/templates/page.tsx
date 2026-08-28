@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 import { TemplateGrid } from "@/components/template-grid";
 import { TEMPLATES } from "@/lib/invitation";
 
-const DESCRIPTION = `모바일 청첩장 템플릿 ${TEMPLATES.length}종. 만들어 링크를 발행하면 하객이 주소만 눌러 봅니다. 무료 발행은 7일, 결제하면 예식 뒤까지 열립니다. 참석 여부와 방명록도 그대로 모입니다.`;
+const DESCRIPTION = `모바일 청첩장 템플릿 ${TEMPLATES.length}종. 만들어 링크를 발행하면 하객이 주소만 눌러 봅니다. 지금은 여는 기간이라 링크 발행이 무료이고, 참석 여부와 방명록도 함께 열려 있습니다.`;
 
 export const metadata: Metadata = {
   title: "모바일 청첩장 무료 제작 — 템플릿 " + TEMPLATES.length + "종",

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { FREE_PERIOD } from "@/lib/plan";
 
 export type SectionId =
   | "decor" | "design" | "bgm" | "opening" | "effect" | "groom" | "bride" | "album"
@@ -45,8 +46,11 @@ export const RAIL: RailItem[] = [
  * 프리미엄에서 열리는 항목.
  * 어떤 기능이 유료인지는 lib/plan.ts 가 기준이고, 여기서는 그 목록을
  * 레일 항목 이름으로 옮겨 놓은 것뿐입니다.
+ *
+ * 무료 기간에는 목록이 비어 있어 점 표시가 하나도 붙지 않습니다. 전부
+ * 열려 있는데 «유료» 점이 찍혀 있으면 눌러 보기 전에 지레 포기합니다.
  */
-const PREMIUM_RAIL: SectionId[] = [
+const PREMIUM_RAIL: SectionId[] = FREE_PERIOD ? [] : [
   "rsvp",
   "guestbook",
   "snap",

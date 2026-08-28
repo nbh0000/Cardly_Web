@@ -30,7 +30,7 @@ import {
   type RsvpRow,
 } from "@/lib/backend/guests";
 import { paymentsEnabled, startCheckout } from "@/lib/backend/payments";
-import { formatPrice, PAID_GRACE_DAYS, PRICES } from "@/lib/plan";
+import { formatPrice, FREE_PERIOD, PAID_GRACE_DAYS, PRICES, unlocked } from "@/lib/plan";
 
 export function DocPanel() {
   const id = useQueryParam("id");
@@ -100,7 +100,7 @@ export function DocPanel() {
         <span className="eyebrow">{doc.kind === "wedding" ? "모바일 청첩장" : "초대장"}</span>
         <h1 className="mt-4 font-serif text-h1 text-ink">{doc.title || "제목 없음"}</h1>
         <p className="mt-3 text-caption text-ink-soft">
-          {doc.plan === "premium" ? "프리미엄" : "무료"} ·{" "}
+          {doc.plan === "premium" ? "프리미엄" : FREE_PERIOD ? "무료 기간 · 전부 열림" : "무료"} ·{" "}
           {published ? expiryLine(doc, now) : "아직 발행하지 않았습니다"}
         </p>
       </header>
@@ -112,9 +112,19 @@ export function DocPanel() {
         <section className="rounded-lg border border-line bg-white p-6 sm:p-7">
           <h2 className="font-serif text-h3 text-ink">링크 발행</h2>
           <p className="mt-3 text-body text-ink-soft">
-            누르면 이 {what}의 주소가 만들어집니다. 무료 발행은 7일 동안 열려
-            있고, 하단에 Cardly 표기가 붙습니다. 결제하면 행사일 +
-            {PAID_GRACE_DAYS}일까지 열리고 표기가 사라집니다.
+            {FREE_PERIOD ? (
+              <>
+                누르면 이 {what}의 주소가 만들어집니다. 여는 기간이라 값 없이
+                행사일 +{PAID_GRACE_DAYS}일까지 열려 있고, 참석 여부와 방명록도
+                함께 열립니다. 하단에 Cardly 표기만 붙습니다.
+              </>
+            ) : (
+              <>
+                누르면 이 {what}의 주소가 만들어집니다. 무료 발행은 7일 동안 열려
+                있고, 하단에 Cardly 표기가 붙습니다. 결제하면 행사일 +
+                {PAID_GRACE_DAYS}일까지 열리고 표기가 사라집니다.
+              </>
+            )}
           </p>
           <button type="button" className="btn btn-primary mt-6" onClick={publish} disabled={busy}>
             {busy ? "발행하는 중…" : "무료로 발행하기"}
@@ -151,8 +161,10 @@ export function DocPanel() {
         </section>
       )}
 
-      {/* ── 결제 ── */}
-      {doc.plan === "free" && (
+      {/* ── 결제 ──
+          여는 기간에는 통째로 감춥니다. 이미 다 열려 있는데 «프리미엄으로
+          올리기» 가 붙어 있으면 무엇을 사는 것인지 설명할 수 없습니다. */}
+      {doc.plan === "free" && !FREE_PERIOD && (
         <section className="rounded-lg bg-ink p-6 text-ivory sm:p-7">
           <h2 className="font-serif text-h3">프리미엄으로 올리기</h2>
           <p className="mt-3 text-caption text-ivory/75">
@@ -183,8 +195,8 @@ export function DocPanel() {
       )}
 
       {/* ── 하객 응답 ── */}
-      {published && doc.plan === "premium" && <Responses doc={doc} />}
-      {published && doc.plan === "free" && (
+      {published && unlocked(doc.plan) && <Responses doc={doc} />}
+      {published && !unlocked(doc.plan) && (
         <p className="text-caption text-muted">
           참석 여부와 방명록은 프리미엄에서 열립니다.
         </p>
